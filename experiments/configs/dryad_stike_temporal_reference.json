@@ -1,0 +1,13 @@
+{
+  "dataset_doi": "10.5061/dryad.n2z34tn70",
+  "dryad_version": 4,
+  "lookback_hours": 24,
+  "horizons_hours": [1, 6, 24],
+  "folds": 3,
+  "test_hours": 12,
+  "minimum_train_samples": 48,
+  "ridge_alpha": 1.0,
+  "seed": 42,
+  "confirmatory": false,
+  "central_wdm_thesis_tested": false
+}

@@ -1,0 +1,2121 @@
+{
+  "schema": "orion.controller-evidence-catalog.v1",
+  "evidence": "simulated",
+  "sources": {
+    "orion_q_polarisation_actuator_20260929_summary.json": "9752ea98d6ec55d787ec7577faa45f624557c08fa17070b2eeb6cdd62ef889c5",
+    "orion_q_polarisation_closed_loop_20260929_summary.json": "652bd502380a279394b400a34fdde403fdd0f21fdea7f06ce38a16e66778f76e",
+    "orion_q_polarisation_closed_loop_dev_20260929_summary.json": "4649a11926fba7719a51d389bcbe5b1f47bd2824aebbb2879f3ed35ce2b01f01",
+    "docs/thesis/orion_q_platform_claim_registry.json": "ff688ad94704ce5b2b16a756e85159a0b08da37c4d099de9d3b34da14ce93f65",
+    "docs/results/orion_q_platform_evidence_20260930.csv": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19"
+  },
+  "claim_registry": {
+    "P-COMP-LF": {
+      "id": "P-COMP-LF",
+      "status": "supported_simulation_only",
+      "boundaries": [
+        "Atuador ideal; planta do autor; execuções de 20 s."
+      ],
+      "automation_allowed": false
+    },
+    "P-COMP-ATU": {
+      "id": "P-COMP-ATU",
+      "status": "supported_simulation_only",
+      "boundaries": [
+        "Dispositivo simulado do autor; pesos treinados com atuador ideal."
+      ],
+      "automation_allowed": false
+    }
+  },
+  "protocol": {
+    "schema": "orion.polarisation-actuator-protocol.v1",
+    "target_id": "polarisation.compensation.v1",
+    "evidence": "simulated",
+    "mode": "simulation",
+    "actuator": {
+      "model": "qnet_network.compensation.actuator.PolarisationActuator",
+      "range_rad": 12.566370614359172,
+      "reset_slew_multiplier": 3.0
+    },
+    "slew_rates_rad_per_s": [
+      null,
+      30.0,
+      60.0,
+      120.0,
+      250.0,
+      500.0,
+      1000.0,
+      3000.0,
+      10000.0
+    ],
+    "slew_note": "null = ideal actuator (no device in the loop)",
+    "operating_points": {
+      "desenvolvimento": [
+        "qnet.compensation.desenvolvimento.ridge",
+        "qnet.compensation.desenvolvimento.mlp"
+      ],
+      "calibrado": [
+        "qnet.compensation.calibrado.ridge",
+        "qnet.compensation.calibrado.mlp"
+      ]
+    },
+    "duration_s": 20.0,
+    "evaluation_plant_seeds": [
+      1000,
+      1001,
+      1002,
+      1003,
+      1004,
+      1005,
+      1006,
+      1007,
+      1008,
+      1009,
+      1010,
+      1011,
+      1012,
+      1013,
+      1014,
+      1015,
+      1016,
+      1017,
+      1018,
+      1019
+    ],
+    "monitoring_seed_offset": 6000,
+    "baselines": [
+      "baseline.alpha_beta",
+      "baseline.none"
+    ],
+    "alpha_beta_grid": {
+      "alpha": [
+        0.01,
+        0.02,
+        0.03,
+        0.05,
+        0.1,
+        0.2,
+        0.5,
+        1.0
+      ],
+      "beta": [
+        0.0,
+        0.001,
+        0.005,
+        0.02
+      ]
+    },
+    "tuning_plant_seeds": [
+      100,
+      101,
+      102,
+      103
+    ],
+    "tuning_monitoring_seeds": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "tuning_duration_s": 10.0,
+    "tuning_rule": "alpha-beta retuned for every operating point and every device",
+    "supervisor": {
+      "max_command_step_rad": 1.5707963267948966,
+      "max_consecutive_faults": 8,
+      "rotation_tolerance": 1e-07
+    },
+    "reproduction": {
+      "reference": "external/qnet_network/runs/actuator/slew_sweep.csv",
+      "reference_sha256": "ca4943155e2b462e738c6ee02ed3844254499abade411f5e2960c12eaea51d0d",
+      "operating_point": "desenvolvimento",
+      "plant_seeds": [
+        500,
+        501,
+        502,
+        503
+      ],
+      "monitoring_seeds": [
+        7000,
+        7001,
+        7002,
+        7003
+      ],
+      "alpha_beta": {
+        "alpha": 0.05,
+        "beta": 0.005
+      },
+      "compensators": {
+        "persistência": "baseline.persistence",
+        "filtro alfa-beta": "baseline.alpha_beta",
+        "ridge (Wiener)": "qnet.compensation.desenvolvimento.ridge",
+        "MLP": "qnet.compensation.desenvolvimento.mlp"
+      },
+      "tolerance": 1e-09,
+      "author_script": "external/qnet_network/scripts/evaluate_actuator.py (slew sweep)"
+    },
+    "primary_endpoint": "per-seed mean QBER over the whole run",
+    "test": "exact two-sided paired sign-flip test, learned checkpoint vs retuned alpha-beta, per point and device",
+    "multiplicity": "Holm over all learned-versus-alpha-beta comparisons",
+    "alpha": 0.05,
+    "bootstrap": {
+      "resamples": 10000,
+      "seed": 20261022,
+      "confidence": 0.95
+    },
+    "interpretation": "simulated device model from the author's package; not a characterised physical controller"
+  },
+  "protocol_sha256": "ac93fd8c9e51911faa68e1c5f2acd5c928744819c4d7c6b5a5320f1128847433",
+  "source_sha256": {
+    "quantum_autopilot/control_plane/polarisation_actuator_campaign.py": "4cfc240f530e62d86781cd3ef78e056c580070aefc801566260bd1a86b315d7d",
+    "quantum_autopilot/control_plane/polarisation_loop.py": "bffe5034b0680e55d647432852c1fb0f3a52eb972dc3a0774df4daff871b27bf",
+    "quantum_autopilot/control_plane/polarisation_plant.py": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+    "quantum_autopilot/control_plane/comparative_evaluation.py": "4a019cb5c527c67234a4ef896a53701e61ec16ab668277cbfa44eff271097cfd",
+    "quantum_autopilot/model_intake/compensation.py": "91ac7e614fa6941c57fd4f2015bb062cf9e945f3c7d5b9eb0ad9b9b33f0d0e05",
+    "quantum_autopilot/model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+    "quantum_autopilot/model_intake/catalog.py": "f333031b92cfa26312d92922710409076fe411b7b4e7668e33dae98c5c603369",
+    "quantum_autopilot/model_intake/inference.py": "e8521e49b97abbba59f9a1f986e4af992d54fb9e8c1f7db67cdf0e54e2acfe32",
+    "qnet_network/compensation/actuator.py": "1345542b5c2d8b2833d3409a7a18fc7334b6e9d8b4df571595400a36eac1aa6e"
+  },
+  "limitations": [
+    "Device model is the author's simulated retarder cascade, not a characterised controller.",
+    "Learned checkpoints were trained with an ideal actuator; they are not retrained per device.",
+    "20 s runs: resets that need long drift accumulation are rare at 4π of travel."
+  ],
+  "profiles": [
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|ideal",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": null,
+        "actuator": {
+          "model": "ideal"
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": null,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.007612920696349887,
+        "baseline_mean_qber": 0.03613358559724617,
+        "baseline_to_model_qber_ratio": 4.746349927770939,
+        "ratio_ci95": [
+          4.530331048669428,
+          4.963510083781115
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|ideal",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": null,
+        "actuator": {
+          "model": "ideal"
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": null,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.007220517693620397,
+        "baseline_mean_qber": 0.03613358559724617,
+        "baseline_to_model_qber_ratio": 5.004292923369134,
+        "ratio_ci95": [
+          4.773365753737046,
+          5.2397426177615545
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|30",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 30.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 30.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.044312535749659765,
+        "baseline_mean_qber": 0.0341916467367719,
+        "baseline_to_model_qber_ratio": 0.7716021247336184,
+        "ratio_ci95": [
+          0.7584077146894084,
+          0.7848600452297109
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.1,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|30",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 30.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 30.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.04404062337307186,
+        "baseline_mean_qber": 0.0341916467367719,
+        "baseline_to_model_qber_ratio": 0.7763660938023415,
+        "ratio_ci95": [
+          0.7647188856050984,
+          0.7884195832269121
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.1,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|60",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 60.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 60.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.03929359766615749,
+        "baseline_mean_qber": 0.030759512025433467,
+        "baseline_to_model_qber_ratio": 0.7828123117350947,
+        "ratio_ci95": [
+          0.7625511253086398,
+          0.8043429869223337
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.05,
+        "beta": 0.02
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|60",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 60.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 60.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.03921979752627341,
+        "baseline_mean_qber": 0.030759512025433467,
+        "baseline_to_model_qber_ratio": 0.7842853345896958,
+        "ratio_ci95": [
+          0.7645079921670821,
+          0.8058638003020815
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.05,
+        "beta": 0.02
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|120",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 120.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 120.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.030428620889499047,
+        "baseline_mean_qber": 0.036007436132362486,
+        "baseline_to_model_qber_ratio": 1.1833410479930326,
+        "ratio_ci95": [
+          1.056686537416845,
+          1.3452085276437298
+        ],
+        "model_wins": 16,
+        "p_value": 0.010158538818359375,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 0.030475616455078125,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.05,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|120",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 120.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 120.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.029918686198605417,
+        "baseline_mean_qber": 0.036007436132362486,
+        "baseline_to_model_qber_ratio": 1.2035099366776634,
+        "ratio_ci95": [
+          1.0728565821114842,
+          1.372227505506091
+        ],
+        "model_wins": 15,
+        "p_value": 0.005931854248046875,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 0.0237274169921875,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.05,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|250",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 250.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 250.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.020113498741960723,
+        "baseline_mean_qber": 0.036884209406818746,
+        "baseline_to_model_qber_ratio": 1.8338037494128765,
+        "ratio_ci95": [
+          1.5808044301911388,
+          2.17399476316563
+        ],
+        "model_wins": 19,
+        "p_value": 3.814697265625e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.02,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|250",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 250.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 250.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.019775826407386735,
+        "baseline_mean_qber": 0.036884209406818746,
+        "baseline_to_model_qber_ratio": 1.8651159575835288,
+        "ratio_ci95": [
+          1.595640068953676,
+          2.219267960062637
+        ],
+        "model_wins": 19,
+        "p_value": 3.814697265625e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.02,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|500",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 500.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 500.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.01433639402967154,
+        "baseline_mean_qber": 0.036768880684765096,
+        "baseline_to_model_qber_ratio": 2.564723082294321,
+        "ratio_ci95": [
+          2.268227499119687,
+          2.9304301564416972
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|500",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 500.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 500.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.014290641507492829,
+        "baseline_mean_qber": 0.036768880684765096,
+        "baseline_to_model_qber_ratio": 2.5729342287039065,
+        "ratio_ci95": [
+          2.261249475708139,
+          2.943565259734977
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|1000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 1000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 1000.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.010996073594923956,
+        "baseline_mean_qber": 0.036793756729147906,
+        "baseline_to_model_qber_ratio": 3.346081345447957,
+        "ratio_ci95": [
+          3.060447323163854,
+          3.6671017497237344
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.02,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|1000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 1000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 1000.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.010785610859532035,
+        "baseline_mean_qber": 0.036793756729147906,
+        "baseline_to_model_qber_ratio": 3.4113743957886786,
+        "ratio_ci95": [
+          3.087284694944959,
+          3.7668781816956556
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.02,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|3000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 3000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 3000.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.007612920696349887,
+        "baseline_mean_qber": 0.036133585597246456,
+        "baseline_to_model_qber_ratio": 4.746349927770976,
+        "ratio_ci95": [
+          4.528264155931217,
+          4.961079540392221
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|3000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 3000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 3000.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.007220517693620397,
+        "baseline_mean_qber": 0.036133585597246456,
+        "baseline_to_model_qber_ratio": 5.004292923369173,
+        "ratio_ci95": [
+          4.775850570405676,
+          5.237462457294578
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.ridge|10000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 10000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 10000.0,
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.007612920696349887,
+        "baseline_mean_qber": 0.036133585597246456,
+        "baseline_to_model_qber_ratio": 4.746349927770976,
+        "ratio_ci95": [
+          4.536078665806312,
+          4.9644774028496474
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.desenvolvimento.mlp|10000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "desenvolvimento",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 10000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      },
+      "comparison": {
+        "operating_point": "desenvolvimento",
+        "slew_rate_rad_per_s": 10000.0,
+        "model_id": "qnet.compensation.desenvolvimento.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.007220517693620397,
+        "baseline_mean_qber": 0.036133585597246456,
+        "baseline_to_model_qber_ratio": 5.004292923369173,
+        "ratio_ci95": [
+          4.779511294382151,
+          5.2410136461502725
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|ideal",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": null,
+        "actuator": {
+          "model": "ideal"
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": null,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.013079433498572032,
+        "baseline_mean_qber": 0.04355426455154091,
+        "baseline_to_model_qber_ratio": 3.329980962577318,
+        "ratio_ci95": [
+          3.241179219334248,
+          3.4149564974827062
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|ideal",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": null,
+        "actuator": {
+          "model": "ideal"
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": null,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.013422886566343249,
+        "baseline_mean_qber": 0.04355426455154091,
+        "baseline_to_model_qber_ratio": 3.2447763255892768,
+        "ratio_ci95": [
+          3.159568942894193,
+          3.3255483618700543
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|30",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 30.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 30.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.0476908926420679,
+        "baseline_mean_qber": 0.04345225510309209,
+        "baseline_to_model_qber_ratio": 0.9111227048990708,
+        "ratio_ci95": [
+          0.9010664737868151,
+          0.9212676143780677
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|30",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 30.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 30.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.04803336378347258,
+        "baseline_mean_qber": 0.04345225510309209,
+        "baseline_to_model_qber_ratio": 0.9046265279060726,
+        "ratio_ci95": [
+          0.8937921890263075,
+          0.915273544935425
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|60",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 60.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 60.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.04766573637993343,
+        "baseline_mean_qber": 0.04350240925377577,
+        "baseline_to_model_qber_ratio": 0.9126557682236844,
+        "ratio_ci95": [
+          0.8990841159484774,
+          0.9276382773925891
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|60",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 60.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 60.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.04795849613048139,
+        "baseline_mean_qber": 0.04350240925377577,
+        "baseline_to_model_qber_ratio": 0.9070845160661026,
+        "ratio_ci95": [
+          0.8936619888368017,
+          0.9215656667620828
+        ],
+        "model_wins": 0,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "alpha_beta_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|120",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 120.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 120.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.04487318737279839,
+        "baseline_mean_qber": 0.04353086178600801,
+        "baseline_to_model_qber_ratio": 0.9700862438043775,
+        "ratio_ci95": [
+          0.9433759214081565,
+          1.0019620073249378
+        ],
+        "model_wins": 5,
+        "p_value": 0.07097816467285156,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 0.07097816467285156,
+        "verdict": "no_significant_difference"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|120",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 120.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 120.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.04524012372215057,
+        "baseline_mean_qber": 0.04353086178600801,
+        "baseline_to_model_qber_ratio": 0.9622180092468301,
+        "ratio_ci95": [
+          0.9357881066931218,
+          0.9926736141337718
+        ],
+        "model_wins": 5,
+        "p_value": 0.025831222534179688,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 0.051662445068359375,
+        "verdict": "no_significant_difference"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|250",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 250.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 250.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.036070490714590994,
+        "baseline_mean_qber": 0.04355118198595586,
+        "baseline_to_model_qber_ratio": 1.2073908927537498,
+        "ratio_ci95": [
+          1.1426169430613151,
+          1.2800100261920384
+        ],
+        "model_wins": 18,
+        "p_value": 7.62939453125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|250",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 250.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 250.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.0367794462740123,
+        "baseline_mean_qber": 0.04355118198595586,
+        "baseline_to_model_qber_ratio": 1.1841173915858638,
+        "ratio_ci95": [
+          1.1231330896926928,
+          1.253712587654622
+        ],
+        "model_wins": 19,
+        "p_value": 5.7220458984375e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|500",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 500.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 500.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.026507756031518986,
+        "baseline_mean_qber": 0.04356621271684548,
+        "baseline_to_model_qber_ratio": 1.643526998854342,
+        "ratio_ci95": [
+          1.5352754146914467,
+          1.7766622089433364
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|500",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 500.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 500.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.026838932831638164,
+        "baseline_mean_qber": 0.04356621271684548,
+        "baseline_to_model_qber_ratio": 1.6232468328803644,
+        "ratio_ci95": [
+          1.5142751506983316,
+          1.7544964873688942
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|1000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 1000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 1000.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.019272045613581732,
+        "baseline_mean_qber": 0.0435659643115142,
+        "baseline_to_model_qber_ratio": 2.260578102866861,
+        "ratio_ci95": [
+          2.1332908702111912,
+          2.40890407025009
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|1000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 1000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 1000.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.01962253388606703,
+        "baseline_mean_qber": 0.0435659643115142,
+        "baseline_to_model_qber_ratio": 2.2202007429044723,
+        "ratio_ci95": [
+          2.1023728781045756,
+          2.3603521708514097
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|3000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 3000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 3000.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.013080052768129364,
+        "baseline_mean_qber": 0.04355426455154081,
+        "baseline_to_model_qber_ratio": 3.3298233060392843,
+        "ratio_ci95": [
+          3.2406360313240294,
+          3.413126911923721
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|3000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 3000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 3000.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.013422886566343249,
+        "baseline_mean_qber": 0.04355426455154081,
+        "baseline_to_model_qber_ratio": 3.244776325589269,
+        "ratio_ci95": [
+          3.155776013927398,
+          3.3273880590814664
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.ridge|10000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 10000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 10000.0,
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.013080052768129364,
+        "baseline_mean_qber": 0.04355426455154081,
+        "baseline_to_model_qber_ratio": 3.3298233060392843,
+        "ratio_ci95": [
+          3.242234653451034,
+          3.4143592022395954
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    },
+    {
+      "id": "qnet.compensation.calibrado.mlp|10000",
+      "scenario": {
+        "duration_s": 20.0,
+        "sample_interval_s": 0.001,
+        "control_period_s": 0.002,
+        "latency_s": 0.04,
+        "monitoring_photons_per_basis": 400,
+        "detector_efficiency": 0.85,
+        "sifted_rate_hz": 100000.0,
+        "operating_point": "calibrado",
+        "mode": "simulation",
+        "slew_rate_rad_per_s": 10000.0,
+        "actuator": {
+          "model": "qnet_network.compensation.actuator.PolarisationActuator",
+          "range_rad": 12.566370614359172,
+          "reset_slew_multiplier": 3.0
+        },
+        "plant_source_sha256": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+        "supervisor": {
+          "max_command_step_rad": 1.5707963267948966,
+          "max_consecutive_faults": 8,
+          "rotation_tolerance": 1e-07
+        }
+      },
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      },
+      "comparison": {
+        "operating_point": "calibrado",
+        "slew_rate_rad_per_s": 10000.0,
+        "model_id": "qnet.compensation.calibrado.mlp",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "model_mean_qber": 0.013422886566343249,
+        "baseline_mean_qber": 0.04355426455154081,
+        "baseline_to_model_qber_ratio": 3.244776325589269,
+        "ratio_ci95": [
+          3.1578454117204515,
+          3.3288182874672843
+        ],
+        "model_wins": 20,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 6.866455078125e-05,
+        "verdict": "learned_better"
+      },
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      }
+    }
+  ]
+}

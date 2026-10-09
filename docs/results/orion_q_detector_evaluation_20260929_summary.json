@@ -1,0 +1,941 @@
+{
+  "schema": "orion.detector-evaluation-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.detector-evaluation-protocol.v1",
+      "model_id": "qkd.detector.boosting",
+      "evidence": "simulated",
+      "mode": "offline_monitoring",
+      "model": "safe export src/quantum_autopilot/model_intake/derived/qkd_detector_boosting_v1.npz, proven equal to the pinned pickle by byte comparison (never unpickled); bound to the archive by the member's SHA-256",
+      "plant": "qnet_qkd.datagen.qkd.generate_qkd_session_dataset at the author's benchmark (scripts/task5.py), read back from CSV as train_detector.py did",
+      "reproduction": {
+        "examples": [
+          "exemplos/detector_normal_entrada.csv",
+          "exemplos/detector_normal_gabarito.csv",
+          "exemplos/detector_normal_saida.csv",
+          "exemplos/detector_thermal_drift_entrada.csv",
+          "exemplos/detector_thermal_drift_gabarito.csv",
+          "exemplos/detector_thermal_drift_saida.csv",
+          "exemplos/detector_loss_event_entrada.csv",
+          "exemplos/detector_loss_event_gabarito.csv",
+          "exemplos/detector_loss_event_saida.csv",
+          "exemplos/detector_intercept_resend_entrada.csv",
+          "exemplos/detector_intercept_resend_gabarito.csv",
+          "exemplos/detector_intercept_resend_saida.csv",
+          "exemplos/detector_pns_entrada.csv",
+          "exemplos/detector_pns_gabarito.csv",
+          "exemplos/detector_pns_saida.csv",
+          "exemplos/detector_detector_blinding_entrada.csv",
+          "exemplos/detector_detector_blinding_gabarito.csv",
+          "exemplos/detector_detector_blinding_saida.csv",
+          "exemplos/detector_beam_splitting_entrada.csv",
+          "exemplos/detector_beam_splitting_gabarito.csv",
+          "exemplos/detector_beam_splitting_saida.csv",
+          "exemplos/detector_resumo.json"
+        ],
+        "example_probability_format": "%.6g",
+        "records": {
+          "scores.csv": "61d0966a01d4e7f3690646e2fbadda116b776c7192721126a97304987ace3a6a",
+          "beam_splitting.csv": "30a18b4a3f329881250ac812c399a5f3503e67f3b17cc2ff290614261f0b7e0c",
+          "hardness.csv": "1c079651ee857e2eda40f0a96a3f8ff67da9c5d0231d67e5346b567c806b2569",
+          "confusion.csv": "d22943d5a9a4711863fa921f084b82d3d5e1b5d2ac9ccb151c8bb3bf9c589871",
+          "settings.json": "b686e9c392a8c400e2114f2104609b02a3b7541e58fd61fd6ccabe1e079ca393"
+        },
+        "records_source": "Qnet-QKD ML.zip: qnet_autopilot_1/runs/detector (vendored in external/qnet_qkd/runs/detector)",
+        "dataset_seed": 0,
+        "tolerance": 1e-12
+      },
+      "evaluation_dataset_seeds": [
+        1000,
+        2000
+      ],
+      "episodes_per_class": 24,
+      "author_seed_sets": {
+        "dataset": "0 (fit, calibration and test episodes all inside it)",
+        "episode_generators": "dataset seed s gives episode i the generator seed s + i: the author's runs (runs/detector, runs/detector_slow) used 0-167; the evaluation uses 1000-1167 and 2000-2167, so no episode shares a random stream"
+      },
+      "detectors": [
+        "limiar de QBER",
+        "gradient boosting",
+        "gradient boosting + limiar",
+        "boosting + limiar + histerese"
+      ],
+      "deployed": "boosting + limiar + histerese",
+      "baseline": "limiar de QBER",
+      "primary": "per episode with an event (trainable classes): share of event-active periods flagged as an attack, deployed detector vs QBER threshold",
+      "test": "exact two-sided sign test over episodes (ties dropped)",
+      "multiplicity": "Holm over the evaluation seeds",
+      "alpha": 0.05,
+      "bootstrap": {
+        "resamples": 2000,
+        "seed": 20261022,
+        "confidence": 0.95,
+        "unit": "episode"
+      },
+      "interpretation": "simulated sessions of the author's plant; not field data; alarms are never acted on"
+    },
+    "protocol_file_sha256": "22475035b093df34362bd3e0ca182f91302dbf089be3db2fe726bf5e88cc4ed2",
+    "archive_sha256": "94352f15b6dcb132a3c03559b9d94b28f42b6e9adb8b2cdaab18f46720a55a79",
+    "expected_archive_sha256": "94352f15b6dcb132a3c03559b9d94b28f42b6e9adb8b2cdaab18f46720a55a79",
+    "source_sha256": {
+      "quantum_autopilot/control_plane/detector_campaign.py": "0a50c7712c18a1736aafa0f614adae6c9248954453da6ec56f3ee84a42757efa",
+      "quantum_autopilot/model_intake/detector.py": "7d71545a50f340544320d34f202c11fb6f304c676da6d4c1abb7c51d0b1e098f",
+      "quantum_autopilot/model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+      "quantum_autopilot/model_intake/derived/qkd_detector_boosting_v1.npz": "5a7442e906cae5f5c00246a42d3009b68ca60e752fcff34f409486766d1f68fe",
+      "quantum_autopilot/model_intake/derived/qkd_detector_boosting_v1.json": "ed81d7afa3a73d7662110b72917a3a243800cf7a32af1de1ce853da41918e041",
+      "qnet_qkd/qkd/detection.py": "116d1b1de7899910b8db5396ce26ebdbabd90fe97725ca46d6b21b6133f5432b",
+      "qnet_qkd/qkd/session.py": "38f87179c30b909a2c16f77448f041f9fa35af163191486fa853de1da3e546a2",
+      "qnet_qkd/qkd/attacks.py": "3cc3e9946951264fe1a79f3edc65c40b380080a439ea0f4c8ccbc0fc998b91f9",
+      "qnet_qkd/datagen/qkd.py": "d6badeb447e344df43889790866deaae0bee527b19cc9d685e2b4a5c2131f164"
+    }
+  },
+  "safe_export": {
+    "npz_sha256": "5a7442e906cae5f5c00246a42d3009b68ca60e752fcff34f409486766d1f68fe",
+    "archive_member_sha256": "900d4d16e0790fafd10d06281c9619b350889349df0eff78996c408c4cc5a3e1",
+    "rebuild": {
+      "dataset_seed": 0,
+      "detector_seed": 0,
+      "dataset_rows": 100800,
+      "dataset_csv_sha256": "fb69e0795d93ef6c500b3669a5c326834bf02d8ab9af9a5499fa7cdebea19a32",
+      "fit_rows": 44280,
+      "calibration_rows": 10800,
+      "false_alarm_target": 0.005,
+      "scikit_learn": "1.8.0",
+      "numpy": "2.4.4",
+      "pandas": "3.0.2",
+      "python": "3.11.15",
+      "script": "tools/export_detector_safe.py"
+    }
+  },
+  "reproduction": {
+    "examples": [
+      {
+        "example": "normal",
+        "episode": 4,
+        "periods": 540,
+        "input_identical": true,
+        "input_max_relative_error": 0.0,
+        "answer_key_identical": true,
+        "output_identical": true,
+        "alarms": 4,
+        "summary_identical": true,
+        "passed": true
+      },
+      {
+        "example": "thermal_drift",
+        "episode": 24,
+        "periods": 540,
+        "input_identical": true,
+        "input_max_relative_error": 0.0,
+        "answer_key_identical": true,
+        "output_identical": true,
+        "alarms": 246,
+        "summary_identical": true,
+        "passed": true
+      },
+      {
+        "example": "loss_event",
+        "episode": 50,
+        "periods": 540,
+        "input_identical": true,
+        "input_max_relative_error": 0.0,
+        "answer_key_identical": true,
+        "output_identical": true,
+        "alarms": 137,
+        "summary_identical": true,
+        "passed": true
+      },
+      {
+        "example": "intercept_resend",
+        "episode": 75,
+        "periods": 540,
+        "input_identical": true,
+        "input_max_relative_error": 0.0,
+        "answer_key_identical": true,
+        "output_identical": true,
+        "alarms": 93,
+        "summary_identical": true,
+        "passed": true
+      },
+      {
+        "example": "pns",
+        "episode": 97,
+        "periods": 540,
+        "input_identical": true,
+        "input_max_relative_error": 0.0,
+        "answer_key_identical": true,
+        "output_identical": true,
+        "alarms": 367,
+        "summary_identical": true,
+        "passed": true
+      },
+      {
+        "example": "detector_blinding",
+        "episode": 120,
+        "periods": 540,
+        "input_identical": true,
+        "input_max_relative_error": 0.0,
+        "answer_key_identical": true,
+        "output_identical": true,
+        "alarms": 43,
+        "summary_identical": true,
+        "passed": true
+      },
+      {
+        "example": "beam_splitting",
+        "episode": 145,
+        "periods": 540,
+        "input_identical": true,
+        "input_max_relative_error": 0.0,
+        "answer_key_identical": true,
+        "output_identical": true,
+        "alarms": 0,
+        "summary_identical": true,
+        "passed": true
+      }
+    ],
+    "records": {
+      "scores.csv": {
+        "rows": 24,
+        "values_checked": 240,
+        "max_absolute_error": 0.0,
+        "mismatches": [],
+        "passed": true
+      },
+      "beam_splitting.csv": {
+        "rows": 4,
+        "values_checked": 12,
+        "max_absolute_error": 0.0,
+        "mismatches": [],
+        "passed": true
+      },
+      "hardness.csv": {
+        "rows": 15,
+        "values_checked": 45,
+        "max_absolute_error": 0.0,
+        "mismatches": [],
+        "passed": true
+      },
+      "confusion.csv": {
+        "passed": true
+      },
+      "settings.json": {
+        "threshold_sigma": 97.15752200912328,
+        "attack_threshold": 0.9997181057361344,
+        "passed": true
+      }
+    },
+    "dataset_seed_0_csv_sha256": "fb69e0795d93ef6c500b3669a5c326834bf02d8ab9af9a5499fa7cdebea19a32"
+  },
+  "threshold_sigma": 97.15752200912328,
+  "evaluation": [
+    {
+      "seed": 1000,
+      "dataset_csv_sha256": "ffa0cb2b019583700de2dcda14db6bdbd828d387f7e1b25e7f77a4ace2164659",
+      "rows": 100800,
+      "episodes_scored": 144,
+      "detectors": {
+        "limiar de QBER": {
+          "macro_f1": 0.12006997455470737,
+          "false_alarm_rate": 0.0030653147842489977,
+          "false_alarms_per_hour": 0.8488564017920303,
+          "detection_rate": 0.07536067892503535,
+          "precision_at_prior": 0.1989317293743996,
+          "recall": {
+            "detector_blinding": 0.0,
+            "intercept_resend": 0.0,
+            "loss_event": 0.0,
+            "normal": 0.996934685215751,
+            "pns": 0.0,
+            "thermal_drift": 0.0
+          },
+          "detection_recall": {
+            "detector_blinding": 0.033437677859988614,
+            "intercept_resend": 0.2935308786856388,
+            "loss_event": 0.005597014925373134,
+            "normal": 0.996934685215751,
+            "pns": 0.024445068839561674,
+            "thermal_drift": 0.030800523027749528
+          },
+          "detection_delay_s": {
+            "detector_blinding": Infinity,
+            "intercept_resend": Infinity,
+            "loss_event": Infinity,
+            "pns": Infinity,
+            "thermal_drift": Infinity
+          },
+          "sustained_false_alarm_rate": 0.0029945767507663285,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.11302920953031366,
+              0.12698411810749985
+            ],
+            "false_alarm_rate": [
+              0.000298633445905514,
+              0.00703575849277391
+            ],
+            "false_alarms_per_hour": [
+              0.17299749397802835,
+              1.754223079211068
+            ],
+            "detection_rate": [
+              0.04226387456236392,
+              0.11439989542672757
+            ],
+            "precision_at_prior": [
+              0.08293467807648514,
+              0.6876319168786895
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.1278058834551246,
+            "false_alarm_rate": 0.007276961141027507,
+            "false_alarms_per_hour": 1.5718236064619415,
+            "precision_at_prior": 0.10332669644316002
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": false,
+            "false_alarm_rate": false,
+            "false_alarms_per_hour": true,
+            "precision_at_prior": true
+          }
+        },
+        "gradient boosting": {
+          "macro_f1": 0.8862307629109841,
+          "false_alarm_rate": 0.04524876208441405,
+          "false_alarms_per_hour": 11.54444706437161,
+          "detection_rate": 0.9068741159830269,
+          "precision_at_prior": 0.16836050365667402,
+          "recall": {
+            "detector_blinding": 0.887877063175868,
+            "intercept_resend": 0.5936629015696054,
+            "loss_event": 1.0,
+            "normal": 0.9547512379155859,
+            "pns": 0.9311604383253723,
+            "thermal_drift": 0.8797036176086009
+          },
+          "detection_recall": {
+            "detector_blinding": 0.933693796243597,
+            "intercept_resend": 0.6306293090802406,
+            "loss_event": 1.0,
+            "normal": 0.9547512379155859,
+            "pns": 0.9570103961787019,
+            "thermal_drift": 0.99970942902804
+          },
+          "detection_delay_s": {
+            "detector_blinding": 0.3358678703508815,
+            "intercept_resend": 0.9933102705135184,
+            "loss_event": 0.37871252691918755,
+            "pns": 0.8105663290224498,
+            "thermal_drift": 0.6357943095034955
+          },
+          "sustained_false_alarm_rate": 0.04317377976892242,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.8497052859727467,
+              0.9152001047758903
+            ],
+            "false_alarm_rate": [
+              0.024693074057713205,
+              0.06897602411535685
+            ],
+            "false_alarms_per_hour": [
+              7.226148475398779,
+              16.18476905323095
+            ],
+            "detection_rate": [
+              0.8561710403374315,
+              0.950961800900639
+            ],
+            "precision_at_prior": [
+              0.11751658612096211,
+              0.2684141364041257
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.8303967048132708,
+            "false_alarm_rate": 0.06178140008732353,
+            "false_alarms_per_hour": 14.932324261388445,
+            "precision_at_prior": 0.13497259743051315
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": false,
+            "false_alarm_rate": true,
+            "false_alarms_per_hour": true,
+            "precision_at_prior": true
+          }
+        },
+        "gradient boosting + limiar": {
+          "macro_f1": 0.8668961436599489,
+          "false_alarm_rate": 0.024239566140061307,
+          "false_alarms_per_hour": 5.262909691110587,
+          "detection_rate": 0.8587553041018388,
+          "precision_at_prior": 0.2635453707573138,
+          "recall": {
+            "detector_blinding": 0.8675298804780877,
+            "intercept_resend": 0.4215930761331964,
+            "loss_event": 1.0,
+            "normal": 0.9757604338599387,
+            "pns": 0.9022197246417533,
+            "thermal_drift": 0.8795583321226209
+          },
+          "detection_recall": {
+            "detector_blinding": 0.900398406374502,
+            "intercept_resend": 0.4575326389907584,
+            "loss_event": 1.0,
+            "normal": 0.9757604338599387,
+            "pns": 0.9182354593987075,
+            "thermal_drift": 0.9981112886822606
+          },
+          "detection_delay_s": {
+            "detector_blinding": 0.4901117633341414,
+            "intercept_resend": 18.829035652889218,
+            "loss_event": 0.37871252691918755,
+            "pns": 0.8747302443371012,
+            "thermal_drift": 0.6787328487869217
+          },
+          "sustained_false_alarm_rate": 0.023461447771751947,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.8292252547490866,
+              0.897856106579916
+            ],
+            "false_alarm_rate": [
+              0.010579642325589469,
+              0.040471619552059246
+            ],
+            "false_alarms_per_hour": [
+              2.1695511259017315,
+              8.94125905374423
+            ],
+            "detection_rate": [
+              0.7996184115302382,
+              0.9126729943488
+            ],
+            "precision_at_prior": [
+              0.1743153747306299,
+              0.45187460499872395
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.8248546528790843,
+            "false_alarm_rate": 0.03733081065347111,
+            "false_alarms_per_hour": 11.00276524523359,
+            "precision_at_prior": 0.19988075085118853
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": false,
+            "false_alarm_rate": true,
+            "false_alarms_per_hour": false,
+            "precision_at_prior": true
+          }
+        },
+        "boosting + limiar + histerese": {
+          "macro_f1": 0.8571420866881895,
+          "false_alarm_rate": 0.021763734968167886,
+          "false_alarms_per_hour": 3.0558830464513087,
+          "detection_rate": 0.8338896746817539,
+          "precision_at_prior": 0.2790329034325981,
+          "recall": {
+            "detector_blinding": 0.8471826977803073,
+            "intercept_resend": 0.3843332844359689,
+            "loss_event": 0.9936034115138592,
+            "normal": 0.9782362650318321,
+            "pns": 0.8864849676875527,
+            "thermal_drift": 0.8627052157489467
+          },
+          "detection_recall": {
+            "detector_blinding": 0.8722253841775754,
+            "intercept_resend": 0.41220478216224143,
+            "loss_event": 0.9936034115138592,
+            "normal": 0.9782362650318321,
+            "pns": 0.9006743467266086,
+            "thermal_drift": 0.9691994769722505
+          },
+          "detection_delay_s": {
+            "detector_blinding": 2.4901117633341414,
+            "intercept_resend": 20.829035652889218,
+            "loss_event": 2.3787125269191876,
+            "pns": 2.9541211220336123,
+            "thermal_drift": 2.6787328487869217
+          },
+          "sustained_false_alarm_rate": 0.021598679556708324,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.8190629541506318,
+              0.8890632782543872
+            ],
+            "false_alarm_rate": [
+              0.009009500067164724,
+              0.03722678521378519
+            ],
+            "false_alarms_per_hour": [
+              1.4407178376430807,
+              5.025274670931446
+            ],
+            "detection_rate": [
+              0.7734247027678236,
+              0.8902539345294954
+            ],
+            "precision_at_prior": [
+              0.18275326112835247,
+              0.47975434704065095
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.817947816523831,
+            "false_alarm_rate": 0.032091398631931306,
+            "false_alarms_per_hour": 6.8112356280017465,
+            "precision_at_prior": 0.21958718108014297
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": false,
+            "false_alarm_rate": true,
+            "false_alarms_per_hour": false,
+            "precision_at_prior": true
+          }
+        }
+      },
+      "beam_splitting": [
+        {
+          "detector": "limiar de QBER",
+          "periods": 6290,
+          "called_normal": 0.9572337042925279,
+          "called_attack": 0.04276629570747218
+        },
+        {
+          "detector": "gradient boosting",
+          "periods": 6290,
+          "called_normal": 0.5310015898251192,
+          "called_attack": 0.46899841017488075
+        },
+        {
+          "detector": "gradient boosting + limiar",
+          "periods": 6290,
+          "called_normal": 0.5694753577106518,
+          "called_attack": 0.43052464228934817
+        },
+        {
+          "detector": "boosting + limiar + histerese",
+          "periods": 6290,
+          "called_normal": 0.5694753577106518,
+          "called_attack": 0.43052464228934817
+        }
+      ],
+      "primary": {
+        "episodes_with_event": 120,
+        "deployed_mean_flagged": 0.8367529416430156,
+        "threshold_mean_flagged": 0.07459865968566266,
+        "mean_difference": 0.7621542819573529,
+        "difference_ci95": [
+          0.6902171777155424,
+          0.8345632443173834
+        ],
+        "wins": 110,
+        "losses": 8,
+        "p_value": 4.74093238312722e-24,
+        "holm_p_value": 5.079176068166751e-24,
+        "significant": true
+      },
+      "per_class_flagged": {
+        "detector_blinding": {
+          "episodes": 24,
+          "deployed": 0.8929480597331231,
+          "threshold": 0.037092418444245,
+          "wins": 24,
+          "losses": 0
+        },
+        "intercept_resend": {
+          "episodes": 24,
+          "deployed": 0.44964821917912196,
+          "threshold": 0.2447653890687923,
+          "wins": 15,
+          "losses": 7
+        },
+        "loss_event": {
+          "episodes": 24,
+          "deployed": 0.9908494903472159,
+          "threshold": 0.005663619743608563,
+          "wins": 24,
+          "losses": 0
+        },
+        "pns": {
+          "episodes": 24,
+          "deployed": 0.8848135473921012,
+          "threshold": 0.04415080178012825,
+          "wins": 23,
+          "losses": 1
+        },
+        "thermal_drift": {
+          "episodes": 24,
+          "deployed": 0.9655053915635161,
+          "threshold": 0.041321069391539185,
+          "wins": 24,
+          "losses": 0
+        }
+      }
+    },
+    {
+      "seed": 2000,
+      "dataset_csv_sha256": "306536158512badb713ca703bf70cf99ce4a5a738e9344c5089c93008b9f2906",
+      "rows": 100800,
+      "episodes_scored": 144,
+      "detectors": {
+        "limiar de QBER": {
+          "macro_f1": 0.12401954078026313,
+          "false_alarm_rate": 0.008973512196232948,
+          "false_alarms_per_hour": 2.131778531896964,
+          "detection_rate": 0.1276400909815969,
+          "precision_at_prior": 0.12562781004576262,
+          "recall": {
+            "detector_blinding": 0.0,
+            "intercept_resend": 0.0,
+            "loss_event": 0.0,
+            "normal": 0.991026487803767,
+            "pns": 0.0,
+            "thermal_drift": 0.0
+          },
+          "detection_recall": {
+            "detector_blinding": 0.07551553877432472,
+            "intercept_resend": 0.39219820769636266,
+            "loss_event": 0.03795571832861661,
+            "normal": 0.991026487803767,
+            "pns": 0.024715398442180948,
+            "thermal_drift": 0.06451612903225806
+          },
+          "detection_delay_s": {
+            "detector_blinding": Infinity,
+            "intercept_resend": 172.03184733383577,
+            "loss_event": Infinity,
+            "pns": Infinity,
+            "thermal_drift": Infinity
+          },
+          "sustained_false_alarm_rate": 0.00851800396292163,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.11706478852685703,
+              0.12991748616136586
+            ],
+            "false_alarm_rate": [
+              0.0017518992777207133,
+              0.018733661830353583
+            ],
+            "false_alarms_per_hour": [
+              0.42500723240994304,
+              4.157105051554608
+            ],
+            "detection_rate": [
+              0.08252932566353839,
+              0.1781019157811512
+            ],
+            "precision_at_prior": [
+              0.05826930328283217,
+              0.43688016135984264
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.1278058834551246,
+            "false_alarm_rate": 0.007276961141027507,
+            "false_alarms_per_hour": 1.5718236064619415,
+            "precision_at_prior": 0.10332669644316002
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": true,
+            "false_alarm_rate": true,
+            "false_alarms_per_hour": true,
+            "precision_at_prior": true
+          }
+        },
+        "gradient boosting": {
+          "macro_f1": 0.9078190519849351,
+          "false_alarm_rate": 0.05579975858063634,
+          "false_alarms_per_hour": 9.183045983556154,
+          "detection_rate": 0.9485422266859658,
+          "precision_at_prior": 0.14654464768705355,
+          "recall": {
+            "detector_blinding": 0.9265175718849841,
+            "intercept_resend": 0.768450184501845,
+            "loss_event": 1.0,
+            "normal": 0.9442002414193637,
+            "pns": 0.9218094667465548,
+            "thermal_drift": 0.9041218637992832
+          },
+          "detection_recall": {
+            "detector_blinding": 0.9616613418530351,
+            "intercept_resend": 0.8289404322614655,
+            "loss_event": 1.0,
+            "normal": 0.9442002414193637,
+            "pns": 0.9730377471539844,
+            "thermal_drift": 1.0
+          },
+          "detection_delay_s": {
+            "detector_blinding": 0.4045951504025709,
+            "intercept_resend": 0.8706574790540955,
+            "loss_event": 0.6604675029211933,
+            "pns": 0.5569241110707139,
+            "thermal_drift": 0.4530783102626401
+          },
+          "sustained_false_alarm_rate": 0.05418270435238117,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.8749334508261719,
+              0.9328017436984717
+            ],
+            "false_alarm_rate": [
+              0.02725997023694026,
+              0.08899844613848298
+            ],
+            "false_alarms_per_hour": [
+              5.196840225098777,
+              14.083435971480007
+            ],
+            "detection_rate": [
+              0.9125308309180828,
+              0.9768336934902274
+            ],
+            "precision_at_prior": [
+              0.09746221192434916,
+              0.25933923345780574
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.8303967048132708,
+            "false_alarm_rate": 0.06178140008732353,
+            "false_alarms_per_hour": 14.932324261388445,
+            "precision_at_prior": 0.13497259743051315
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": false,
+            "false_alarm_rate": true,
+            "false_alarms_per_hour": false,
+            "precision_at_prior": true
+          }
+        },
+        "gradient boosting + limiar": {
+          "macro_f1": 0.9007105986368464,
+          "false_alarm_rate": 0.0410868426446808,
+          "false_alarms_per_hour": 7.543216343635412,
+          "detection_rate": 0.920686497503914,
+          "precision_at_prior": 0.18456978640222862,
+          "recall": {
+            "detector_blinding": 0.9077839093813534,
+            "intercept_resend": 0.672509225092251,
+            "loss_event": 1.0,
+            "normal": 0.9589131573553192,
+            "pns": 0.9137207908927502,
+            "thermal_drift": 0.9017323775388292
+          },
+          "detection_recall": {
+            "detector_blinding": 0.9424920127795527,
+            "intercept_resend": 0.7326041117554033,
+            "loss_event": 1.0,
+            "normal": 0.9589131573553192,
+            "pns": 0.9640503295386459,
+            "thermal_drift": 0.9970131421744325
+          },
+          "detection_delay_s": {
+            "detector_blinding": 0.5437805826611424,
+            "intercept_resend": 0.8706574790540955,
+            "loss_event": 0.6604675029211933,
+            "pns": 0.7928356513044577,
+            "thermal_drift": 0.7343403462033038
+          },
+          "sustained_false_alarm_rate": 0.039765868768077986,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.867712020352284,
+              0.9263277975484583
+            ],
+            "false_alarm_rate": [
+              0.016763058793755708,
+              0.07157347329984468
+            ],
+            "false_alarms_per_hour": [
+              3.7580544522644406,
+              11.903843134091192
+            ],
+            "detection_rate": [
+              0.8740921139520078,
+              0.9570632363202606
+            ],
+            "precision_at_prior": [
+              0.11536944723749483,
+              0.35863599488609577
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.8248546528790843,
+            "false_alarm_rate": 0.03733081065347111,
+            "false_alarms_per_hour": 11.00276524523359,
+            "precision_at_prior": 0.19988075085118853
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": false,
+            "false_alarm_rate": true,
+            "false_alarms_per_hour": true,
+            "precision_at_prior": true
+          }
+        },
+        "boosting + limiar + histerese": {
+          "macro_f1": 0.8948952420848237,
+          "false_alarm_rate": 0.037442776778190266,
+          "false_alarms_per_hour": 4.017582617805817,
+          "detection_rate": 0.8935397158302071,
+          "precision_at_prior": 0.1942319463622183,
+          "recall": {
+            "detector_blinding": 0.892099912866686,
+            "intercept_resend": 0.6414074855034264,
+            "loss_event": 0.9920093224571334,
+            "normal": 0.9625572232218097,
+            "pns": 0.8993409227082085,
+            "thermal_drift": 0.8817204301075269
+          },
+          "detection_recall": {
+            "detector_blinding": 0.9218704618065641,
+            "intercept_resend": 0.6918819188191881,
+            "loss_event": 0.9920093224571334,
+            "normal": 0.9625572232218097,
+            "pns": 0.9414319952067106,
+            "thermal_drift": 0.9568399044205496
+          },
+          "detection_delay_s": {
+            "detector_blinding": 2.5437805826611424,
+            "intercept_resend": 2.8706574790540955,
+            "loss_event": 2.6604675029211933,
+            "pns": 2.816441825893257,
+            "thermal_drift": 3.1365413429810474
+          },
+          "sustained_false_alarm_rate": 0.03714669642653791,
+          "rows": 77760,
+          "ci95": {
+            "macro_f1": [
+              0.8609644232108861,
+              0.9205748454305863
+            ],
+            "false_alarm_rate": [
+              0.014371256031517312,
+              0.06630088955938196
+            ],
+            "false_alarms_per_hour": [
+              2.0454637541531238,
+              6.2240511069946844
+            ],
+            "detection_rate": [
+              0.8462091648121336,
+              0.9321694366955391
+            ],
+            "precision_at_prior": [
+              0.11957712811863042,
+              0.3865373437762437
+            ]
+          },
+          "author_seed0_test": {
+            "macro_f1": 0.817947816523831,
+            "false_alarm_rate": 0.032091398631931306,
+            "false_alarms_per_hour": 6.8112356280017465,
+            "precision_at_prior": 0.21958718108014297
+          },
+          "author_value_inside_ci95": {
+            "macro_f1": false,
+            "false_alarm_rate": true,
+            "false_alarms_per_hour": false,
+            "precision_at_prior": true
+          }
+        }
+      },
+      "beam_splitting": [
+        {
+          "detector": "limiar de QBER",
+          "periods": 6582,
+          "called_normal": 0.9241871771498025,
+          "called_attack": 0.07581282285019751
+        },
+        {
+          "detector": "gradient boosting",
+          "periods": 6582,
+          "called_normal": 0.5227894257064722,
+          "called_attack": 0.4772105742935278
+        },
+        {
+          "detector": "gradient boosting + limiar",
+          "periods": 6582,
+          "called_normal": 0.5353995745973869,
+          "called_attack": 0.4646004254026132
+        },
+        {
+          "detector": "boosting + limiar + histerese",
+          "periods": 6582,
+          "called_normal": 0.5353995745973869,
+          "called_attack": 0.4646004254026132
+        }
+      ],
+      "primary": {
+        "episodes_with_event": 120,
+        "deployed_mean_flagged": 0.8910917661683553,
+        "threshold_mean_flagged": 0.13917039566647194,
+        "mean_difference": 0.7519213705018833,
+        "difference_ci95": [
+          0.6814870235196748,
+          0.8159031863731879
+        ],
+        "wins": 111,
+        "losses": 8,
+        "p_value": 2.5395880340833756e-24,
+        "holm_p_value": 5.079176068166751e-24,
+        "significant": true
+      },
+      "per_class_flagged": {
+        "detector_blinding": {
+          "episodes": 24,
+          "deployed": 0.9212946472535201,
+          "threshold": 0.12182685844280201,
+          "wins": 24,
+          "losses": 0
+        },
+        "intercept_resend": {
+          "episodes": 24,
+          "deployed": 0.6751535464549514,
+          "threshold": 0.3852238990287194,
+          "wins": 16,
+          "losses": 7
+        },
+        "loss_event": {
+          "episodes": 24,
+          "deployed": 0.9890588350437574,
+          "threshold": 0.0695608903063527,
+          "wins": 23,
+          "losses": 1
+        },
+        "pns": {
+          "episodes": 24,
+          "deployed": 0.9389444609945458,
+          "threshold": 0.032712473251900236,
+          "wins": 24,
+          "losses": 0
+        },
+        "thermal_drift": {
+          "episodes": 24,
+          "deployed": 0.9310073410950022,
+          "threshold": 0.08652785730258533,
+          "wins": 24,
+          "losses": 0
+        }
+      }
+    }
+  ],
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "limitations": [
+    "The author's simulated sessions; no labelled field data with attacks is public.",
+    "One event per episode, at the author's benchmark link and span lengths.",
+    "A monitor: alarms are scored, never acted on."
+  ]
+}

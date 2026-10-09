@@ -1,0 +1,911 @@
+{
+  "schema": "orion.polarisation-closed-loop-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.polarisation-closed-loop-protocol.v1",
+      "target_id": "polarisation.compensation.v1",
+      "evidence": "simulated",
+      "mode": "simulation",
+      "operating_point": "calibrado",
+      "duration_s": 20.0,
+      "sample_interval_s": 0.001,
+      "control_period_s": 0.002,
+      "latency_s": 0.04,
+      "monitoring_photons_per_basis": 400,
+      "detector_efficiency": 0.85,
+      "sifted_rate_hz": 100000.0,
+      "evaluation_plant_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019
+      ],
+      "monitoring_seed_offset": 6000,
+      "learned_model_ids": [
+        "qnet.compensation.calibrado.ridge",
+        "qnet.compensation.calibrado.mlp"
+      ],
+      "contract_probe_model_ids": [
+        "qnet.compensation.desenvolvimento.ridge",
+        "qnet.compensation.desenvolvimento.mlp"
+      ],
+      "baselines": [
+        "baseline.none",
+        "baseline.persistence",
+        "baseline.alpha_beta"
+      ],
+      "alpha_beta_grid": {
+        "alpha": [
+          0.005,
+          0.01,
+          0.02,
+          0.03,
+          0.05,
+          0.1,
+          0.2,
+          0.35,
+          0.5,
+          0.7,
+          1.0
+        ],
+        "beta": [
+          0.0,
+          0.0005,
+          0.001,
+          0.002,
+          0.005,
+          0.02,
+          0.05,
+          0.1
+        ]
+      },
+      "tuning_plant_seeds": [
+        100,
+        101,
+        102,
+        103
+      ],
+      "tuning_monitoring_seeds": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "tuning_duration_s": 10.0,
+      "supervisor": {
+        "max_command_step_rad": 1.5707963267948966,
+        "max_consecutive_faults": 8,
+        "rotation_tolerance": 1e-07
+      },
+      "fallback": "baseline.alpha_beta",
+      "reproduction": {
+        "plant_seeds": [
+          500,
+          501,
+          502,
+          503,
+          504,
+          505
+        ],
+        "monitoring_seeds": [
+          7000,
+          7001,
+          7002,
+          7003,
+          7004,
+          7005
+        ],
+        "tolerance": 1e-09,
+        "reference": "held_out_mean_qber.estimate in each checkpoint's metadata"
+      },
+      "fault_injection": {
+        "model_id": "qnet.compensation.calibrado.ridge",
+        "start_step": 2500,
+        "steps": 50
+      },
+      "primary_endpoint": "per-seed mean QBER over the whole run",
+      "test": "exact one-sided paired sign-flip test, H1: learned mean QBER lower than baseline",
+      "multiplicity": "Holm over the six learned-versus-baseline comparisons",
+      "alpha": 0.05,
+      "bootstrap": {
+        "resamples": 10000,
+        "seed": 20261022,
+        "confidence": 0.95
+      },
+      "interpretation": "simulated closed loop with an ideal actuator; not physical validation or permission to actuate"
+    },
+    "protocol_file_sha256": "0b7b12b586e78839d2385af4acbbf2908eb1807ddd8812c2340a030eba79d9f4",
+    "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+    "expected_archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+    "source_sha256": {
+      "control_plane/polarisation_campaign.py": "2f561546d17ae89d06c940bb8b7203ab33e1ceb88183e1d4af7d7be5fa7efe37",
+      "control_plane/polarisation_loop.py": "bffe5034b0680e55d647432852c1fb0f3a52eb972dc3a0774df4daff871b27bf",
+      "control_plane/polarisation_plant.py": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+      "control_plane/comparative_evaluation.py": "4a019cb5c527c67234a4ef896a53701e61ec16ab668277cbfa44eff271097cfd",
+      "model_intake/compensation.py": "91ac7e614fa6941c57fd4f2015bb062cf9e945f3c7d5b9eb0ad9b9b33f0d0e05",
+      "model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+      "model_intake/catalog.py": "f333031b92cfa26312d92922710409076fe411b7b4e7668e33dae98c5c603369",
+      "model_intake/inference.py": "e8521e49b97abbba59f9a1f986e4af992d54fb9e8c1f7db67cdf0e54e2acfe32",
+      "model_intake/sync_session.py": "644cf4302ecfb8d7a1d62ae4f6d86ed91c66e2b70be87062d29489a68c94bcd4"
+    }
+  },
+  "contracts": [
+    {
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "operating_point": "calibrado",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "operating_point": "calibrado",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "operating_point": "calibrado",
+      "status": "REFUSED",
+      "reasons": [
+        "checkpoint_regime_differs_from_plant",
+        "declared_training_fibre_differs_from_plant"
+      ],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "operating_point": "calibrado",
+      "status": "REFUSED",
+      "reasons": [
+        "checkpoint_regime_differs_from_plant",
+        "declared_training_fibre_differs_from_plant"
+      ],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      }
+    }
+  ],
+  "reproduction": [
+    {
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "declared_mean_qber": 0.0132653151857407,
+      "reproduced_mean_qber": 0.013265315185740818,
+      "absolute_difference": 1.1796119636642288e-16,
+      "passed": true
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "declared_mean_qber": 0.0136375117637343,
+      "reproduced_mean_qber": 0.013637511763734402,
+      "absolute_difference": 1.0234868508263162e-16,
+      "passed": true
+    }
+  ],
+  "alpha_beta": {
+    "alpha": 0.01,
+    "beta": 0.0,
+    "mean_qber": 0.04459439548725999
+  },
+  "controllers": {
+    "qnet.compensation.calibrado.ridge": {
+      "mean_qber": 0.013079433498572032,
+      "ci95": [
+        0.012772130424726035,
+        0.013402368187127492
+      ],
+      "min": 0.011963877074933973,
+      "max": 0.014245573871541644
+    },
+    "qnet.compensation.calibrado.mlp": {
+      "mean_qber": 0.013422886566343249,
+      "ci95": [
+        0.013108198075986224,
+        0.013756932775001127
+      ],
+      "min": 0.012222140466207109,
+      "max": 0.01469026468116382
+    },
+    "baseline.none": {
+      "mean_qber": 0.08357344179661472,
+      "ci95": [
+        0.06601819377389438,
+        0.1058383566683737
+      ],
+      "min": 0.04618619532006588,
+      "max": 0.23070839616532457
+    },
+    "baseline.persistence": {
+      "mean_qber": 0.1216669078804744,
+      "ci95": [
+        0.11936984111128127,
+        0.12413633744852229
+      ],
+      "min": 0.11442620968374033,
+      "max": 0.13292033665912104
+    },
+    "baseline.alpha_beta": {
+      "mean_qber": 0.04355426455154091,
+      "ci95": [
+        0.04290159895308901,
+        0.04424793900456217
+      ],
+      "min": 0.040466362709722925,
+      "max": 0.04686534967244218
+    }
+  },
+  "comparisons": [
+    {
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "baseline": "baseline.none",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 6.3896836056193855,
+      "ratio_ci95": [
+        5.0307224848094165,
+        8.000217566434142
+      ],
+      "mean_qber_reduction": 0.07049400829804267,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "baseline": "baseline.persistence",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 9.302154248022866,
+      "ratio_ci95": [
+        9.035258425189019,
+        9.575013856774982
+      ],
+      "mean_qber_reduction": 0.10858747438190239,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "baseline": "baseline.alpha_beta",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 3.329980962577318,
+      "ratio_ci95": [
+        3.241395904343363,
+        3.4154168551386035
+      ],
+      "mean_qber_reduction": 0.03047483105296888,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "baseline": "baseline.none",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 6.226189976615615,
+      "ratio_ci95": [
+        4.931371325674772,
+        7.771858805197495
+      ],
+      "mean_qber_reduction": 0.0701505552302715,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "baseline": "baseline.persistence",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 9.064138870512686,
+      "ratio_ci95": [
+        8.798467507236413,
+        9.318457829835031
+      ],
+      "mean_qber_reduction": 0.10824402131413118,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "baseline": "baseline.alpha_beta",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 3.2447763255892768,
+      "ratio_ci95": [
+        3.1585532551274236,
+        3.3265830741049367
+      ],
+      "mean_qber_reduction": 0.03013137798519766,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    }
+  ],
+  "secondary": {
+    "qnet.compensation.calibrado.ridge": {
+      "p95_qber": 0.038335958108966554,
+      "uptime": 0.9986,
+      "mean_key_rate_hz": 80089.37824344475,
+      "mean_residual_mrad": 253.31298498273517
+    },
+    "qnet.compensation.calibrado.mlp": {
+      "p95_qber": 0.03930131221809401,
+      "uptime": 0.9985399999999999,
+      "mean_key_rate_hz": 79660.18057862126,
+      "mean_residual_mrad": 256.5069555566328
+    },
+    "baseline.none": {
+      "p95_qber": 0.2120204473434057,
+      "uptime": 0.7509725,
+      "mean_key_rate_hz": 34940.02717751217,
+      "mean_residual_mrad": 659.1540884204668
+    },
+    "baseline.persistence": {
+      "p95_qber": 0.30224644234160414,
+      "uptime": 0.5454600000000001,
+      "mean_key_rate_hz": 19400.45079559407,
+      "mean_residual_mrad": 834.5872471190498
+    },
+    "baseline.alpha_beta": {
+      "p95_qber": 0.11374170841346849,
+      "uptime": 0.9438175,
+      "mean_key_rate_hz": 50074.67574179012,
+      "mean_residual_mrad": 480.850266459093
+    }
+  },
+  "supervisor": {
+    "rate_limited": 2,
+    "faults": 0,
+    "degraded_runs": 0,
+    "commands": 1000000
+  },
+  "fault_injection": {
+    "runs": 20,
+    "degraded_runs": 20,
+    "degraded_at_s": [
+      5.014
+    ],
+    "mean_qber": 0.035990581120860995
+  },
+  "runs": 120,
+  "artifacts": [
+    {
+      "file": "1000-qnet.compensation.calibrado.ridge.json",
+      "sha256": "378c5dc238cbff0a6a598e0450d658731090ca13476d6be06226657b6373898f"
+    },
+    {
+      "file": "1000-qnet.compensation.calibrado.mlp.json",
+      "sha256": "bc36979ce452a84464c0d80411e0bff088c5cfcac75a620744649114ff1cf4c0"
+    },
+    {
+      "file": "1000-baseline.none.json",
+      "sha256": "c4a3be0f708b28a5f9ff637d42408f69436db5a3cb1053cbb94752c723692c87"
+    },
+    {
+      "file": "1000-baseline.persistence.json",
+      "sha256": "7dec479786048880b2591d887686e78bbb71be8f66f2fea4b9faddb1d5e02269"
+    },
+    {
+      "file": "1000-baseline.alpha_beta.json",
+      "sha256": "37e280c3a3695610691c52984a875041147507cb0240406a31065d8ba5b58cb4"
+    },
+    {
+      "file": "1000-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "58e71d0f03e09c74e7caadb0de42d3d5d78dfff54c45271983c46b476bd7c769"
+    },
+    {
+      "file": "1001-qnet.compensation.calibrado.ridge.json",
+      "sha256": "4016810f0fceb94aba38b8f4f80c8da82c62fb4347ed200e80bcffcbadbd1279"
+    },
+    {
+      "file": "1001-qnet.compensation.calibrado.mlp.json",
+      "sha256": "e017d3db122c95298424d25f193190a961062b9d6c9507f0751026cfb0bf42eb"
+    },
+    {
+      "file": "1001-baseline.none.json",
+      "sha256": "c0e506b939e692937b2de77677f4b3023c8b83d89a3ad5561daa1abd36b0e538"
+    },
+    {
+      "file": "1001-baseline.persistence.json",
+      "sha256": "58347d31b6e8e714f4d3c6744fe38709521d6acb8828ec82ab3ec83d93aade65"
+    },
+    {
+      "file": "1001-baseline.alpha_beta.json",
+      "sha256": "166695a31e0f60468f21219db02e54d243a0ffd1a7cc388c9456378275a825cb"
+    },
+    {
+      "file": "1001-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "007aa840e87c0ecc583993404163bd91d9fcba43469893181cd36f35dedd951c"
+    },
+    {
+      "file": "1002-qnet.compensation.calibrado.ridge.json",
+      "sha256": "8cc8d3e5c7ee56167f3653118925fead2c10d5800cdfa4d27b00c4fdb5c0574e"
+    },
+    {
+      "file": "1002-qnet.compensation.calibrado.mlp.json",
+      "sha256": "320dc2b20cbeaa201774842cb0833af581a94c867400c4a01a28357850fd0b56"
+    },
+    {
+      "file": "1002-baseline.none.json",
+      "sha256": "b80b2442fecb1592378318b3a860c82f8b1ede0af82e952790beddb423c0bff7"
+    },
+    {
+      "file": "1002-baseline.persistence.json",
+      "sha256": "be1f4f5c3f1640489f8b20ab7f827949872f9e142767df135d439be280d6bef3"
+    },
+    {
+      "file": "1002-baseline.alpha_beta.json",
+      "sha256": "f04626b241833b8a1ebba3ecbe4faa450991dd908b09441c33dd67e0bad6cf9c"
+    },
+    {
+      "file": "1002-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "665db6297fc73afb4bc734b834867a5e827dd61b1bd1ad1e6b4460fa622c8fc6"
+    },
+    {
+      "file": "1003-qnet.compensation.calibrado.ridge.json",
+      "sha256": "e6c7ff84a745a8bf889b3ce988a20f849b6c19b2c6f91993b46767630f9dac62"
+    },
+    {
+      "file": "1003-qnet.compensation.calibrado.mlp.json",
+      "sha256": "a4e359e567f35b122219389549d74e9b647a7c2923325fb4c8b99c5ea0a02fa1"
+    },
+    {
+      "file": "1003-baseline.none.json",
+      "sha256": "4e2948cdfaf63c3089ac5bb235bcba9e957571d0d87e18f91c7421f4b3501c43"
+    },
+    {
+      "file": "1003-baseline.persistence.json",
+      "sha256": "d76b3e603e8fc37b30b2ce3327324f6109f3690b63e297b1f2d6b49eca70fa0a"
+    },
+    {
+      "file": "1003-baseline.alpha_beta.json",
+      "sha256": "2738e00e08920c642b61338f9cbd63adb383bcb54fcda3089453d560c527efae"
+    },
+    {
+      "file": "1003-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "d861e8b93b35ea18e4ce96d594b81449ed432e7fe0b23647cd71441dac51f604"
+    },
+    {
+      "file": "1004-qnet.compensation.calibrado.ridge.json",
+      "sha256": "eb1dee7351adc6240e558fb691713f2684ad51e071ee91caa793f99258f0b820"
+    },
+    {
+      "file": "1004-qnet.compensation.calibrado.mlp.json",
+      "sha256": "d42c9f6fa7b77b65c6abd7b3a99cfd9c0e1c8476591dc0e6caca77120bb864fd"
+    },
+    {
+      "file": "1004-baseline.none.json",
+      "sha256": "a8f767ff1d4771db2d5b9214d151f573fdf5b4f0a9fad19d40a9e7a20f864b99"
+    },
+    {
+      "file": "1004-baseline.persistence.json",
+      "sha256": "47159c820241352225972a379da9e411f87fe51c966d07d2f1b6734922197e4b"
+    },
+    {
+      "file": "1004-baseline.alpha_beta.json",
+      "sha256": "114c08a1170aa909887d8405c86533c6a75fb4c09d48409ff98c371611588333"
+    },
+    {
+      "file": "1004-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "b24ecddaf11c0eb93ecea15a39b601e503e23286c520b746afadfcc288666190"
+    },
+    {
+      "file": "1005-qnet.compensation.calibrado.ridge.json",
+      "sha256": "82b53361610c32cf45784bb7553dfaeb10957d8b3b4db7b9e362f530c14e9781"
+    },
+    {
+      "file": "1005-qnet.compensation.calibrado.mlp.json",
+      "sha256": "22cb399d7a9b4174067758a76ab97143180f20b2274dc68bbe77d6b271bca104"
+    },
+    {
+      "file": "1005-baseline.none.json",
+      "sha256": "d57346b212c8a824b0e37381a40f506b6e42b9b9b677fac9a2f69f48c61e3cf8"
+    },
+    {
+      "file": "1005-baseline.persistence.json",
+      "sha256": "b70ee96ca30e315fb1f90c8bf4a6fbb29abf886528f4741b3ae3a1d769b1bd7d"
+    },
+    {
+      "file": "1005-baseline.alpha_beta.json",
+      "sha256": "8ba362cb13d59329d4b120f61e2fbc6085fded43ae40bc3364e92b7252f351a5"
+    },
+    {
+      "file": "1005-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "9a416a1aa5bfc6ffe15996b66c85a5c64021c9780c3d96a5a4dc644b4af09929"
+    },
+    {
+      "file": "1006-qnet.compensation.calibrado.ridge.json",
+      "sha256": "631f74b3d2ed1b65953df54a214a30af49953f792b7aaf9b29afc511e72ca140"
+    },
+    {
+      "file": "1006-qnet.compensation.calibrado.mlp.json",
+      "sha256": "b81d42cb83cf3c679487eecacc74072f85fc692268fe36b581213db40b55d8b1"
+    },
+    {
+      "file": "1006-baseline.none.json",
+      "sha256": "dbc3fb48bf1249be28a9dc9155de8ce1a1fd557ff74a389ab1a4727138c34d58"
+    },
+    {
+      "file": "1006-baseline.persistence.json",
+      "sha256": "4c481d31a878f77c3aa218d9c9e660ce5fb297e2a016c9a4b7c907acfc580bcd"
+    },
+    {
+      "file": "1006-baseline.alpha_beta.json",
+      "sha256": "fa8796f3cab94db83162acfc9d28029d8106bc8ee13bdb862cfdf25631fdd632"
+    },
+    {
+      "file": "1006-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "291e4be9d1b6f4d97326b29a2d53a2d1b8a5e810799fadf0eecb44330b6706bd"
+    },
+    {
+      "file": "1007-qnet.compensation.calibrado.ridge.json",
+      "sha256": "3739e5832ad3cc0643f7f18f6a9e6cb63a391ca8180c1dce85bba2a3eebb6857"
+    },
+    {
+      "file": "1007-qnet.compensation.calibrado.mlp.json",
+      "sha256": "a8f9970a5ad0c0a69044fb5f98b1335d85a1d272816ded7eeb32b382f0fdf3bc"
+    },
+    {
+      "file": "1007-baseline.none.json",
+      "sha256": "f06f39bd7db1afdc298937cb58e37584067f31f5cbb1bfe6f9785fe6d7d033f5"
+    },
+    {
+      "file": "1007-baseline.persistence.json",
+      "sha256": "89f51586bb24456a419386e93ce259e6b1eed4750a60f577c1cf295a0316eeb3"
+    },
+    {
+      "file": "1007-baseline.alpha_beta.json",
+      "sha256": "da3b776940f0c1ec65ff5f19cfaa5c2a1e1dc04be4f47918a84eac065271cc37"
+    },
+    {
+      "file": "1007-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "67ee615655f85f49ab70108efb4f42f56569a2671c5cdb1fa458b3e4fd7429bc"
+    },
+    {
+      "file": "1008-qnet.compensation.calibrado.ridge.json",
+      "sha256": "b9e180bf00f59e222ec9986356282bb71f6465123d02756acfe71802c626a618"
+    },
+    {
+      "file": "1008-qnet.compensation.calibrado.mlp.json",
+      "sha256": "3ca254b4cdd0619bc2ac5787569b086dd4b8af6101ea6c0cb6af2c0a2108d451"
+    },
+    {
+      "file": "1008-baseline.none.json",
+      "sha256": "36c4dc775b2a46fc964f5e85449066e4b9d68bf31d8cc59438df43944e9ed0de"
+    },
+    {
+      "file": "1008-baseline.persistence.json",
+      "sha256": "b36c52797cd863dcb86765d6b3a3b3647c90c3e9b314034b560c97f8e695044f"
+    },
+    {
+      "file": "1008-baseline.alpha_beta.json",
+      "sha256": "53da035439e91edca2b80717ef2c2284b8991490b6b828cffd14ac1587738194"
+    },
+    {
+      "file": "1008-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "01ab90a17db2ebe446b8dd8289aa94f8727053093179ae2573a3aacb863738b7"
+    },
+    {
+      "file": "1009-qnet.compensation.calibrado.ridge.json",
+      "sha256": "70df700c95c60089509378302c75874b5b82c25290944a924a82d5e252fc37a9"
+    },
+    {
+      "file": "1009-qnet.compensation.calibrado.mlp.json",
+      "sha256": "16e40055e14a13c2d8bb5b895f4bc657190412ca03b2f3164fcffda383dfcbca"
+    },
+    {
+      "file": "1009-baseline.none.json",
+      "sha256": "fba2c718a9c3e98dac974400e11c2e655550922f7409d6d94f81afb13e8db9b4"
+    },
+    {
+      "file": "1009-baseline.persistence.json",
+      "sha256": "a123e4c689bbed53df24b14178c7b77ec43765b7e77fed3141dad878ba8c170a"
+    },
+    {
+      "file": "1009-baseline.alpha_beta.json",
+      "sha256": "becaf401db781650c13cd952735f1c00d697fdde6384429b6c489c3fdf6fee2d"
+    },
+    {
+      "file": "1009-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "38b996c740335ec0e46cae5d8a72665d8de88abe1c5e59773d8c5fb8f032087c"
+    },
+    {
+      "file": "1010-qnet.compensation.calibrado.ridge.json",
+      "sha256": "7cfe43a8e429b953620c1a9541e2774fe97fdf4ea8eefd883afb983f5dc6644f"
+    },
+    {
+      "file": "1010-qnet.compensation.calibrado.mlp.json",
+      "sha256": "203756b73ff56c772e0e5bd90c668b40190c48f4a0c54c6667164f8679b980b8"
+    },
+    {
+      "file": "1010-baseline.none.json",
+      "sha256": "24e829180646743f42aff139fcf02c88508edd03968ec27669b9c6272efc2344"
+    },
+    {
+      "file": "1010-baseline.persistence.json",
+      "sha256": "6dff0b60b77cbe5999fbda906f1326ecb30edbfb7b1e6109188fd1b6834a56d5"
+    },
+    {
+      "file": "1010-baseline.alpha_beta.json",
+      "sha256": "d2577992e7f9b7e9de7f0862edb812428fb03652d3a9921880b59c897e2cbbd1"
+    },
+    {
+      "file": "1010-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "a7f55ab1f89fd0dc776185efe23de5fcd2c45b04154c4bd807c369d2afcf51a2"
+    },
+    {
+      "file": "1011-qnet.compensation.calibrado.ridge.json",
+      "sha256": "b07fb8f0d79e6506abb95ddd66d836c2bd8472477b900884ff821835c6942f5f"
+    },
+    {
+      "file": "1011-qnet.compensation.calibrado.mlp.json",
+      "sha256": "45317eff1e522adfb1647b3ba798453e74f7f6747e9185466dce4009a09d7790"
+    },
+    {
+      "file": "1011-baseline.none.json",
+      "sha256": "3da2606a9c07602a9c38612f3ea24e6ac9bdd8a3cbd3d12385d4e031c1dc3939"
+    },
+    {
+      "file": "1011-baseline.persistence.json",
+      "sha256": "18bb5c9ecbcb599db034bbbee92d55f11c16658fdca3828a04059e3fc9ae3443"
+    },
+    {
+      "file": "1011-baseline.alpha_beta.json",
+      "sha256": "fda0618790eb4705a864dd10811e67a638f48ef663cf666e01c1e15c1619b5fa"
+    },
+    {
+      "file": "1011-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "fa7f6cd44e3500721d23223b259a291ae96ef04cacd5b8b996fc4648b7dd10a7"
+    },
+    {
+      "file": "1012-qnet.compensation.calibrado.ridge.json",
+      "sha256": "dccad4e7159d952c72e28b3b8d3e5a826235f859412de8e763447f406ea64838"
+    },
+    {
+      "file": "1012-qnet.compensation.calibrado.mlp.json",
+      "sha256": "512d9be8e153612691a3c6ae05e30efe3a80ddeb08321c273fbaf11b994bd692"
+    },
+    {
+      "file": "1012-baseline.none.json",
+      "sha256": "4923d4642e05bd92abbe29ae18d6d26fcda82b1bdd27dc25bae219ea9e0ddeef"
+    },
+    {
+      "file": "1012-baseline.persistence.json",
+      "sha256": "ee7f8e2de9535486fe71c907414dd57bc214e203555146e24562fdc122149854"
+    },
+    {
+      "file": "1012-baseline.alpha_beta.json",
+      "sha256": "27c15ed26973cf7f9bc454de0baabe77572e88de2c34601682a3752a85d07383"
+    },
+    {
+      "file": "1012-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "a773917d44477dd5042cab84c0c9b518b0cf8b247af8e67c0f65ca845cf4f006"
+    },
+    {
+      "file": "1013-qnet.compensation.calibrado.ridge.json",
+      "sha256": "c287b3368103f4788278e189d8ee02715a98b77757f31cfbac2d2e65ee797ab7"
+    },
+    {
+      "file": "1013-qnet.compensation.calibrado.mlp.json",
+      "sha256": "ef1700834846fb84b824bf07e9744dab01893e41d50a820b87a18e8f14965bd9"
+    },
+    {
+      "file": "1013-baseline.none.json",
+      "sha256": "738628a1e28cc858b851fdedc5083dcbe9c54b770b91466269b09dbc6eeebd12"
+    },
+    {
+      "file": "1013-baseline.persistence.json",
+      "sha256": "e8b899f28ce9ca30566ee2e4509981942dac7272948ed011c886090026478076"
+    },
+    {
+      "file": "1013-baseline.alpha_beta.json",
+      "sha256": "012f8a1184f27539490f302220bb79ac6dcf1c6b4cba062eccc455feb105baee"
+    },
+    {
+      "file": "1013-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "21effe76657f2f49357ef22fac0717450d93b2ab5544bea27111ce13c5fcd123"
+    },
+    {
+      "file": "1014-qnet.compensation.calibrado.ridge.json",
+      "sha256": "3d0e7062f3451890b03914833fe939cb359a6a7d8e4dcc0bf12e181a4ce2ac72"
+    },
+    {
+      "file": "1014-qnet.compensation.calibrado.mlp.json",
+      "sha256": "c18e13d3da570752669bea7fc5739ed1ad2281eb4d6f111b1241cadbc0079226"
+    },
+    {
+      "file": "1014-baseline.none.json",
+      "sha256": "84a65bd3a6c972c7feeee678417fe772b0478b04c23caa4dbdb587a9514dc98b"
+    },
+    {
+      "file": "1014-baseline.persistence.json",
+      "sha256": "336c91c484a6fe71d0cf0e57329bf66d66a932df9373ed47afd8869a14841260"
+    },
+    {
+      "file": "1014-baseline.alpha_beta.json",
+      "sha256": "2020833ca3c844aca55861b0b2f320c7b9f7374381e589fc6fbfdd64934499ef"
+    },
+    {
+      "file": "1014-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "92047b909d30f31214dfd98e7766578db8bf1284a6ade0ddbb3b33eb0c73d8d1"
+    },
+    {
+      "file": "1015-qnet.compensation.calibrado.ridge.json",
+      "sha256": "4ee3850cb8312c7440954a4d93d8204b8806620805f81163efd9b449a0d5c558"
+    },
+    {
+      "file": "1015-qnet.compensation.calibrado.mlp.json",
+      "sha256": "7ab6e07bf9ecc21c34ee63f59a13e6881e39edb151a68fbf788acc2a9f511315"
+    },
+    {
+      "file": "1015-baseline.none.json",
+      "sha256": "9e93e4f37f5ba05066ab71bd5bc7dc311eeffacb91ff6cc8499165dc2009ff26"
+    },
+    {
+      "file": "1015-baseline.persistence.json",
+      "sha256": "bc35d66df89cf2069a615675e2ef335d7552b42016c1d786124b25108338f2db"
+    },
+    {
+      "file": "1015-baseline.alpha_beta.json",
+      "sha256": "37d2fbc768e7fc111d66e5b00d05455c0ed1a8412f293a5f55b5cdf8f4eee60b"
+    },
+    {
+      "file": "1015-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "3cee152f380416cba3a05c629b44426641a5fdca89f7c180cb149dfe88efaa60"
+    },
+    {
+      "file": "1016-qnet.compensation.calibrado.ridge.json",
+      "sha256": "656a5d88c2f0bc2ec1434cc2d06c81b32b1ca4b834174649f5fee33492593ca6"
+    },
+    {
+      "file": "1016-qnet.compensation.calibrado.mlp.json",
+      "sha256": "70f94152387f76e29afc5f5b6f7a12a6dd27cf541d07501207bf14dbae08eb4c"
+    },
+    {
+      "file": "1016-baseline.none.json",
+      "sha256": "b19087bda39b31200254b1df0484b226e03971f422b8ebc9d18e3c2ab9fdcfc7"
+    },
+    {
+      "file": "1016-baseline.persistence.json",
+      "sha256": "12bb90e4421fdbacf63a988a0f1e2709f30bf38c8f60adb8b42cedb89f297cd4"
+    },
+    {
+      "file": "1016-baseline.alpha_beta.json",
+      "sha256": "a51d53c021943720f7c4e474dd2b9c46b55e18504ec30c79676e1c58e8445f2e"
+    },
+    {
+      "file": "1016-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "1f230985dd9d125cd4b9c0cee9da31d742f649eecb5ffe4c561c5bb4f865decf"
+    },
+    {
+      "file": "1017-qnet.compensation.calibrado.ridge.json",
+      "sha256": "70d4e2ce15feb5bb86c499b9e8b06b3e1b985ce43474f41ebec36d4e84efd3ad"
+    },
+    {
+      "file": "1017-qnet.compensation.calibrado.mlp.json",
+      "sha256": "6e778132d6c12219a2686712d61c33144df721e91ab815def82c81187d43dea6"
+    },
+    {
+      "file": "1017-baseline.none.json",
+      "sha256": "d83aeda80a49ce7600c294eb82b33eff79531efeb4614f906c23adf0565bfe7c"
+    },
+    {
+      "file": "1017-baseline.persistence.json",
+      "sha256": "428f9248f53b0c060f34c1d242d1e645880181a43b355f146c80b7d3991d79fa"
+    },
+    {
+      "file": "1017-baseline.alpha_beta.json",
+      "sha256": "0f85e4ab46ce1f2704f46f3db3068ef9a09ecfd6b1f51e1e74b0b4e5a38236f0"
+    },
+    {
+      "file": "1017-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "41ed2433c5a71dbef64559513a5e5fd4633ace89f34e8222ce60669245b74630"
+    },
+    {
+      "file": "1018-qnet.compensation.calibrado.ridge.json",
+      "sha256": "ff5d5dbf674d80beebd3aec038ac5b8862a6678bc9df57dd9862003de08dbb52"
+    },
+    {
+      "file": "1018-qnet.compensation.calibrado.mlp.json",
+      "sha256": "4fa10bb893d93788bc1a7490b3adf5776e2239f02de4ba33bce64b6799e5365d"
+    },
+    {
+      "file": "1018-baseline.none.json",
+      "sha256": "557537670ad896eb25198f472800a73463d32f04c63fd76e8dfdc077132de28b"
+    },
+    {
+      "file": "1018-baseline.persistence.json",
+      "sha256": "a84113e18500f5539ec2d4f208f28cf011e87686e0390d042ba2309b1dc2717c"
+    },
+    {
+      "file": "1018-baseline.alpha_beta.json",
+      "sha256": "134ac408d676c1768e24dcbcd0c3121ee18888837893176fc3e2e67619a15d4c"
+    },
+    {
+      "file": "1018-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "07ffdd992e71dd42643aa654ad094a2a6721bd09467831797c4c2030835335fe"
+    },
+    {
+      "file": "1019-qnet.compensation.calibrado.ridge.json",
+      "sha256": "4054ed1533ad04c01a682c7e57e833b3988efbad78fd7cc9b13aef2b63b2d972"
+    },
+    {
+      "file": "1019-qnet.compensation.calibrado.mlp.json",
+      "sha256": "048bbaf09a6ef993923fadc179fb300e60bd6ea6a3770a64bd01b488d349acc9"
+    },
+    {
+      "file": "1019-baseline.none.json",
+      "sha256": "69550f12057f82b0f75bde098348120136b1384fc665a9ce74a3dbe8e74078e2"
+    },
+    {
+      "file": "1019-baseline.persistence.json",
+      "sha256": "85ea9f14694fcca010f7ee97c0804769cd5854186f8cb4212a330436ed6843d7"
+    },
+    {
+      "file": "1019-baseline.alpha_beta.json",
+      "sha256": "21cf39ab4d0c3b2f78befb1322d6f61d8496a9066dc0ba6357e010d5836e1473"
+    },
+    {
+      "file": "1019-qnet.compensation.calibrado.ridge-fault.json",
+      "sha256": "7fc209f762d6e79e360d7ac796fba25bf50dfb82aa9fc9c079bae5756bd7ac01"
+    }
+  ],
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "simulator_action_performed": true,
+  "limitations": [
+    "Simulated plant parameterised by published field statistics, not recorded fibre data.",
+    "Ideal actuator here: the correction appears exactly one latency later; the author's bounded device is evaluated separately (polarisation_actuator_v1).",
+    "Checkpoints of the calibrado point only; the other point's checkpoints do not transfer and the contract refuses them.",
+    "Python replay timing is not hardware latency; the 40 ms latency is a simulation parameter."
+  ]
+}

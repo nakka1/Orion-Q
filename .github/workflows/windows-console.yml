@@ -1,0 +1,205 @@
+name: Windows console build
+
+# Produces the installable .exe without needing a Windows machine.
+# Run it from the Actions tab (workflow_dispatch) or by pushing a v* tag;
+# download the artefacts from the run summary.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project with the console extra
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -e ".[console,analysis,dev,satellite]"
+          pip install "pyinstaller>=6.11,<7"
+
+      - name: Prepare hash-verified runtime resources
+        run: |
+          python -c "from setuptools import setup; setup()" egg_info
+          if ($LASTEXITCODE -ne 0) { throw 'Project version metadata refresh failed' }
+          python tools/prepare_console_resources.py
+          if ($LASTEXITCODE -ne 0) { throw 'Runtime resource preparation failed' }
+          python tools/build_controller_evidence.py
+          if ($LASTEXITCODE -ne 0) { throw 'Controller evidence preparation failed' }
+          python tools/build_runtime_diagnostic_manifest.py
+          if ($LASTEXITCODE -ne 0) { throw 'Runtime diagnostic provenance preparation failed' }
+
+      - name: Generate and validate the Windows product identity
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python tools/generate_console_icon.py
+          if ($LASTEXITCODE -ne 0) { throw 'Desktop icon generation failed' }
+          python -m pytest tests/test_console_branding.py tests/test_desktop_instance.py tests/test_frozen_desktop_behavior.py tests/test_windows_product_layout.py -q
+          if ($LASTEXITCODE -ne 0) { throw 'Desktop identity and product layout validation failed' }
+
+      - name: Validate roadmap evidence and optional emulation contracts
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/test_controller_evidence.py tests/test_console_controller_comparison.py tests/test_console_polarisation_control.py tests/test_runtime_diagnostic.py tests/test_laboneq_emulation.py tests/test_platform_claims.py tests/test_roadmap_frozen_commands.py -q
+
+      - name: Smoke-test the console
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/test_console_input_sources.py tests/test_orion_console.py tests/test_console_integration.py tests/test_desktop_app.py tests/test_physical_control_gate.py -q
+
+      - name: Validate OGS streams, orbital models and satellite science
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/test_satellite_pipeline_v2.py tests/test_console_satellite_telemetry.py -q
+
+      - name: Validate campaigns in a separate Qt process
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/test_console_service_provider.py tests/test_console_screens.py tests/test_worker_runtime.py tests/test_console_temporal_campaign.py tests/test_temporal_history.py tests/test_windows_acceptance.py tests/test_temporal_history_search.py tests/test_campaign_attempts.py tests/test_attempt_export.py tests/test_attempt_file.py tests/test_attempt_filters.py tests/test_attempt_period.py tests/test_attempt_batch.py tests/test_attempt_archive.py tests/test_attempt_receipt.py tests/test_campaign_read_store.py tests/test_campaign_manifest_editor.py -q
+
+      - name: Validate local command lifecycle
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/test_policy_preparation.py tests/test_policy_approval.py tests/test_policy_activation.py tests/test_policy_recovery.py tests/test_console_policy_review.py tests/test_console_policy_approval.py tests/test_console_policy_activation.py tests/test_console_policy_recovery.py tests/test_policy_decisions.py tests/test_console_policy_decisions.py tests/test_policy_compatibility.py tests/test_console_policy_compatibility.py tests/test_policy_context.py tests/test_console_policy_context.py tests/test_console_commands.py tests/test_command_reconciliation.py tests/test_console_command_reconciliation.py tests/test_console_inventory.py tests/test_console_link_editor.py -q
+
+      - name: Freeze the application
+        run: pyinstaller packaging/console.spec --noconfirm --clean
+
+      - name: Validate the frozen Windows desktop identity
+        run: python tools/validate_frozen_desktop_behavior.py --exe dist/OrionQ/OrionQ.exe --output-dir dist/desktop-behavior-validation
+
+      - name: Validate frozen branding and product version
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'dist/OrionQ/OrionQ.exe').Path
+          $proc = Start-Process -FilePath $exe -ArgumentList '--branding-test dist/branding-validation' -WindowStyle Hidden -PassThru
+          if (-not $proc.WaitForExit(180000)) { Stop-Process -Id $proc.Id; throw 'Frozen branding timeout' }
+          if ($proc.ExitCode -ne 0) { throw 'Frozen branding and version validation failed' }
+          $report = Get-Content -Raw dist/branding-validation/branding-report.json | ConvertFrom-Json
+          if ($report.passed -isnot [bool] -or $report.passed -ne $true) { throw 'Frozen branding evidence was not approved' }
+
+      - name: Test optional diagnostics and package gate
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/test_optional_models_acceptance.py tests/test_optional_package_gate.py tests/test_optional_sync_shadow.py tests/test_console_sync_shadow.py tests/test_sync_temporal.py tests/test_sync_campaign.py tests/test_optional_compensation_shadow.py tests/test_optional_allocation_shadow.py tests/test_optional_routing_shadow.py tests/test_optional_keyrate_shadow.py tests/test_console_keyrate_shadow.py tests/test_console_routing_shadow.py tests/test_console_allocation_shadow.py tests/test_console_compensation_shadow.py tests/test_compensation_temporal.py tests/test_compensation_campaign.py -q
+
+      - name: Validate optional model sessions without external packages
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'dist/OrionQ/OrionQ.exe').Path
+          $proc = Start-Process -FilePath $exe -ArgumentList '--optional-model-test --output-dir dist/optional-models-validation' -WindowStyle Hidden -PassThru
+          if (-not $proc.WaitForExit(120000)) { Stop-Process -Id $proc.Id; throw 'Optional model diagnostic timeout' }
+          if ($proc.ExitCode -ne 0) { throw 'Optional model diagnostic failed' }
+
+      - name: Validate frozen resources and native screens
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $exe = (Resolve-Path 'dist/OrionQ/OrionQ.exe').Path
+          $proc = Start-Process -FilePath $exe -ArgumentList '--self-test dist/self-test.json --state-root dist/validation-state' -WindowStyle Hidden -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw 'Frozen self-test failed' }
+          if (-not (Get-Content -Raw dist/self-test.json | ConvertFrom-Json).passed) { throw 'Frozen resource validation failed' }
+          $stress = Start-Process -FilePath $exe -ArgumentList '--stress-test dist/stress-validation --stress-rounds 20 --seed 1337' -WindowStyle Hidden -PassThru
+          if (-not $stress.WaitForExit(180000)) { Stop-Process -Id $stress.Id; throw 'Frozen stress timeout' }
+          if ($stress.ExitCode -ne 0) { throw 'Frozen stress failed' }
+          $reports = @(Get-ChildItem dist/stress-validation -Recurse -Filter report.json)
+          if ($reports.Count -ne 1 -or -not (Get-Content -Raw $reports[0].FullName | ConvertFrom-Json).passed) { throw 'Invalid frozen stress report' }
+
+      - name: Validate frozen worker
+        run: python tools/validate_frozen_temporal_campaign.py --exe dist/OrionQ/OrionQ.exe --output-dir dist/campaign-validation
+
+      - name: Validate frozen satellite pipeline
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'dist/OrionQ/OrionQ.exe').Path
+          $proc = Start-Process -FilePath $exe -ArgumentList '--satellite-test dist/satellite-validation --seed 42' -WindowStyle Hidden -PassThru
+          if (-not $proc.WaitForExit(120000)) { Stop-Process -Id $proc.Id; throw 'Frozen satellite validation timeout' }
+          if ($proc.ExitCode -ne 0 -or -not (Get-Content -Raw dist/satellite-validation/report.json | ConvertFrom-Json).passed) { throw 'Frozen satellite validation failed' }
+
+      - name: Validate frozen controller comparisons and runtime diagnostic
+        run: python tools/validate_frozen_roadmap.py --exe dist/OrionQ/OrionQ.exe --output-dir dist/roadmap-validation
+
+      - name: Validate the frozen classical satellite mission
+        run: python tools/validate_frozen_satellite_mission.py --exe dist/OrionQ/OrionQ.exe --output-dir dist/satellite-mission-validation
+
+      - name: Validate ordinary frozen startup
+        run: python tools/validate_frozen_startup.py --exe dist/OrionQ/OrionQ.exe --output-dir dist/startup-validation
+
+      - name: Validate the frozen laboratory campaign
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'dist/OrionQ/OrionQ.exe').Path
+          $proc = Start-Process -FilePath $exe -ArgumentList '--lab-test dist/laboratory-validation' -WindowStyle Hidden -PassThru
+          if (-not $proc.WaitForExit(300000)) { Stop-Process -Id $proc.Id; throw 'Frozen laboratory timeout' }
+          if ($proc.ExitCode -ne 0) { throw 'Frozen laboratory campaign failed' }
+          $report = Get-Content -Raw dist/laboratory-validation/report.json | ConvertFrom-Json
+          if (-not $report.passed -or -not $report.frozen -or -not $report.full_campaign) { throw 'Invalid frozen laboratory evidence' }
+
+      - name: Validate the frozen global network campaign
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'dist/OrionQ/OrionQ.exe').Path
+          $proc = Start-Process -FilePath $exe -ArgumentList '--global-network-test dist/global-validation' -WindowStyle Hidden -PassThru
+          if (-not $proc.WaitForExit(600000)) { Stop-Process -Id $proc.Id; throw 'Frozen global network timeout' }
+          if ($proc.ExitCode -ne 0) { throw 'Frozen global network campaign failed' }
+          $report = Get-Content -Raw dist/global-validation/report.json | ConvertFrom-Json
+          if (-not $report.passed -or -not $report.frozen -or -not $report.full_campaign) { throw 'Invalid frozen global network evidence' }
+
+      - name: Package verified portable files
+        run: python tools/package_console_portable.py --release-root dist --worker-report dist/campaign-validation/report.json
+
+      - name: Run native acceptance on the packaged product
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'dist/OrionQ/OrionQ.exe').Path
+          $proc = Start-Process -FilePath $exe -ArgumentList '--acceptance-test --output-dir dist/native-acceptance' -WindowStyle Hidden -PassThru
+          if (-not $proc.WaitForExit(600000)) { Stop-Process -Id $proc.Id; throw 'Native acceptance timeout' }
+          if ($proc.ExitCode -ne 0) { throw 'Native acceptance failed' }
+          $report = Get-Content -Raw dist/native-acceptance/acceptance-report.json | ConvertFrom-Json
+          if ($report.automatic_passed -isnot [bool] -or $report.automatic_passed -ne $true) { throw 'Native acceptance not approved' }
+
+      - name: Read project version
+        id: version
+        shell: pwsh
+        run: |
+          $v = python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])"
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Compile the installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { winget install --silent --accept-package-agreements --accept-source-agreements JRSoftware.InnoSetup }
+          & $iscc "/DAppVersion=${{ steps.version.outputs.version }}" "packaging\installer.iss"
+
+      - name: Upload the installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrionQ-Setup-${{ steps.version.outputs.version }}
+          path: packaging/output/*.exe
+          if-no-files-found: error
+
+      - name: Upload the portable folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrionQ-portable-${{ steps.version.outputs.version }}
+          path: dist/OrionQ/
+
+      - name: Attach both to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: packaging/output/*.exe

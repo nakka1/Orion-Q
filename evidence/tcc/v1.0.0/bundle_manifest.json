@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "bundle_version": "1.0.0",
+  "generated_at": "2026-09-03",
+  "purpose": "Portable evidence for the formal TCC scientific claims.",
+  "content_boundaries": {
+    "contains_only_selector_matched_aggregate_rows": true,
+    "contains_raw_measurements": false,
+    "contains_model_weights": false,
+    "contains_individual_level_rows": false,
+    "intended_use": "Academic, research and non-commercial TCC assurance.",
+    "bristol_non_commercial_restriction_applies": true
+  },
+  "counts": {
+    "claims": 7,
+    "evidence_items": 14,
+    "tables": 8,
+    "selected_unique_rows": 14
+  },
+  "published_registry": {
+    "file": "docs/thesis/tcc_claim_registry.json",
+    "sha256": "5f7d329d5b70fe80c0d010e1693d9f4521d7ed418feecec926805bdb832d3b39"
+  },
+  "files": [
+    {
+      "file": "README.md",
+      "sha256": "acfb90d93c1813d5e6941676d31dcd7912392f73da059afd41f1c489ba678d58",
+      "bytes": 1114
+    },
+    {
+      "file": "generation_registry.json",
+      "sha256": "af4296b9f8a72d4873dd2c825d5dbde71258c8b43c074cbb9bbb11a472ad5fbe",
+      "bytes": 24890
+    },
+    {
+      "file": "portable_claim_registry.json",
+      "sha256": "5f7d329d5b70fe80c0d010e1693d9f4521d7ed418feecec926805bdb832d3b39",
+      "bytes": 25557
+    },
+    {
+      "file": "provenance.json",
+      "sha256": "ccf3b85fe82fa22b7b7603e37b3d2839fb64de93a8ec96af43dfca137a73c849",
+      "bytes": 8226
+    },
+    {
+      "file": "tables/classical-quantum-pareto__joint_model_comparisons.csv",
+      "sha256": "e675c7609193eba9c60257e386ac7a4e3a404c05764735d5af1bc635cca56237",
+      "bytes": 1165
+    },
+    {
+      "file": "tables/cross-platform-qkd-replication__replication_results.csv",
+      "sha256": "506412b05e73467d98a33e55a9f3a5e77d54af986594bb17f6d3c6df669673e6",
+      "bytes": 946
+    },
+    {
+      "file": "tables/qkd-dose-order-falsification__corrected_comparisons.csv",
+      "sha256": "a5c1e0700145c2a869061d7bc8ceddebf452729d8cd18bdc5f98fe912df3e427",
+      "bytes": 564
+    },
+    {
+      "file": "tables/qkd-hierarchical-robustness__design_audit.csv",
+      "sha256": "5a387f9d815060630cf5bcf967f96889946266eb62959801b7f62869a1fa6a19",
+      "bytes": 434
+    },
+    {
+      "file": "tables/qkd-hierarchical-robustness__hierarchical_primary_intervals.csv",
+      "sha256": "b4819d1d9d393c226f928746f1d65febace83b5de702769668d451316b94a9f4",
+      "bytes": 727
+    },
+    {
+      "file": "tables/qkd-pareto-falsification__power_holdout_comparisons.csv",
+      "sha256": "a3fb7698525304e428360b4e6b2f4df8277a3f1d662d0628a241ae09e93a3c3d",
+      "bytes": 964
+    },
+    {
+      "file": "tables/qkd-pareto-falsification__randomization_summary.csv",
+      "sha256": "435371beb1fdba39d5ac1a6c48b026fcc706eb3b1155b51615e2a84384648bb8",
+      "bytes": 768
+    },
+    {
+      "file": "tables/qkd_coexistence_measured__primary_matched_contrasts.csv",
+      "sha256": "43c5b6bce86e5ea25ec395785a700fee8b95cf31a928436a93ef2991a5a4c16f",
+      "bytes": 797
+    }
+  ]
+}

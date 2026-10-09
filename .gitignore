@@ -1,0 +1,70 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.audit-*/
+.audit-*.sqlite
+.sites-*/
+tmp/
+release/
+build/
+dist/
+packaging/output/
+.venv/
+venv/
+
+# Generated experiment artifacts and downloaded telemetry stay local.
+outputs/
+data/raw/
+
+# Paired campaign measurements may expose sensitive topology/performance.
+# Keep raw CSV/Parquet local; manifests, dictionaries and runbooks remain trackable.
+acquisition/**/*.csv
+acquisition/**/*.parquet
+
+# Downloads do app Claude (copias de arquivos ja versionados)
+Claude outputs/
+
+# SeQUeNCe checkout used by the vendored qnet tests (fetched, not versioned)
+external/*/vendor/
+external/sequence/
+
+# Git source delivery: local state, credentials and render/build caches.
+work/
+laboneq_output/
+_to_delete/
+.pytest*/
+**/.wrangler/
+**/.vinext/
+**/.next/
+**/.vercel/
+**/node_modules/
+**/coverage/
+**/out/
+*.sqlite*
+*.db
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.crt
+*.cer
+*.der
+.env*
+!.env.example
+!.env.sample
+!.env.template
+**/.env*
+!**/.env.example
+!**/.env.sample
+!**/.env.template
+
+# Hash-pinned author result logs are scientific references, not operator logs.
+!/external/qnet_network/runs/allocator/eval.log
+!/external/qnet_network/runs/allocator/eval2.log
+!/external/qnet_network/runs/allocator/eval3.log

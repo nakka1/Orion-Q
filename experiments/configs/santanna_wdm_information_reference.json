@@ -1,0 +1,35 @@
+{
+  "status": "exploratory_reference_after_prior_use_of_hard_and_soft_labels",
+  "dataset": "HardFailure_dataset.csv",
+  "targets": ["osnr_db", "pre_fec_ber"],
+  "horizons": [3, 10],
+  "models": ["ridge", "edge_lstm", "edge_gru", "edge_tcn"],
+  "feature_sets": [
+    "persistence",
+    "autoregressive",
+    "wdm_only",
+    "combined",
+    "permuted_wdm"
+  ],
+  "seeds": [42],
+  "window_size": 20,
+  "folds": 2,
+  "min_train_fraction": 0.5,
+  "effective_purge_rule": "max(requested_purge_steps, window_size + horizon_steps)",
+  "requested_purge_steps": 0,
+  "alignment": "backward merge_asof, tolerance 5 seconds",
+  "bootstrap_replicates": 20000,
+  "bootstrap_block_length": 30,
+  "familywise_alpha": 0.05,
+  "multiple_comparison_correction": "Bonferroni over every target-horizon-model-contrast",
+  "hidden_size": 8,
+  "max_epochs": 6,
+  "batch_size": 512,
+  "early_stopping_patience": 3,
+  "learning_rate": 0.001,
+  "confirmation_rule": [
+    "corrected CI lower bound > 0 for combined versus autoregressive",
+    "corrected CI lower bound > 0 for combined versus within-device permuted-WDM control"
+  ],
+  "claim_limit": "Tests predictive information for recorded optical targets, not measured quantum fidelity. A new untouched campaign is required for confirmatory inference."
+}

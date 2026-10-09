@@ -1,0 +1,19 @@
+{
+  "protocol_version": "2.0.0",
+  "status": "exploratory_dataset_inspected_before_protocol",
+  "seeds": [13, 42, 97],
+  "hidden_size": 10,
+  "epochs": 180,
+  "learning_rate": 0.003,
+  "weight_decay": 0.0001,
+  "pareto_dominance_weight": 0.25,
+  "pareto_margin": 0.05,
+  "bootstrap_replicates": 20000,
+  "familywise_alpha": 0.05,
+  "validation": "leave_one_fibre_voa_stratum_out",
+  "targets": [
+    "secure_key_available",
+    "log1p_secure_key_rate_given_available",
+    "qber_reported"
+  ]
+}

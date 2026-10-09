@@ -1,0 +1,82 @@
+{
+  "status": "predeclared_simulated_controller_comparison",
+  "scientific_scope": "simulated WDM to simulated Bell fidelity only",
+  "seeds": [7, 19, 42, 73, 101, 123, 211, 307, 401, 509],
+  "n_steps": 700,
+  "ood_n_steps": 350,
+  "window_size": 20,
+  "test_fraction": 0.25,
+  "calibration_fraction": 0.15,
+  "cycles_per_regime": 100,
+  "feature_set": "wdm_only",
+  "controllers": [
+    "persistence_target_history",
+    "reactive_current_fidelity",
+    "edge_lstm_point",
+    "edge_lstm_probabilistic",
+    "edge_lstm_dual_head",
+    "oracle_future_fidelity"
+  ],
+  "primary_candidates": [
+    "edge_lstm_point",
+    "edge_lstm_probabilistic",
+    "edge_lstm_dual_head"
+  ],
+  "primary_baseline": "persistence_target_history",
+  "primary_regime": "id_held_out",
+  "primary_metric": "expected_useful_pair_rate_per_arrival_pct",
+  "primary_alternative": "candidate greater than persistence",
+  "familywise_alpha": 0.05,
+  "multiplicity_correction": "Holm over three exact paired seed-level sign-flip tests",
+  "domain_shift_regimes": {
+    "higher_depolarization_5x": {
+      "DEPOLARIZATION_P_multiplier": 5.0
+    },
+    "double_link_distance": {
+      "DISTANCE_KM_multiplier": 2.0
+    }
+  },
+  "decision": {
+    "fidelity_threshold": 0.65,
+    "confidence_k": 1.0,
+    "max_wait_cycles": 2,
+    "max_prediction_uncertainty": 0.2,
+    "availability_gate": 0.5
+  },
+  "model": {
+    "hidden_size": 16,
+    "max_epochs": 35,
+    "learning_rate": 0.01,
+    "batch_size": 64,
+    "early_stopping_patience": 8,
+    "lambda_false_positive": 0.9,
+    "lambda_false_negative": 4.0,
+    "discard_penalty_weight": 25.0,
+    "max_discard_rate": 0.6
+  },
+  "resource_accounting": {
+    "n_gates_per_purification": 10,
+    "neural_inference_latency_s": 0.0002676,
+    "control_latency_s": 0.000003863,
+    "wait_time_s": 0.000001,
+    "qpu_energy_per_gate_j": 0.000001,
+    "inference_power_w": 0.1,
+    "control_power_w": 0.1,
+    "memory_hold_power_w": 0.01,
+    "status": "model-based energy and latency estimates; not hardware measurements"
+  },
+  "decision_rules": {
+    "distribution": "PURIFY if mu-k*sigma >= threshold; HALT if mu+k*sigma < threshold; otherwise bounded WAIT then terminal decision by mu",
+    "reactive": "threshold the last simulated observed fidelity without forecasting",
+    "persistence": "forecast the next simulated fidelity with the last observed simulated fidelity and calibration-tail RMS uncertainty",
+    "safety": "OOD or sigma > 0.20 forces a proposed PURIFY to HALT",
+    "bbpssw": "expected useful output uses the existing analytical BBPSSW success probability and output fidelity"
+  },
+  "sandbox_policy_audit": {
+    "purpose": "detect action saturation independently of predictor score",
+    "fixed_memory_state": "STORING",
+    "fixed_pair_fidelities": [0.9, 0.9],
+    "physical_action_performed": false
+  },
+  "claim_limit": "No measured WDM or measured quantum target is used. No winner is selected or tuned on test data. Domain-shift results are secondary and descriptive."
+}

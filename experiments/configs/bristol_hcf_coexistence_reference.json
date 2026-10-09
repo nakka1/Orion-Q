@@ -1,0 +1,6 @@
+{
+  "bootstrap_replicates": 50000,
+  "familywise_alpha": 0.05,
+  "seed": 42,
+  "maximum_exact_sign_flip_pairs": 20
+}

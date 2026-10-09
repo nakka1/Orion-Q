@@ -1,0 +1,101 @@
+{
+  "protocol_version": 1,
+  "protocol_id": "santanna-hard-to-soft-confirmatory-v1",
+  "claim_scope": "cross-campaign transfer of recorded optical forecasting only",
+  "discovery": {
+    "dataset": "HardFailure_dataset.csv",
+    "dataset_sha256": "3d55f31644e8387ab9092bba232dae99ba8a90788d4157a599e9e3f12375f12d",
+    "selection_table": "outputs/santanna_hard_failure_campaign/tcc_results.csv",
+    "selection_table_sha256": "0aec42e73a2cccd80effdd873a4a22c394691c2bb736a229cf434e6119950cc2",
+    "selection_seed": 42
+  },
+  "confirmation": {
+    "dataset": "SoftFailure_dataset.csv",
+    "dataset_sha256": "2554e5548ff744d2416a80a0775c4320cf616d4cf9204420aaaf1c043a4096d2",
+    "must_not_select_or_tune_on_confirmation_data": true
+  },
+  "feature_protocol": {
+    "lag_steps": [1, 2, 3, 5, 10, 30],
+    "rolling_windows": [3, 5, 10, 30],
+    "ber_floor": 1e-12,
+    "hard_calibration_fraction": 0.2,
+    "requested_purge_steps": 20,
+    "soft_warmup_steps": 30
+  },
+  "final_fit_scope": "all HardFailure rows after model/hypothesis freeze; SoftFailure unseen",
+  "inference_protocol": {
+    "fit_seeds": [13, 42, 97],
+    "bootstrap_replicates": 2000,
+    "bootstrap_block_length": 30,
+    "familywise_alpha": 0.05,
+    "conformal_alpha": 0.1,
+    "family": "six predeclared non-persistence superiority hypotheses",
+    "seed_aggregation": "average loss per unique physical observation before bootstrap"
+  },
+  "tasks": [
+    {
+      "target": "osnr_db",
+      "target_unit": "dB",
+      "horizon_steps": 1,
+      "selected_model": "persistence",
+      "discovery_selected_loss": 1.0829210406207217,
+      "discovery_persistence_loss": 1.0829210406207217
+    },
+    {
+      "target": "osnr_db",
+      "target_unit": "dB",
+      "horizon_steps": 3,
+      "selected_model": "hist_gradient_boosting",
+      "discovery_selected_loss": 1.9135679175051639,
+      "discovery_persistence_loss": 2.972354606044007
+    },
+    {
+      "target": "osnr_db",
+      "target_unit": "dB",
+      "horizon_steps": 10,
+      "selected_model": "hist_gradient_boosting",
+      "discovery_selected_loss": 1.9483793361026212,
+      "discovery_persistence_loss": 3.3612187100310615
+    },
+    {
+      "target": "osnr_db",
+      "target_unit": "dB",
+      "horizon_steps": 30,
+      "selected_model": "hist_gradient_boosting",
+      "discovery_selected_loss": 1.900800432479282,
+      "discovery_persistence_loss": 2.6227347611202636
+    },
+    {
+      "target": "pre_fec_ber",
+      "target_unit": "log10(BER)",
+      "horizon_steps": 1,
+      "selected_model": "persistence",
+      "discovery_selected_loss": 0.44670038994782757,
+      "discovery_persistence_loss": 0.44670038994782757
+    },
+    {
+      "target": "pre_fec_ber",
+      "target_unit": "log10(BER)",
+      "horizon_steps": 3,
+      "selected_model": "ridge",
+      "discovery_selected_loss": 0.8570788144626336,
+      "discovery_persistence_loss": 1.1995133561531401
+    },
+    {
+      "target": "pre_fec_ber",
+      "target_unit": "log10(BER)",
+      "horizon_steps": 10,
+      "selected_model": "hist_gradient_boosting",
+      "discovery_selected_loss": 0.822071424557929,
+      "discovery_persistence_loss": 1.408342050114648
+    },
+    {
+      "target": "pre_fec_ber",
+      "target_unit": "log10(BER)",
+      "horizon_steps": 30,
+      "selected_model": "hist_gradient_boosting",
+      "discovery_selected_loss": 0.8278986098764923,
+      "discovery_persistence_loss": 1.1032730560554518
+    }
+  ]
+}

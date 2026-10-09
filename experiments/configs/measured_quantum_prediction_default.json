@@ -1,0 +1,19 @@
+{
+  "protocol_version": "1.0.0",
+  "required_source_profile": "measured_qkd",
+  "targets": ["qber_ratio", "log1p_secure_key_rate_bps"],
+  "horizons": [1, 4],
+  "models": ["edge_lstm", "edge_gru", "edge_tcn"],
+  "seeds": [42],
+  "window_size": 20,
+  "n_splits": 3,
+  "min_train_fraction": 0.5,
+  "requested_purge_steps": 0,
+  "effective_purge_rule": "max(requested_purge_steps, window_size + horizon)",
+  "cross_group_test_fraction": 0.3,
+  "bootstrap_replicates": 2000,
+  "bootstrap_block_length": 20,
+  "familywise_alpha": 0.05,
+  "feature_sets": ["autoregressive", "wdm_only", "combined", "permuted_wdm"],
+  "confirmation_rule": "corrected positive improvement over autoregressive and permuted_wdm"
+}

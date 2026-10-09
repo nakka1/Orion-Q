@@ -1,0 +1,14 @@
+{
+  "schema": "orion.runtime-diagnostic-build.v1",
+  "revision": "6181050fd1f414a106b1f3f2c4e5cd19e08d3062",
+  "source_sha256": {
+    "src/quantum_autopilot/control_plane/runtime_diagnostic.py": "65a50859f1fecbba7ad8d7bfe2f011a04d75dde20237fe1c020bdb0732e5ed59",
+    "src/quantum_autopilot/control_plane/runtime.py": "5f082975bb973bfeecf2cfcb380fa660a9e64e5b48f7501233284b8e494ac18a",
+    "src/quantum_autopilot/control_plane/policy.py": "6b2dea3a444ac49c7d40ee035e0593650fb5cd2cfcbbf02595ddaf986acab6aa",
+    "src/quantum_autopilot/control_plane/safety.py": "7e8b7a1872a69324600be7b87f9b8dc3d2e15087dd4213141065c9a9116cf209",
+    "src/quantum_autopilot/control_plane/executors.py": "0502eb5b4221f9d8cb4f2f759879e9cf4274132462bf7035031f08f4f66d312b",
+    "src/quantum_autopilot/control_plane/journal.py": "0e023ce6b6eafeaa1123fc9f0d1fb47a39c627ac7b07042755688234d97215fa",
+    "src/quantum_autopilot/control_plane/contracts.py": "4bae6712e14b90a7178e194fe850f57244071c1e42429951998d9e5e762aba85",
+    "src/quantum_autopilot/control_plane/sqlite_transaction.py": "f83c22cf7f7526e6e8cfeb5799d9c17f112706fe111b725f1f7131f755489c7f"
+  }
+}

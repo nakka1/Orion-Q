@@ -1,0 +1,16 @@
+# Evidence hashes are over exact bytes. Never normalize these on checkout/add.
+/runtime_assets/** -text
+/evidence/** -text
+/docs/thesis/** -text
+/src/quantum_autopilot/qkd/data/** -text
+/src/qnet_network/** -text
+/src/qnet_qkd/** -text
+/external/** -text
+# Campaign protocols, published summaries and the safe detector export are hashed by
+# the campaigns, the claim registry and their tests: keep their bytes on every OS.
+/configs/** -text
+/docs/results/** -text
+/src/quantum_autopilot/model_intake/derived/** -text
+
+# Independent source snapshot: retain exact bytes on every checkout.
+* -text

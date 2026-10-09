@@ -1,0 +1,321 @@
+{
+  "schema": "orion.official-campaign-comparison.v1",
+  "tolerance": 1e-09,
+  "conclusion_tolerance": 0.001,
+  "campaigns": [
+    {
+      "campaign": "polarisation-calibrado",
+      "status": "identical",
+      "values_checked": 275,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "polarisation-desenvolvimento",
+      "status": "identical",
+      "values_checked": 279,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "polarisation-actuator",
+      "status": "different",
+      "values_checked": 1327,
+      "differences": 6,
+      "first_differences": [
+        [
+          "/comparisons[23]/baseline_to_model_qber_ratio",
+          "0.9070697373909041",
+          "0.9070845160661026"
+        ],
+        [
+          "/comparisons[23]/model_mean_qber",
+          "0.047959277507049515",
+          "0.04795849613048139"
+        ],
+        [
+          "/comparisons[23]/ratio_ci95[0]",
+          "0.8936230123610456",
+          "0.8936619888368017"
+        ],
+        [
+          "/comparisons[23]/ratio_ci95[1]",
+          "0.921557783534252",
+          "0.9215656667620828"
+        ],
+        [
+          "/device/calibrado|60|qnet.compensation.calibrado.mlp/travel_rad",
+          "3277.610519753439",
+          "3277.6083018552977"
+        ],
+        [
+          "/mean_qber/calibrado|60|qnet.compensation.calibrado.mlp",
+          "0.047959277507049515",
+          "0.04795849613048139"
+        ]
+      ],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "polarisation-quantisation",
+      "status": "identical",
+      "values_checked": 1043,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": [],
+      "platform_differences": [
+        [
+          "/reproduction[0]/worst_column",
+          "mean_prediction_error_mrad",
+          "p95_residual_mrad"
+        ],
+        [
+          "/reproduction[1]/worst_column",
+          "mean_key_rate_hz",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[2]/worst_column",
+          "mean_key_rate_hz",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[3]/worst_column",
+          "mean_key_rate_hz",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[4]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[5]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[6]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[7]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[8]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[9]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[10]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[11]/worst_column",
+          "mean_key_rate_hz",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[12]/worst_column",
+          "mean_key_rate_hz",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[13]/worst_column",
+          "mean_key_rate_hz",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[14]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[15]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[16]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[17]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[18]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ],
+        [
+          "/reproduction[19]/worst_column",
+          "mean_prediction_error_mrad",
+          "mean_qber"
+        ]
+      ]
+    },
+    {
+      "campaign": "polarisation-blocking",
+      "status": "identical",
+      "values_checked": 984,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "polarisation-demo",
+      "status": "identical",
+      "values_checked": 36,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "qkd",
+      "status": "identical",
+      "values_checked": 751,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": [],
+      "platform_differences": [
+        [
+          "/reproduction/export_episode/calibration_identical",
+          "False",
+          "True"
+        ]
+      ]
+    },
+    {
+      "campaign": "allocation",
+      "status": "identical",
+      "values_checked": 401,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "routing",
+      "status": "identical",
+      "values_checked": 352,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "routing-sequence",
+      "status": "identical",
+      "values_checked": 312,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": []
+    },
+    {
+      "campaign": "detector",
+      "status": "identical",
+      "values_checked": 603,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": [],
+      "platform_differences": [
+        [
+          "/evaluation[0]/dataset_csv_sha256",
+          "2112a7be02babf2d72ac22186d98ad2e19da33e55a081b46396e2904346c1f60",
+          "ffa0cb2b019583700de2dcda14db6bdbd828d387f7e1b25e7f77a4ace2164659"
+        ],
+        [
+          "/evaluation[1]/dataset_csv_sha256",
+          "1f87a98eec44a9d3125c6539a0b680db7f182db0e730593ec5309f1adbe329c2",
+          "306536158512badb713ca703bf70cf99ce4a5a738e9344c5089c93008b9f2906"
+        ],
+        [
+          "/reproduction/dataset_seed_0_csv_sha256",
+          "264a9a3cd719fec0b10b7abc777d41ac24be57be89699da3be89771af35f21bb",
+          "fb69e0795d93ef6c500b3669a5c326834bf02d8ab9af9a5499fa7cdebea19a32"
+        ],
+        [
+          "/reproduction/examples[0]/input_identical",
+          "False",
+          "True"
+        ],
+        [
+          "/reproduction/examples[1]/input_identical",
+          "False",
+          "True"
+        ],
+        [
+          "/reproduction/examples[2]/input_identical",
+          "False",
+          "True"
+        ],
+        [
+          "/reproduction/examples[3]/input_identical",
+          "False",
+          "True"
+        ],
+        [
+          "/reproduction/examples[4]/input_identical",
+          "False",
+          "True"
+        ],
+        [
+          "/reproduction/examples[5]/input_identical",
+          "False",
+          "True"
+        ],
+        [
+          "/reproduction/examples[6]/input_identical",
+          "False",
+          "True"
+        ]
+      ]
+    },
+    {
+      "campaign": "detector-causal",
+      "status": "identical",
+      "values_checked": 335,
+      "differences": 0,
+      "first_differences": [],
+      "conclusions_identical": true,
+      "conclusion_differences": [],
+      "platform_differences": [
+        [
+          "/evaluation[0]/dataset_csv_sha256",
+          "2112a7be02babf2d72ac22186d98ad2e19da33e55a081b46396e2904346c1f60",
+          "ffa0cb2b019583700de2dcda14db6bdbd828d387f7e1b25e7f77a4ace2164659"
+        ],
+        [
+          "/evaluation[1]/dataset_csv_sha256",
+          "1f87a98eec44a9d3125c6539a0b680db7f182db0e730593ec5309f1adbe329c2",
+          "306536158512badb713ca703bf70cf99ce4a5a738e9344c5089c93008b9f2906"
+        ]
+      ]
+    }
+  ],
+  "passed": false,
+  "conclusions_identical": true
+}

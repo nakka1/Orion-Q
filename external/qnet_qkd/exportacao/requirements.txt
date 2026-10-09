@@ -1,0 +1,5 @@
+numpy>=1.26
+pandas>=2.0
+# O detector é um HistGradientBoostingClassifier serializado com pickle, que só
+# carrega de forma garantida na mesma versão do scikit-learn em que foi salvo.
+scikit-learn==1.8.0

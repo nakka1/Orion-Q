@@ -1,0 +1,73 @@
+{
+  "schema": "orion.detector-evaluation-protocol.v1",
+  "model_id": "qkd.detector.boosting",
+  "evidence": "simulated",
+  "mode": "offline_monitoring",
+  "model": "safe export src/quantum_autopilot/model_intake/derived/qkd_detector_boosting_v1.npz, proven equal to the pinned pickle by byte comparison (never unpickled); bound to the archive by the member's SHA-256",
+  "plant": "qnet_qkd.datagen.qkd.generate_qkd_session_dataset at the author's benchmark (scripts/task5.py), read back from CSV as train_detector.py did",
+  "reproduction": {
+    "examples": [
+      "exemplos/detector_normal_entrada.csv",
+      "exemplos/detector_normal_gabarito.csv",
+      "exemplos/detector_normal_saida.csv",
+      "exemplos/detector_thermal_drift_entrada.csv",
+      "exemplos/detector_thermal_drift_gabarito.csv",
+      "exemplos/detector_thermal_drift_saida.csv",
+      "exemplos/detector_loss_event_entrada.csv",
+      "exemplos/detector_loss_event_gabarito.csv",
+      "exemplos/detector_loss_event_saida.csv",
+      "exemplos/detector_intercept_resend_entrada.csv",
+      "exemplos/detector_intercept_resend_gabarito.csv",
+      "exemplos/detector_intercept_resend_saida.csv",
+      "exemplos/detector_pns_entrada.csv",
+      "exemplos/detector_pns_gabarito.csv",
+      "exemplos/detector_pns_saida.csv",
+      "exemplos/detector_detector_blinding_entrada.csv",
+      "exemplos/detector_detector_blinding_gabarito.csv",
+      "exemplos/detector_detector_blinding_saida.csv",
+      "exemplos/detector_beam_splitting_entrada.csv",
+      "exemplos/detector_beam_splitting_gabarito.csv",
+      "exemplos/detector_beam_splitting_saida.csv",
+      "exemplos/detector_resumo.json"
+    ],
+    "example_probability_format": "%.6g",
+    "records": {
+      "scores.csv": "61d0966a01d4e7f3690646e2fbadda116b776c7192721126a97304987ace3a6a",
+      "beam_splitting.csv": "30a18b4a3f329881250ac812c399a5f3503e67f3b17cc2ff290614261f0b7e0c",
+      "hardness.csv": "1c079651ee857e2eda40f0a96a3f8ff67da9c5d0231d67e5346b567c806b2569",
+      "confusion.csv": "d22943d5a9a4711863fa921f084b82d3d5e1b5d2ac9ccb151c8bb3bf9c589871",
+      "settings.json": "b686e9c392a8c400e2114f2104609b02a3b7541e58fd61fd6ccabe1e079ca393"
+    },
+    "records_source": "Qnet-QKD ML.zip: qnet_autopilot_1/runs/detector (vendored in external/qnet_qkd/runs/detector)",
+    "dataset_seed": 0,
+    "tolerance": 1e-12
+  },
+  "evaluation_dataset_seeds": [
+    1000,
+    2000
+  ],
+  "episodes_per_class": 24,
+  "author_seed_sets": {
+    "dataset": "0 (fit, calibration and test episodes all inside it)",
+    "episode_generators": "dataset seed s gives episode i the generator seed s + i: the author's runs (runs/detector, runs/detector_slow) used 0-167; the evaluation uses 1000-1167 and 2000-2167, so no episode shares a random stream"
+  },
+  "detectors": [
+    "limiar de QBER",
+    "gradient boosting",
+    "gradient boosting + limiar",
+    "boosting + limiar + histerese"
+  ],
+  "deployed": "boosting + limiar + histerese",
+  "baseline": "limiar de QBER",
+  "primary": "per episode with an event (trainable classes): share of event-active periods flagged as an attack, deployed detector vs QBER threshold",
+  "test": "exact two-sided sign test over episodes (ties dropped)",
+  "multiplicity": "Holm over the evaluation seeds",
+  "alpha": 0.05,
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 20261022,
+    "confidence": 0.95,
+    "unit": "episode"
+  },
+  "interpretation": "simulated sessions of the author's plant; not field data; alarms are never acted on"
+}

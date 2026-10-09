@@ -1,0 +1,153 @@
+{
+  "schema": "orion.allocation-closed-loop-protocol.v1",
+  "target_id": "allocation.admission.v1",
+  "evidence": "simulated",
+  "mode": "simulation",
+  "plant": {
+    "scenario": "metro",
+    "control_period_s": 5.0,
+    "duration_s": 1800.0,
+    "classical_power_full_w": 0.0003,
+    "finite_key": true,
+    "declared_by": "model/plant.json of the exported allocator"
+  },
+  "model_ids": [
+    "qnet.allocator.persistence",
+    "qnet.allocator.ridge"
+  ],
+  "max_faults": 3,
+  "fallback": "quantum-first",
+  "evaluation_seeds": [
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019
+  ],
+  "conventions": {
+    "A": "demand stream of seed 0, plant of the episode seed (author's evaluation)",
+    "B": "demand stream and plant of the episode seed (export's episodes)"
+  },
+  "author_seed_sets": {
+    "training": "0-11",
+    "validation": "100-105",
+    "test": "500-511"
+  },
+  "baselines": {
+    "quantum_first": "QuantumFirst",
+    "classical_first": "ClassicalFirst",
+    "static_levels": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "reactive_grid": [
+      [
+        0.02,
+        0.04
+      ],
+      [
+        0.02,
+        0.06
+      ],
+      [
+        0.02,
+        0.08
+      ],
+      [
+        0.02,
+        0.1
+      ],
+      [
+        0.035,
+        0.04
+      ],
+      [
+        0.035,
+        0.06
+      ],
+      [
+        0.035,
+        0.08
+      ],
+      [
+        0.035,
+        0.1
+      ],
+      [
+        0.05,
+        0.06
+      ],
+      [
+        0.05,
+        0.08
+      ],
+      [
+        0.05,
+        0.1
+      ],
+      [
+        0.07,
+        0.08
+      ],
+      [
+        0.07,
+        0.1
+      ]
+    ],
+    "reactive_tuning": {
+      "seeds": [
+        100,
+        101,
+        102
+      ],
+      "convention": "A",
+      "criterion": "served key rounded to 3 decimals, ties by classical (author)"
+    }
+  },
+  "reproduction": {
+    "export_episodes": "qnet_network/qnet_network-alocador/qnet-alocador/examples/episodes_summary.csv",
+    "frontier": "external/qnet_network/runs/realism/finite_key_frontier.csv",
+    "frontier_sha256": "6b2f8ebd025727b1ac7fc20f5a46e551c4053c5bf8e8ca33fad22f7121023890",
+    "frontier_seeds": [
+      500,
+      501,
+      502,
+      503,
+      504,
+      505
+    ],
+    "tolerance": 1e-12
+  },
+  "primary": {
+    "superiority": "served classical fraction above quantum-first",
+    "non_inferiority": "served key fraction above quantum-first minus the margin",
+    "margin": 0.02
+  },
+  "test": "exact one-sided paired sign-flip test",
+  "multiplicity": "Holm over the 8 primary tests",
+  "alpha": 0.05,
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 20261022,
+    "confidence": 0.95
+  },
+  "interpretation": "simulated plant of the author; not a deployed network or permission to actuate"
+}

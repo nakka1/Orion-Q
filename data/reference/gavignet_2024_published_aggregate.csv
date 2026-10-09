@@ -1,0 +1,7 @@
+study_id,design_id,condition_id,condition_order,observation_level,averaging_window_hours,fiber_length_km,wdm_channels,wdm_total_power_dbm,qkd_system,secure_key_rate_kbps,qber_percent,pre_fec_ber,osnr_db_0p1nm,source_location,transcription_note
+gavignet-2024-dwdm,single-span-50km,no-wdm,0,published_condition_mean,,50,0,,Toshiba MU-QKD,169,3.4,,,paper page 3 lines 190-201,"Mean reported in prose; no source-data table or uncertainty"
+gavignet-2024-dwdm,single-span-50km,30-channel,1,published_condition_mean,,50,30,16.8,Toshiba MU-QKD,107,5.4,,,paper page 3 lines 190-201,"Mean reported in prose; about +2 dBm per channel"
+gavignet-2024-dwdm,single-span-50km,60-channel,2,published_condition_mean,,50,60,16.8,Toshiba MU-QKD,106,5.4,,,paper page 3 lines 190-201,"Mean reported in prose; about -1 dBm per channel"
+gavignet-2024-dwdm,multi-span-mu-50km,wdm-13p5-dbm,0,published_24h_mean,24,50,55,13.5,Toshiba MU-QKD,63,5.4,0.01,26.2,paper page 7 lines 489-512,"Approximate values reported in prose; 54x100G plus one 400G channel"
+gavignet-2024-dwdm,multi-span-mu-50km,wdm-15p5-dbm,1,published_24h_mean,24,50,55,15.5,Toshiba MU-QKD,48,6.0,0.0055,27.7,paper page 7 lines 489-512,"Approximate values reported in prose; 54x100G plus one 400G channel"
+gavignet-2024-dwdm,multi-span-mu-50km,wdm-17p5-dbm,2,published_24h_mean,24,50,55,17.5,Toshiba MU-QKD,36.5,6.7,0.003,29.7,paper page 7 lines 489-512,"Approximate values reported in prose; 54x100G plus one 400G channel"

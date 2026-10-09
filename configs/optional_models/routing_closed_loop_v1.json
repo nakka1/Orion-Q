@@ -1,0 +1,60 @@
+{
+  "schema": "orion.routing-closed-loop-protocol.v1",
+  "target_id": "routing.repeater.v1",
+  "evidence": "simulated",
+  "mode": "simulation",
+  "variants": {
+    "nominal": {
+      "attempt_cost": 0.01,
+      "deadline_scale": 1.0,
+      "temperature": 1.0
+    },
+    "prazo_longo": {
+      "attempt_cost": 0.0025,
+      "deadline_scale": 4.0,
+      "temperature": 0.0
+    }
+  },
+  "heralding_round_trips": 4.1,
+  "memory_slots": 6,
+  "max_faults": 3,
+  "standby": "greedy_fidelity",
+  "evaluation_seed": 600000,
+  "episodes": 1000,
+  "blocks": 20,
+  "policy_generator": "numpy.random.default_rng(0), one stream over the episodes in order (export convention)",
+  "baselines": [
+    "greedy_fidelity",
+    "shortest_path",
+    "nao_fazer_nada",
+    "random",
+    "threshold_0.90"
+  ],
+  "author_seed_sets": {
+    "training": "1-3000",
+    "validation": "900000-900099",
+    "test": "500000-500399",
+    "attempt_cost_study": "510000-"
+  },
+  "reproduction": {
+    "exported_episodes": "examples/episodes.json of each variant",
+    "held_out": {
+      "nominal": {
+        "seed": 500000,
+        "episodes": 400,
+        "agent_generator": "ActorCriticPolicy(rng=0).rng (evaluate_phase2)"
+      },
+      "prazo_longo": {
+        "seed": 510000,
+        "episodes": 160,
+        "agent_generator": "greedy"
+      }
+    },
+    "tolerance": 1e-12
+  },
+  "primary": "agent vs greedy fidelity, success rate and raw return, per variant (two-sided)",
+  "test": "exact paired sign-flip test over 20 block means of 50 episodes",
+  "multiplicity": "Holm over the 4 primary tests",
+  "alpha": 0.05,
+  "interpretation": "the author's analytic repeater environment; not a deployed network or permission to act"
+}

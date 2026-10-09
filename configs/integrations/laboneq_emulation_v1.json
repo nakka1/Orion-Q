@@ -1,0 +1,11 @@
+{
+  "schema": "orion.laboneq-emulation-request.v1",
+  "experiment_id": "orion-amplitude-demo-v1",
+  "backend_mode": "emulation",
+  "setup_profile": "shfqc_demo_v1",
+  "experiment_kind": "drive_readout_amplitude",
+  "amplitudes": [0.1, 0.2, 0.3],
+  "drive_length_s": 0.00000016,
+  "averages": 8,
+  "timeout_s": 60
+}

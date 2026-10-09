@@ -1,0 +1,35 @@
+{
+  "protocol_version": "2.0.0",
+  "protocol_status": "frozen exploratory; all source datasets were previously inspected",
+  "internal_predictions": "outputs/qkd_multihead_measured/out_of_stratum_predictions.csv",
+  "internal_validation": "leave-one-fibre/VOA-stratum-out",
+  "external_holdout": "data/reference/gavignet_2024_published_aggregate.csv",
+  "external_holdout_sha256": "21a859bd4bd3e24b8413160e59e19590c8cc5ee3b3cff23c8bb37f0bf74a0d1d",
+  "external_used_for_training": false,
+  "objectives": {
+    "classical_maximize": ["OSNR", "negative log10 pre-FEC BER"],
+    "quantum_maximize": ["negative QBER", "log1p SKR"]
+  },
+  "internal_joint_metrics": ["Pareto Jaccard", "dominance-pair accuracy"],
+  "internal_joint_success_thresholds": {
+    "mean_pareto_jaccard": 0.5,
+    "mean_dominance_pair_accuracy": 0.5
+  },
+  "alignment_control": "within-stratum permuted coexistence conditions",
+  "pareto_aware_candidate": {
+    "dominance_weight": 0.25,
+    "scaled_margin": 0.05,
+    "pair_scope": "positive-key cells within training strata only",
+    "comparators": ["conventional TriHead", "Pareto-aware permuted-WDM TriHead"]
+  },
+  "joint_multiple_comparison_correction": "Bonferroni over model-by-metric contrasts",
+  "classical_weight_grid": [
+    0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
+    0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0
+  ],
+  "bootstrap_replicates": 20000,
+  "bootstrap_seed": 2042,
+  "confidence_level": 0.95,
+  "confirmatory": false,
+  "temporal_forecast_tested": false
+}

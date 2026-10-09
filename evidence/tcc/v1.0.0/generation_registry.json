@@ -1,0 +1,577 @@
+{
+  "schema_version": "1.2.0",
+  "formalized_at": "2026-09-02",
+  "formalization_status": "post_results_synthesis_not_preregistered",
+  "status_semantics": {
+    "supported_exploratory": "A hipótese afirmativa passou os controles disponíveis, mas foi definida ou avaliada após inspeção dos dados.",
+    "not_supported": "A hipótese afirmativa não atingiu os critérios congelados; isso não prova impossibilidade geral.",
+    "refuted_for_evaluated_models": "A hipótese afirmativa falhou com evidência corrigida para as arquiteturas e condições testadas.",
+    "open_not_tested": "Os dados necessários para estimar a hipótese não estão disponíveis.",
+    "supported_simulation_only": "A afirmação foi demonstrada somente dentro do modelo ou simulador."
+  },
+  "thesis_question": "Em que medida condições ópticas clássicas WDM carregam informação sobre o desempenho de um sistema quântico e podem sustentar um gêmeo digital preditivo?",
+  "headline_claim": {
+    "claim_id": "C-MEASURED",
+    "text": "Nas varreduras experimentais públicas analisadas, a coexistência WDM clássica está associada a degradação direcionalmente replicada de QBER e SKR; a estabilidade IrelandQCI é robusta condicionalmente às sessões publicadas, mas condição e sessão não são separáveis. Dentro dessa grade, uma regra monotônica de potência supera o Pareto-TriHead, que também não demonstra transporte para potências não vistas ou previsão temporal de fidelidade quântica."
+  },
+  "original_hypothesis_disposition": {
+    "claim_id": "H-ORIGINAL",
+    "status": "open_not_tested",
+    "reason": "Nenhuma fonte disponível combina telemetria WDM temporalmente ordenada com um alvo quântico futuro medido e sincronizado."
+  },
+  "claims": [
+    {
+      "id": "H-ORIGINAL",
+      "role": "original_central_hypothesis",
+      "statement": "A história temporal da telemetria WDM fornece informação incremental para prever um alvo quântico físico futuro, além do histórico do próprio alvo.",
+      "status": "open_not_tested",
+      "estimand": "Redução de erro fora da amostra de WDM alinhado mais histórico do alvo contra histórico isolado e WDM temporalmente permutado, em campanha ou dispositivo retido.",
+      "evidence": [],
+      "boundaries": [
+        "As fontes QKD medidas disponíveis não contêm telemetria WDM temporal pareada.",
+        "O replay Bristol usa fidelidade simulada e uma relação BER-fidelidade imposta.",
+        "Ausência de evidência não é evidência de ausência do efeito temporal."
+      ],
+      "permitted_language": [
+        "A hipótese temporal central permanece aberta e possui protocolo executável.",
+        "O trabalho testa elos físicos e informacionais necessários, mas não o endpoint temporal completo."
+      ],
+      "forbidden_language": [
+        "Telemetria WDM real prevê fidelidade quântica futura.",
+        "A hipótese temporal foi confirmada ou refutada pelos dados atuais."
+      ],
+      "product_behavior": {
+        "badge": "NAO_TESTADO",
+        "automation_allowed": false,
+        "message": "Previsão temporal indisponível: falta fonte pareada com timestamps e alvo quântico medido."
+      }
+    },
+    {
+      "id": "C-MEASURED",
+      "role": "formal_defensible_thesis_claim",
+      "statement": "Condições de coexistência WDM estão associadas a degradação reproduzível de QBER e SKR; a potência injetada fornece uma ordenação conjunta útil dentro da grade experimental observada.",
+      "status": "supported_exploratory",
+      "estimand": "Degradação medida sob coexistência e acurácia de ordenação conjunta fora do estrato, comparadas com controles corrigidos de permutação e com regras monotônicas de dose.",
+      "evidence": [
+        {
+          "id": "ireland-qber-effect",
+          "artifact": "outputs/qkd_coexistence_measured/primary_matched_contrasts.csv",
+          "sha256": "c2efcc1d35d9f5f085d0a487d3317b61b93a6bc1685fd0818432ab75cf6d79fc",
+          "selector": {
+            "target": "qber_reported"
+          },
+          "assertions": [
+            {
+              "field": "mean_degradation",
+              "operator": "greater_than",
+              "expected": 0.0
+            },
+            {
+              "field": "corrected_p",
+              "operator": "approx",
+              "expected": 0.001495,
+              "absolute_tolerance": 1e-06
+            },
+            {
+              "field": "significant_measured_quantum_degradation",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "ireland-skr-effect",
+          "artifact": "outputs/qkd_coexistence_measured/primary_matched_contrasts.csv",
+          "sha256": "c2efcc1d35d9f5f085d0a487d3317b61b93a6bc1685fd0818432ab75cf6d79fc",
+          "selector": {
+            "target": "log1p_secure_key_rate"
+          },
+          "assertions": [
+            {
+              "field": "mean_degradation",
+              "operator": "greater_than",
+              "expected": 0.0
+            },
+            {
+              "field": "corrected_p",
+              "operator": "approx",
+              "expected": 0.011475,
+              "absolute_tolerance": 1e-06
+            },
+            {
+              "field": "significant_measured_quantum_degradation",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "cross-platform-qber-direction",
+          "artifact": "outputs/cross-platform-qkd-replication/replication_results.csv",
+          "sha256": "cfe30ed0955d5e81e100076e4cd33c2564331a319c45e642745364919f31dba2",
+          "selector": {
+            "outcome_family": "qber"
+          },
+          "assertions": [
+            {
+              "field": "holm_adjusted_partial_conjunction_p",
+              "operator": "approx",
+              "expected": 0.001495,
+              "absolute_tolerance": 1e-06
+            },
+            {
+              "field": "replicated_directional_evidence",
+              "operator": "equals",
+              "expected": true
+            },
+            {
+              "field": "common_magnitude_supported",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "cross-platform-skr-direction",
+          "artifact": "outputs/cross-platform-qkd-replication/replication_results.csv",
+          "sha256": "cfe30ed0955d5e81e100076e4cd33c2564331a319c45e642745364919f31dba2",
+          "selector": {
+            "outcome_family": "log1p_secure_key_rate"
+          },
+          "assertions": [
+            {
+              "field": "holm_adjusted_partial_conjunction_p",
+              "operator": "approx",
+              "expected": 0.005737,
+              "absolute_tolerance": 1e-06
+            },
+            {
+              "field": "replicated_directional_evidence",
+              "operator": "equals",
+              "expected": true
+            },
+            {
+              "field": "common_magnitude_supported",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "ireland-hierarchical-qber-block10",
+          "artifact": "outputs/qkd-hierarchical-robustness/hierarchical_primary_intervals.csv",
+          "sha256": "73fbf0cf0467b6ac2ce5550dcbfd2ac50df2d2fcaf2ece5e5faf7a3e4e51ca6f",
+          "selector": {
+            "target": "qber_reported",
+            "block_length": 10
+          },
+          "assertions": [
+            {
+              "field": "point_mean_degradation",
+              "operator": "approx",
+              "expected": 0.0132042963,
+              "absolute_tolerance": 1e-07
+            },
+            {
+              "field": "ci_low",
+              "operator": "greater_than",
+              "expected": 0.0
+            },
+            {
+              "field": "positive_conditional_interval",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "ireland-hierarchical-skr-block10",
+          "artifact": "outputs/qkd-hierarchical-robustness/hierarchical_primary_intervals.csv",
+          "sha256": "73fbf0cf0467b6ac2ce5550dcbfd2ac50df2d2fcaf2ece5e5faf7a3e4e51ca6f",
+          "selector": {
+            "target": "log1p_secure_key_rate",
+            "block_length": 10
+          },
+          "assertions": [
+            {
+              "field": "point_mean_degradation",
+              "operator": "approx",
+              "expected": 0.360127687,
+              "absolute_tolerance": 1e-07
+            },
+            {
+              "field": "ci_low",
+              "operator": "greater_than",
+              "expected": 0.0
+            },
+            {
+              "field": "positive_conditional_interval",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "pareto-trained-permutation-control",
+          "artifact": "outputs/classical-quantum-pareto/joint_model_comparisons.csv",
+          "sha256": "10c7ead9f82c8463ff78ee26721719ca4986e0f2c8beac33db113a0a87c267bd",
+          "selector": {
+            "contrast": "aligned_pareto_trihead_over_permuted_condition",
+            "metric": "dominance_pair_accuracy"
+          },
+          "assertions": [
+            {
+              "field": "candidate_minus_reference",
+              "operator": "approx",
+              "expected": 0.1750377929,
+              "absolute_tolerance": 1e-07
+            },
+            {
+              "field": "bootstrap_ci_low",
+              "operator": "greater_than",
+              "expected": 0.0
+            },
+            {
+              "field": "positive_beyond_interval",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "pareto-joint-label-randomization",
+          "artifact": "outputs/qkd-pareto-falsification/randomization_summary.csv",
+          "sha256": "fe85172587277fa7611a8cb00fb0c0a73e9e58034893bcd899c19017b601688c",
+          "selector": {
+            "model": "trihead_pareto_qkd",
+            "metric": "dominance_pair_accuracy"
+          },
+          "assertions": [
+            {
+              "field": "observed_minus_null_mean",
+              "operator": "greater_than",
+              "expected": 0.0
+            },
+            {
+              "field": "bonferroni_adjusted_p",
+              "operator": "approx",
+              "expected": 0.01179941,
+              "absolute_tolerance": 1e-07
+            },
+            {
+              "field": "familywise_significant",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Os desenhos são exploratórios e não randomizados.",
+        "A magnitude do efeito não transporta entre IrelandQCI e Bristol.",
+        "A robustez hierárquica IrelandQCI é condicional às dez sessões publicadas; condição e sessão não são separáveis no desenho.",
+        "A informação de ordenação é contemporânea, limitada à grade observada e explicada ao menos tão bem por uma regra monotônica de potência.",
+        "QBER e SKR não equivalem a fidelidade de estado de Bell."
+      ],
+      "permitted_language": [
+        "A potência WDM fornece uma ordenação útil de QBER e SKR medidos dentro da grade estudada.",
+        "A direção da degradação QKD sob coexistência foi replicada entre duas plataformas públicas.",
+        "As medições IrelandQCI são robustas a blocos dentro de célula e exclusões, condicionalmente às sessões observadas."
+      ],
+      "forbidden_language": [
+        "O efeito possui magnitude universal entre plataformas.",
+        "O resultado prova previsão temporal, causalidade ou fidelidade quântica.",
+        "IrelandQCI possui replicação independente de sessões por condição.",
+        "O Pareto-TriHead aprendeu estrutura de ordenação além da potência WDM."
+      ],
+      "product_behavior": {
+        "badge": "SUPORTADO_EXPLORATORIO",
+        "automation_allowed": false,
+        "message": "Efeito e prior de dose suportados dentro da grade; ranking aprendido não supera a regra monotônica."
+      }
+    },
+    {
+      "id": "L-SESSION",
+      "role": "ireland_session_identification_limit",
+      "statement": "O desenho IrelandQCI permite separar o efeito da condição WDM de um deslocamento específico da sessão de varredura.",
+      "status": "not_supported",
+      "estimand": "Variação entre sessões repetidas da mesma combinação distância-condição, necessária para inferência clusterizada por campanha.",
+      "evidence": [
+        {
+          "id": "ireland-session-alias-audit",
+          "artifact": "outputs/qkd-hierarchical-robustness/design_audit.csv",
+          "sha256": "808bedd9e0bf51da7998c5736bbe11dea60b18734aba7684e6aa08d670e643b5",
+          "selector": {},
+          "assertions": [
+            {
+              "field": "minimum_sessions_per_distance_condition",
+              "operator": "approx",
+              "expected": 1.0
+            },
+            {
+              "field": "condition_session_aliased",
+              "operator": "equals",
+              "expected": true
+            },
+            {
+              "field": "session_effect_separable",
+              "operator": "equals",
+              "expected": false
+            },
+            {
+              "field": "campaign_clustered_confirmatory_inference_available",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "A reamostragem hierárquica quantifica heterogeneidade entre VOA e dependência dentro de célula, não um viés compartilhado por toda a sessão.",
+        "A direção também observada em Bristol reduz a plausibilidade de um artefato exclusivo de IrelandQCI, mas não randomiza IrelandQCI retroativamente."
+      ],
+      "permitted_language": [
+        "A degradação IrelandQCI é robusta condicionalmente às dez sessões publicadas.",
+        "Deriva entre sessões permanece uma explicação concorrente não identificável nessa base."
+      ],
+      "forbidden_language": [
+        "O efeito IrelandQCI foi confirmado por campanhas repetidas da mesma condição.",
+        "O bootstrap hierárquico elimina confundimento entre condição e sessão."
+      ],
+      "product_behavior": {
+        "badge": "NAO_SUPORTADO",
+        "automation_allowed": false,
+        "message": "Sessão não replicada por condição: exibir robustez condicional e bloquear linguagem causal."
+      }
+    },
+    {
+      "id": "L-DOSE",
+      "role": "residual_ordering_beyond_dose_limit",
+      "statement": "O Pareto-TriHead extrai estrutura de dominância QBER-SKR além de uma regra monotônica baseada somente na potência WDM.",
+      "status": "refuted_for_evaluated_models",
+      "estimand": "Acurácia de dominância média do Pareto-TriHead menos a acurácia da regra monotônica, pareada por estrato leave-one-stratum-out e com intervalo bootstrap Bonferroni.",
+      "evidence": [
+        {
+          "id": "pareto-versus-fixed-dose-order",
+          "artifact": "outputs/qkd-dose-order-falsification/corrected_comparisons.csv",
+          "sha256": "3aa059a650573ecd8e09062ca081a54da25de2d7a6ae031b9ff2966e6991392e",
+          "selector": {
+            "candidate_model": "trihead_pareto_qkd",
+            "reference_model": "fixed_monotonic_power_order",
+            "metric": "dominance_pair_accuracy"
+          },
+          "assertions": [
+            {
+              "field": "candidate_minus_reference",
+              "operator": "approx",
+              "expected": -0.1159297052,
+              "absolute_tolerance": 1e-07
+            },
+            {
+              "field": "bootstrap_ci_high",
+              "operator": "less_than",
+              "expected": 0.0
+            },
+            {
+              "field": "reference_better_corrected",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "O baseline usa uma direção física simples e foi auditado após a descoberta do resultado Pareto.",
+        "A refutação se aplica às arquiteturas, hiperparâmetros e grade IrelandQCI avaliados.",
+        "O resultado não refuta a degradação física associada à coexistência WDM."
+      ],
+      "permitted_language": [
+        "Uma regra monotônica de potência supera o Pareto-TriHead na ordenação de dominância avaliada.",
+        "Não foi demonstrada informação residual de ordenação além da dose para os modelos atuais."
+      ],
+      "forbidden_language": [
+        "O TriHead descobriu relações clássico-quânticas complexas além da potência.",
+        "Nenhuma arquitetura futura poderá superar o baseline de dose."
+      ],
+      "product_behavior": {
+        "badge": "NAO_SUPORTADO",
+        "automation_allowed": false,
+        "message": "Ranking neural não validado além da regra monotônica; mostrar o baseline como referência principal."
+      }
+    },
+    {
+      "id": "L-PARETO",
+      "role": "full_front_recovery_limit",
+      "statement": "Os modelos atuais recuperam de forma confiável o conjunto Pareto QBER-SKR completo.",
+      "status": "not_supported",
+      "estimand": "Jaccard do conjunto Pareto fora do estrato e superioridade sobre controles de condição permutada e relabelamento conjunto.",
+      "evidence": [
+        {
+          "id": "pareto-front-trained-control",
+          "artifact": "outputs/classical-quantum-pareto/joint_model_comparisons.csv",
+          "sha256": "10c7ead9f82c8463ff78ee26721719ca4986e0f2c8beac33db113a0a87c267bd",
+          "selector": {
+            "contrast": "aligned_pareto_trihead_over_permuted_condition",
+            "metric": "pareto_jaccard"
+          },
+          "assertions": [
+            {
+              "field": "candidate_mean",
+              "operator": "less_than",
+              "expected": 0.5
+            },
+            {
+              "field": "positive_beyond_interval",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "pareto-front-randomization",
+          "artifact": "outputs/qkd-pareto-falsification/randomization_summary.csv",
+          "sha256": "fe85172587277fa7611a8cb00fb0c0a73e9e58034893bcd899c19017b601688c",
+          "selector": {
+            "model": "trihead_pareto_qkd",
+            "metric": "pareto_jaccard"
+          },
+          "assertions": [
+            {
+              "field": "observed",
+              "operator": "approx",
+              "expected": 0.2297619048,
+              "absolute_tolerance": 1e-07
+            },
+            {
+              "field": "familywise_significant",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Falha do conjunto completo não invalida a acurácia de pares dominantes.",
+        "A grade possui apenas cinco condições por estrato e 14 estratos avaliáveis conjuntamente."
+      ],
+      "permitted_language": [
+        "A ordenação de pares melhorou, mas a seleção da fronteira completa permanece inadequada.",
+        "O Pareto Guard deve operar somente como visualização e apoio à decisão."
+      ],
+      "forbidden_language": [
+        "O modelo identifica com confiabilidade todos os pontos Pareto.",
+        "A fronteira prevista pode controlar autonomamente o enlace."
+      ],
+      "product_behavior": {
+        "badge": "NAO_SUPORTADO",
+        "automation_allowed": false,
+        "message": "Fronteira estimada é exploratória; exibir medições e incerteza junto da previsão."
+      }
+    },
+    {
+      "id": "L-TRANSPORT",
+      "role": "unseen_condition_transport_limit",
+      "statement": "Os TriHeads avaliados transportam desempenho de log-SKR para uma condição WDM completamente ausente do treinamento.",
+      "status": "refuted_for_evaluated_models",
+      "estimand": "MAE do modelo menos MAE da média do próprio alvo nas demais condições do mesmo estrato, com uma condição inteira retida.",
+      "evidence": [
+        {
+          "id": "conventional-unseen-log-skr",
+          "artifact": "outputs/qkd-pareto-falsification/power_holdout_comparisons.csv",
+          "sha256": "d3d8a9938802d7a5ccd0f90244651c99a72b1fae8d4f06b82a12e1315055b334",
+          "selector": {
+            "target": "log1p_secure_key_rate_given_available",
+            "contrast": "conventional_trihead_over_within_stratum_mean"
+          },
+          "assertions": [
+            {
+              "field": "absolute_improvement",
+              "operator": "approx",
+              "expected": -0.38147,
+              "absolute_tolerance": 1e-06
+            },
+            {
+              "field": "bootstrap_ci_high",
+              "operator": "less_than",
+              "expected": 0.0
+            },
+            {
+              "field": "significant_negative_improvement",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "pareto-unseen-log-skr",
+          "artifact": "outputs/qkd-pareto-falsification/power_holdout_comparisons.csv",
+          "sha256": "d3d8a9938802d7a5ccd0f90244651c99a72b1fae8d4f06b82a12e1315055b334",
+          "selector": {
+            "target": "log1p_secure_key_rate_given_available",
+            "contrast": "pareto_trihead_over_within_stratum_mean"
+          },
+          "assertions": [
+            {
+              "field": "absolute_improvement",
+              "operator": "approx",
+              "expected": -0.381058,
+              "absolute_tolerance": 1e-06
+            },
+            {
+              "field": "bootstrap_ci_high",
+              "operator": "less_than",
+              "expected": 0.0
+            },
+            {
+              "field": "significant_negative_improvement",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "O resultado se aplica às arquiteturas e hiperparâmetros congelados avaliados.",
+        "O holdout conserva os mesmos estratos de fibra e VOA; não é transferência entre dispositivos."
+      ],
+      "permitted_language": [
+        "O transporte para potência não vista falhou para os modelos avaliados.",
+        "O produto deve marcar condições fora da grade como fora de distribuição."
+      ],
+      "forbidden_language": [
+        "Nenhum modelo futuro poderá interpolar entre potências.",
+        "As previsões atuais são válidas fora da grade calibrada."
+      ],
+      "product_behavior": {
+        "badge": "FORA_DA_GRADE",
+        "automation_allowed": false,
+        "message": "Condição não calibrada: bloquear recomendação automática e solicitar nova medição."
+      }
+    },
+    {
+      "id": "B-FIDELITY",
+      "role": "bell_fidelity_boundary",
+      "statement": "A relação WDM-fidelidade de Bell permanece demonstrada somente no ambiente simulado do repositório.",
+      "status": "supported_simulation_only",
+      "estimand": "Associação e ganho preditivo sobre fidelidade produzida pelo simulador, não por medição física sincronizada.",
+      "evidence": [],
+      "boundaries": [
+        "IrelandQCI, Bristol HCF e Gavignet fornecem QBER/SKR, não fidelidade de Bell.",
+        "KAPPA_DEPOL_FROM_BER não possui calibração com fidelidade física pareada."
+      ],
+      "permitted_language": [
+        "A simulação sustenta plausibilidade mecanística e prototipagem do controlador.",
+        "QBER e SKR são alvos quânticos medidos distintos de fidelidade."
+      ],
+      "forbidden_language": [
+        "A fidelidade quântica real foi prevista ou validada.",
+        "QBER pode ser convertido diretamente em fidelidade para confirmar a tese."
+      ],
+      "product_behavior": {
+        "badge": "SIMULADO",
+        "automation_allowed": false,
+        "message": "Fidelidade exibida somente no sandbox, com proveniência simulada explícita."
+      }
+    }
+  ]
+}

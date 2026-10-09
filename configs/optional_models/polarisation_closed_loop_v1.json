@@ -1,0 +1,129 @@
+{
+  "schema": "orion.polarisation-closed-loop-protocol.v1",
+  "target_id": "polarisation.compensation.v1",
+  "evidence": "simulated",
+  "mode": "simulation",
+  "operating_point": "calibrado",
+  "duration_s": 20.0,
+  "sample_interval_s": 0.001,
+  "control_period_s": 0.002,
+  "latency_s": 0.04,
+  "monitoring_photons_per_basis": 400,
+  "detector_efficiency": 0.85,
+  "sifted_rate_hz": 100000.0,
+  "evaluation_plant_seeds": [
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019
+  ],
+  "monitoring_seed_offset": 6000,
+  "learned_model_ids": [
+    "qnet.compensation.calibrado.ridge",
+    "qnet.compensation.calibrado.mlp"
+  ],
+  "contract_probe_model_ids": [
+    "qnet.compensation.desenvolvimento.ridge",
+    "qnet.compensation.desenvolvimento.mlp"
+  ],
+  "baselines": [
+    "baseline.none",
+    "baseline.persistence",
+    "baseline.alpha_beta"
+  ],
+  "alpha_beta_grid": {
+    "alpha": [
+      0.005,
+      0.01,
+      0.02,
+      0.03,
+      0.05,
+      0.1,
+      0.2,
+      0.35,
+      0.5,
+      0.7,
+      1.0
+    ],
+    "beta": [
+      0.0,
+      0.0005,
+      0.001,
+      0.002,
+      0.005,
+      0.02,
+      0.05,
+      0.1
+    ]
+  },
+  "tuning_plant_seeds": [
+    100,
+    101,
+    102,
+    103
+  ],
+  "tuning_monitoring_seeds": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "tuning_duration_s": 10.0,
+  "supervisor": {
+    "max_command_step_rad": 1.5707963267948966,
+    "max_consecutive_faults": 8,
+    "rotation_tolerance": 1e-07
+  },
+  "fallback": "baseline.alpha_beta",
+  "reproduction": {
+    "plant_seeds": [
+      500,
+      501,
+      502,
+      503,
+      504,
+      505
+    ],
+    "monitoring_seeds": [
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      7005
+    ],
+    "tolerance": 1e-09,
+    "reference": "held_out_mean_qber.estimate in each checkpoint's metadata"
+  },
+  "fault_injection": {
+    "model_id": "qnet.compensation.calibrado.ridge",
+    "start_step": 2500,
+    "steps": 50
+  },
+  "primary_endpoint": "per-seed mean QBER over the whole run",
+  "test": "exact one-sided paired sign-flip test, H1: learned mean QBER lower than baseline",
+  "multiplicity": "Holm over the six learned-versus-baseline comparisons",
+  "alpha": 0.05,
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20261022,
+    "confidence": 0.95
+  },
+  "interpretation": "simulated closed loop with an ideal actuator; not physical validation or permission to actuate"
+}

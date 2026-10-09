@@ -1,0 +1,1358 @@
+{
+  "schema": "orion.polarisation-quantisation-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.polarisation-quantisation-protocol.v1",
+      "target_id": "polarisation.compensation.v1",
+      "evidence": "simulated",
+      "mode": "simulation",
+      "fixed_point": "qnet_network.deploy (author): collect_calibration ranges, build_quantised, QuantisedCompensator (CORDIC datapath 32 bits, 20 fraction bits)",
+      "models": [
+        "ridge",
+        "mlp"
+      ],
+      "reproduction": {
+        "references": {
+          "width.csv": {
+            "path": "external/qnet_network/runs/quantisation/width.csv"
+          },
+          "cordic.csv": {
+            "path": "external/qnet_network/runs/quantisation/cordic.csv"
+          }
+        },
+        "reference_sha256": {
+          "width.csv": "0ee9be41ff3ff72aa81079a5872d5f59e226196b497f250906d158a3e5b21bc0",
+          "cordic.csv": "6ce288930e6d676644740263730dc3eb055b07dbc241ae91b504c03d50eb6b44"
+        },
+        "procedure": "scripts/evaluate_quantisation.py study(): task3 TEST_SEEDS[:6], rng 7000+i, calibration on TRAIN_SEEDS[:3]; widths 8-24 at CORDIC 16, and 16 bits at CORDIC 8",
+        "columns": [
+          "mean_qber",
+          "median_qber",
+          "p95_qber",
+          "uptime",
+          "mean_key_rate_hz",
+          "mean_residual_mrad",
+          "p95_residual_mrad",
+          "mean_prediction_error_mrad",
+          "qber_stderr",
+          "saturations"
+        ],
+        "tolerance": "relative 1e-12 (absolute below 1): |ours - author| <= 1e-12 * max(1, |author|)"
+      },
+      "operating_points": {
+        "calibrado": {
+          "alpha_beta": {
+            "alpha": 0.01,
+            "beta": 0.0
+          },
+          "float_mean_qber": {
+            "ridge": 0.013079433498572032,
+            "mlp": 0.013422886566343249
+          },
+          "source": "docs/results/orion_q_polarisation_closed_loop_20260929_summary.json"
+        },
+        "desenvolvimento": {
+          "alpha_beta": {
+            "alpha": 0.03,
+            "beta": 0.005
+          },
+          "float_mean_qber": {
+            "ridge": 0.007612920696349887,
+            "mlp": 0.007220517693620397
+          },
+          "source": "docs/results/orion_q_polarisation_closed_loop_dev_20260929_summary.json"
+        }
+      },
+      "configurations": [
+        {
+          "width": 16,
+          "cordic": 8
+        },
+        {
+          "width": 16,
+          "cordic": 16
+        },
+        {
+          "width": 14,
+          "cordic": 16
+        },
+        {
+          "width": 12,
+          "cordic": 16
+        }
+      ],
+      "calibration": {
+        "plant_seeds": [
+          100,
+          101,
+          102,
+          103
+        ],
+        "monitoring_seeds": [
+          7,
+          8,
+          9,
+          10
+        ],
+        "duration_s": 20.0
+      },
+      "duration_s": 20.0,
+      "evaluation_plant_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019
+      ],
+      "monitoring_seed_offset": 6000,
+      "supervisor": {
+        "max_command_step_rad": 1.5707963267948966,
+        "max_consecutive_faults": 8,
+        "rotation_tolerance": 1e-07
+      },
+      "fixed_point_output": "projected onto SO(3) (nearest rotation by SVD) before the supervisor, as an actuator driver would; the largest Frobenius distance moved is recorded",
+      "primary": {
+        "configuration": {
+          "width": 16,
+          "cordic": 8
+        },
+        "margin": 0.05,
+        "endpoint": "per-seed mean QBER, fixed point against the float model"
+      },
+      "test": "exact one-sided paired sign-flip test, H1: mean(q_fixed - (1 + margin) q_float) < 0",
+      "multiplicity": "Holm over the four model x point hypotheses",
+      "alpha": 0.05,
+      "bootstrap": {
+        "resamples": 10000,
+        "seed": 20261022,
+        "confidence": 0.95
+      },
+      "interpretation": "simulated closed loop with an ideal actuator; the fixed-point model is the author's reference, whose RTL tools/verify_author_rtl.py checks bit for bit"
+    },
+    "protocol_file_sha256": "3764bf96d0c582ee713dc2cd121c9ccf0a55d84861e4b535cacd5e3f6654da58",
+    "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "expected_archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "source_sha256": {
+      "quantum_autopilot/control_plane/polarisation_quantisation.py": "fa27263fd69a787609591d63addd31646c44f849bd2811480fdb8ba1758b172c",
+      "quantum_autopilot/control_plane/polarisation_loop.py": "bffe5034b0680e55d647432852c1fb0f3a52eb972dc3a0774df4daff871b27bf",
+      "quantum_autopilot/control_plane/polarisation_plant.py": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+      "quantum_autopilot/model_intake/compensation.py": "91ac7e614fa6941c57fd4f2015bb062cf9e945f3c7d5b9eb0ad9b9b33f0d0e05",
+      "qnet_network/deploy/quantise.py": "5c583f1a5e7f851eddb1f2c6b02341eeeac514947172b41476c8679f01a46a3f",
+      "qnet_network/deploy/fixed_point.py": "2ad8877f06d2ec5b69b8eecf5e3576c28ec5fd39833520db393fb1f17a496fc3",
+      "qnet_network/compensation/closed_loop.py": "5e36d3cdfe6cb7bd0f42a09a88470f88394f06041c39cd8da4e58c95586cbd0c",
+      "qnet_network/compensation/predictors.py": "1153f34cde9cc4dac075ea6b2b91a63093684e39263b16cccd6183c2a604d7fe"
+    }
+  },
+  "reproduction": [
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "float64",
+      "mean_qber": 0.007958281090150133,
+      "author_mean_qber": 0.007958281090150133,
+      "max_relative_error": 3.2280798594415057e-16,
+      "worst_column": "p95_residual_mrad",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "8 bits, CORDIC 16",
+      "mean_qber": 0.13107889859452715,
+      "author_mean_qber": 0.13107889859452715,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "10 bits, CORDIC 16",
+      "mean_qber": 0.13107889859452715,
+      "author_mean_qber": 0.13107889859452715,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "12 bits, CORDIC 16",
+      "mean_qber": 0.14854363955004343,
+      "author_mean_qber": 0.14854363955004343,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "14 bits, CORDIC 16",
+      "mean_qber": 0.010197037265768844,
+      "author_mean_qber": 0.010197037265768844,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "16 bits, CORDIC 16",
+      "mean_qber": 0.007818841263900627,
+      "author_mean_qber": 0.007818841263900627,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "18 bits, CORDIC 16",
+      "mean_qber": 0.007918207198922117,
+      "author_mean_qber": 0.007918207198922117,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "20 bits, CORDIC 16",
+      "mean_qber": 0.007991173342184243,
+      "author_mean_qber": 0.007991173342184243,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "ridge",
+      "variant": "24 bits, CORDIC 16",
+      "mean_qber": 0.00795960005201952,
+      "author_mean_qber": 0.00795960005201952,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "cordic.csv",
+      "model": "ridge",
+      "variant": "16 bits, CORDIC 8",
+      "mean_qber": 0.007825715223779093,
+      "author_mean_qber": 0.007825715223779093,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "float64",
+      "mean_qber": 0.007583629645977637,
+      "author_mean_qber": 0.007583629645977637,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "8 bits, CORDIC 16",
+      "mean_qber": 0.13122807079039855,
+      "author_mean_qber": 0.13122807079039855,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "10 bits, CORDIC 16",
+      "mean_qber": 0.13230479822204877,
+      "author_mean_qber": 0.13230479822204877,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "12 bits, CORDIC 16",
+      "mean_qber": 0.16787727581866205,
+      "author_mean_qber": 0.16787727581866205,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "14 bits, CORDIC 16",
+      "mean_qber": 0.00799270232516239,
+      "author_mean_qber": 0.00799270232516239,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "16 bits, CORDIC 16",
+      "mean_qber": 0.007742877558882016,
+      "author_mean_qber": 0.007742877558882016,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "18 bits, CORDIC 16",
+      "mean_qber": 0.007562003410998614,
+      "author_mean_qber": 0.007562003410998614,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "20 bits, CORDIC 16",
+      "mean_qber": 0.007612481073399002,
+      "author_mean_qber": 0.007612481073399002,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "width.csv",
+      "model": "mlp",
+      "variant": "24 bits, CORDIC 16",
+      "mean_qber": 0.007584076351683593,
+      "author_mean_qber": 0.007584076351683593,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    },
+    {
+      "reference": "cordic.csv",
+      "model": "mlp",
+      "variant": "16 bits, CORDIC 8",
+      "mean_qber": 0.007747787341057939,
+      "author_mean_qber": 0.007747787341057939,
+      "max_relative_error": 0.0,
+      "worst_column": "mean_qber",
+      "passed": true
+    }
+  ],
+  "consistency": [
+    {
+      "operating_point": "calibrado",
+      "model": "ridge",
+      "author_float_vs_replay_max_difference": 0.0,
+      "replay_mean_qber": 0.013079433498572032,
+      "closed_loop_campaign_mean_qber": 0.013079433498572032,
+      "passed": true
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "mlp",
+      "author_float_vs_replay_max_difference": 0.0,
+      "replay_mean_qber": 0.013422886566343249,
+      "closed_loop_campaign_mean_qber": 0.013422886566343249,
+      "passed": true
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "ridge",
+      "author_float_vs_replay_max_difference": 0.0,
+      "replay_mean_qber": 0.007612920696349887,
+      "closed_loop_campaign_mean_qber": 0.007612920696349887,
+      "passed": true
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "mlp",
+      "author_float_vs_replay_max_difference": 0.0,
+      "replay_mean_qber": 0.007220517693620397,
+      "closed_loop_campaign_mean_qber": 0.007220517693620397,
+      "passed": true
+    }
+  ],
+  "comparisons": [
+    {
+      "operating_point": "calibrado",
+      "model": "ridge",
+      "configuration": "16b/CORDIC8",
+      "float_mean_qber": 0.013079433498572032,
+      "fixed_mean_qber": 0.01309118655617533,
+      "fixed_to_float_ratio": 1.0008985907229528,
+      "ratio_ci95": [
+        0.9948413951953023,
+        1.007063175907523
+      ],
+      "worst_seed_ratio": 1.0331568570400707,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 3.814697265625e-06,
+      "non_inferior": true
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "ridge",
+      "configuration": "16b/CORDIC16",
+      "float_mean_qber": 0.013079433498572032,
+      "fixed_mean_qber": 0.013077500623276114,
+      "fixed_to_float_ratio": 0.999852220258918,
+      "ratio_ci95": [
+        0.993661527894479,
+        1.0061024937962126
+      ],
+      "worst_seed_ratio": 1.0325345682506022,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "ridge",
+      "configuration": "14b/CORDIC16",
+      "float_mean_qber": 0.013079433498572032,
+      "fixed_mean_qber": 0.014860433906731588,
+      "fixed_to_float_ratio": 1.1361680082209982,
+      "ratio_ci95": [
+        1.1189701745896885,
+        1.1545982851921937
+      ],
+      "worst_seed_ratio": 1.2329118338919904,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "ridge",
+      "configuration": "12b/CORDIC16",
+      "float_mean_qber": 0.013079433498572032,
+      "fixed_mean_qber": 0.11793340477418046,
+      "fixed_to_float_ratio": 9.016705867808115,
+      "ratio_ci95": [
+        8.747248723190049,
+        9.276147053619633
+      ],
+      "worst_seed_ratio": 9.986229980592483,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 0,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "mlp",
+      "configuration": "16b/CORDIC8",
+      "float_mean_qber": 0.013422886566343249,
+      "fixed_mean_qber": 0.013414678825048714,
+      "fixed_to_float_ratio": 0.9993885263610054,
+      "ratio_ci95": [
+        0.9935983914233869,
+        1.0051522074645292
+      ],
+      "worst_seed_ratio": 1.0316195613302603,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 3.814697265625e-06,
+      "non_inferior": true
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "mlp",
+      "configuration": "16b/CORDIC16",
+      "float_mean_qber": 0.013422886566343249,
+      "fixed_mean_qber": 0.013402555816280245,
+      "fixed_to_float_ratio": 0.998485366767981,
+      "ratio_ci95": [
+        0.9926982761792346,
+        1.0043734315877495
+      ],
+      "worst_seed_ratio": 1.0312588898001507,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "mlp",
+      "configuration": "14b/CORDIC16",
+      "float_mean_qber": 0.013422886566343249,
+      "fixed_mean_qber": 0.01534270127355714,
+      "fixed_to_float_ratio": 1.1430254735242764,
+      "ratio_ci95": [
+        1.1265619264877478,
+        1.1606527528962158
+      ],
+      "worst_seed_ratio": 1.2375125590734475,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "calibrado",
+      "model": "mlp",
+      "configuration": "12b/CORDIC16",
+      "float_mean_qber": 0.013422886566343249,
+      "fixed_mean_qber": 0.10900319570930266,
+      "fixed_to_float_ratio": 8.120697077379685,
+      "ratio_ci95": [
+        7.8736049060557365,
+        8.363885632144193
+      ],
+      "worst_seed_ratio": 8.891300760322789,
+      "alpha_beta_mean_qber": 0.04355426455154091,
+      "beats_alpha_beta_seeds": 0,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "ridge",
+      "configuration": "16b/CORDIC8",
+      "float_mean_qber": 0.007612920696349887,
+      "fixed_mean_qber": 0.0076909252870960895,
+      "fixed_to_float_ratio": 1.0102463422196954,
+      "ratio_ci95": [
+        0.9938374565476472,
+        1.0278478821964583
+      ],
+      "worst_seed_ratio": 1.1000347866352442,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20,
+      "p_value": 0.00030612945556640625,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 0.0006122589111328125,
+      "non_inferior": true
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "ridge",
+      "configuration": "16b/CORDIC16",
+      "float_mean_qber": 0.007612920696349887,
+      "fixed_mean_qber": 0.007682069864993779,
+      "fixed_to_float_ratio": 1.0090831326637943,
+      "ratio_ci95": [
+        0.9927482023748243,
+        1.0266271531459925
+      ],
+      "worst_seed_ratio": 1.099092207755684,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "ridge",
+      "configuration": "14b/CORDIC16",
+      "float_mean_qber": 0.007612920696349887,
+      "fixed_mean_qber": 0.00919391098996632,
+      "fixed_to_float_ratio": 1.2076719772444837,
+      "ratio_ci95": [
+        1.1721477187643186,
+        1.2421799792285595
+      ],
+      "worst_seed_ratio": 1.3586484249915876,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "ridge",
+      "configuration": "12b/CORDIC16",
+      "float_mean_qber": 0.007612920696349887,
+      "fixed_mean_qber": 0.14694713648325344,
+      "fixed_to_float_ratio": 19.30233380123205,
+      "ratio_ci95": [
+        18.39994560535598,
+        20.24256801533795
+      ],
+      "worst_seed_ratio": 24.797471477332326,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 0,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "mlp",
+      "configuration": "16b/CORDIC8",
+      "float_mean_qber": 0.007220517693620397,
+      "fixed_mean_qber": 0.007495382322498663,
+      "fixed_to_float_ratio": 1.0380671636773522,
+      "ratio_ci95": [
+        1.0252327180873062,
+        1.0509874327911926
+      ],
+      "worst_seed_ratio": 1.1000747304442995,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20,
+      "p_value": 0.046410560607910156,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 0.046410560607910156,
+      "non_inferior": true
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "mlp",
+      "configuration": "16b/CORDIC16",
+      "float_mean_qber": 0.007220517693620397,
+      "fixed_mean_qber": 0.007487630984576233,
+      "fixed_to_float_ratio": 1.0369936481413016,
+      "ratio_ci95": [
+        1.0240662690186442,
+        1.0500361391207456
+      ],
+      "worst_seed_ratio": 1.098992207045094,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "mlp",
+      "configuration": "14b/CORDIC16",
+      "float_mean_qber": 0.007220517693620397,
+      "fixed_mean_qber": 0.007236598698548008,
+      "fixed_to_float_ratio": 1.0022271263100455,
+      "ratio_ci95": [
+        0.9748432488313676,
+        1.028024637791406
+      ],
+      "worst_seed_ratio": 1.0934743809262344,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 20,
+      "n_seeds": 20
+    },
+    {
+      "operating_point": "desenvolvimento",
+      "model": "mlp",
+      "configuration": "12b/CORDIC16",
+      "float_mean_qber": 0.007220517693620397,
+      "fixed_mean_qber": 0.16604171953373298,
+      "fixed_to_float_ratio": 22.99581921673527,
+      "ratio_ci95": [
+        21.90788870170869,
+        24.120260322852364
+      ],
+      "worst_seed_ratio": 29.950260219848946,
+      "alpha_beta_mean_qber": 0.03613358559724617,
+      "beats_alpha_beta_seeds": 0,
+      "n_seeds": 20
+    }
+  ],
+  "per_seed_mean_qber": {
+    "calibrado": {
+      "ridge|replay": [
+        0.01243593227644202,
+        0.014135262708707705,
+        0.011963877074933973,
+        0.013959891499592675,
+        0.012461358484220381,
+        0.012712293509950786,
+        0.01310144353222023,
+        0.012751543610742341,
+        0.012508986511298892,
+        0.012798577511849058,
+        0.014245573871541644,
+        0.012107224515966101,
+        0.013808204350020111,
+        0.012411350964632013,
+        0.013481664677582461,
+        0.012870336497227935,
+        0.012870376489675149,
+        0.014222321908821806,
+        0.013955713502777582,
+        0.012786736473237796
+      ],
+      "ridge|author-float": [
+        0.01243593227644202,
+        0.014135262708707705,
+        0.011963877074933973,
+        0.013959891499592675,
+        0.012461358484220381,
+        0.012712293509950786,
+        0.01310144353222023,
+        0.012751543610742341,
+        0.012508986511298892,
+        0.012798577511849058,
+        0.014245573871541644,
+        0.012107224515966101,
+        0.013808204350020111,
+        0.012411350964632013,
+        0.013481664677582461,
+        0.012870336497227935,
+        0.012870376489675149,
+        0.014222321908821806,
+        0.013955713502777582,
+        0.012786736473237796
+      ],
+      "ridge|16b/CORDIC8": [
+        0.012283733465369056,
+        0.014419767697901398,
+        0.011902676606545556,
+        0.01417453304119129,
+        0.012297108284482756,
+        0.012821653563457965,
+        0.013238604682780982,
+        0.012403806095582243,
+        0.012923745188770201,
+        0.01252075973676855,
+        0.014268124654045403,
+        0.012139062105666856,
+        0.013853288288596508,
+        0.012343738813561201,
+        0.0133105387949769,
+        0.013025727114104456,
+        0.012974276882201909,
+        0.01427178916715665,
+        0.01394904383903355,
+        0.012701753101313147
+      ],
+      "ridge|16b/CORDIC16": [
+        0.01227759430069986,
+        0.014405596121113617,
+        0.0118955214619564,
+        0.014163293763459064,
+        0.012289497837236707,
+        0.012807494469539398,
+        0.013220281336452951,
+        0.012383997420709149,
+        0.012915960986696609,
+        0.012499328654976787,
+        0.014260679901071717,
+        0.012127511835557311,
+        0.01385054826071065,
+        0.01232409966698699,
+        0.013297764256101447,
+        0.013009053568405758,
+        0.012958144353210924,
+        0.014249578098037228,
+        0.013932110279203403,
+        0.01268195589339632
+      ],
+      "ridge|14b/CORDIC16": [
+        0.015332408069104728,
+        0.015316491461827331,
+        0.01281192911004798,
+        0.015608469377535794,
+        0.013543065151348241,
+        0.0138298593414879,
+        0.014438593424650292,
+        0.015063008470172324,
+        0.014027906435361524,
+        0.014643860232167566,
+        0.016104680164166135,
+        0.013883636662972078,
+        0.016126416046634215,
+        0.014841808367362949,
+        0.015333510210766753,
+        0.014754793983733855,
+        0.01444914776371237,
+        0.016927658178681353,
+        0.015566695856403936,
+        0.014604739826494472
+      ],
+      "ridge|12b/CORDIC16": [
+        0.12418807973562303,
+        0.11462502382477333,
+        0.11540625354748793,
+        0.11315195130175289,
+        0.11560065337737735,
+        0.1120772074705094,
+        0.1151437034923716,
+        0.12532177990842,
+        0.11224699106076073,
+        0.123319118317081,
+        0.1291043412290017,
+        0.11908328973356627,
+        0.11030299273565494,
+        0.11722036788999655,
+        0.12206747714002406,
+        0.11463001311676876,
+        0.11795864651463399,
+        0.1269250741636875,
+        0.1116059581327901,
+        0.11868917279132829
+      ],
+      "mlp|replay": [
+        0.012957572209884177,
+        0.014454923660868828,
+        0.012222140466207109,
+        0.01437285433421207,
+        0.01269791805217831,
+        0.012977111525880696,
+        0.013465007137226427,
+        0.012967980361658141,
+        0.012821950917577445,
+        0.01316657728536517,
+        0.01469026468116382,
+        0.012506858629206445,
+        0.014179782635678961,
+        0.012627511825810931,
+        0.013740013107584582,
+        0.013313527945791529,
+        0.013235763916822532,
+        0.014629472546712203,
+        0.014307517531501713,
+        0.013122982555533824
+      ],
+      "mlp|author-float": [
+        0.012957572209884177,
+        0.014454923660868828,
+        0.012222140466207109,
+        0.01437285433421207,
+        0.01269791805217831,
+        0.012977111525880696,
+        0.013465007137226427,
+        0.012967980361658141,
+        0.012821950917577445,
+        0.01316657728536517,
+        0.01469026468116382,
+        0.012506858629206445,
+        0.014179782635678961,
+        0.012627511825810931,
+        0.013740013107584582,
+        0.013313527945791529,
+        0.013235763916822532,
+        0.014629472546712203,
+        0.014307517531501713,
+        0.013122982555533824
+      ],
+      "mlp|16b/CORDIC8": [
+        0.012804337277676223,
+        0.014727468847468499,
+        0.012177469298488447,
+        0.014543624632787796,
+        0.012519877292514938,
+        0.0130786999783123,
+        0.013634665505105094,
+        0.012620217820862369,
+        0.013227375380989372,
+        0.012890763862253431,
+        0.014692330816759431,
+        0.012502571883798917,
+        0.014163113372152324,
+        0.01252994104491883,
+        0.013558781173679433,
+        0.013389109118478536,
+        0.01332509473406044,
+        0.014610298558483396,
+        0.014273616588853745,
+        0.013024219313330782
+      ],
+      "mlp|16b/CORDIC16": [
+        0.012799229772439337,
+        0.014712614235370805,
+        0.012176497208104615,
+        0.01453351235808212,
+        0.012512844567009648,
+        0.01306174659529072,
+        0.0136187618996018,
+        0.012606299174157955,
+        0.01322275086833294,
+        0.012874532019375263,
+        0.01468733154878273,
+        0.012491477044464221,
+        0.01415676355212313,
+        0.012513340705482727,
+        0.013546860653283432,
+        0.013372822712993435,
+        0.013313610494434868,
+        0.01459316597252906,
+        0.01425408965781858,
+        0.013002865285927515
+      ],
+      "mlp|14b/CORDIC16": [
+        0.016035158344832753,
+        0.01579287556969142,
+        0.013212085629864171,
+        0.016116842056921633,
+        0.013925204372669791,
+        0.01424999177366371,
+        0.01500513649906972,
+        0.015428002613575348,
+        0.014520011391759777,
+        0.015187063013526198,
+        0.01669962512867377,
+        0.014424172338276383,
+        0.01660943040894587,
+        0.015154399953450422,
+        0.015689877769739548,
+        0.015309899408271474,
+        0.014957497030561288,
+        0.017433204944334375,
+        0.016017661938414772,
+        0.015085885284900463
+      ],
+      "mlp|12b/CORDIC16": [
+        0.1127617972734994,
+        0.106357419756724,
+        0.10867072681995919,
+        0.10394397880227088,
+        0.10887673571738495,
+        0.10450529303802268,
+        0.10644330079462193,
+        0.11500566272580635,
+        0.10296153039005398,
+        0.11502741143263798,
+        0.12026501473264276,
+        0.10996177931542254,
+        0.10098146339711117,
+        0.10669311466918967,
+        0.11412414669360828,
+        0.10520093106266666,
+        0.10984101062206068,
+        0.11593824637304051,
+        0.10310535962354334,
+        0.10939899094578637
+      ],
+      "alpha_beta": [
+        0.044651304319228084,
+        0.04418837892279738,
+        0.04334893202327971,
+        0.04261074869381332,
+        0.04229952001560689,
+        0.04243241805931239,
+        0.04349721617543821,
+        0.04500438800750569,
+        0.04274125701308808,
+        0.04447069158199526,
+        0.04686534967244218,
+        0.043408751068270135,
+        0.040466362709722925,
+        0.04297434698345658,
+        0.043666307660922055,
+        0.04318464639533646,
+        0.04414828592871145,
+        0.04677020163547112,
+        0.04104608505963546,
+        0.043310099104784866
+      ]
+    },
+    "desenvolvimento": {
+      "ridge|replay": [
+        0.008064680749536294,
+        0.00785564854232993,
+        0.006086611594228742,
+        0.007759767432661829,
+        0.006672045059232625,
+        0.007066562828326292,
+        0.007541748820655744,
+        0.007495597861928749,
+        0.006927793115179184,
+        0.007745036876384274,
+        0.00788672708754642,
+        0.00743735135505342,
+        0.008590744655937637,
+        0.007409068822094023,
+        0.007382964502616025,
+        0.008113884419966376,
+        0.007025697391923718,
+        0.008601294351522046,
+        0.008636526277632502,
+        0.007958662182241897
+      ],
+      "ridge|author-float": [
+        0.008064680749536294,
+        0.00785564854232993,
+        0.006086611594228742,
+        0.007759767432661829,
+        0.006672045059232625,
+        0.007066562828326292,
+        0.007541748820655744,
+        0.007495597861928749,
+        0.006927793115179184,
+        0.007745036876384274,
+        0.00788672708754642,
+        0.00743735135505342,
+        0.008590744655937637,
+        0.007409068822094023,
+        0.007382964502616025,
+        0.008113884419966376,
+        0.007025697391923718,
+        0.008601294351522046,
+        0.008636526277632502,
+        0.007958662182241897
+      ],
+      "ridge|16b/CORDIC8": [
+        0.008589886016902663,
+        0.008092044049735361,
+        0.006363058940159251,
+        0.007535388114868922,
+        0.006251160921763605,
+        0.00732969816856301,
+        0.008052489165559598,
+        0.007507134513971297,
+        0.007620813421309248,
+        0.0077748156052933805,
+        0.007985636448807806,
+        0.007269758322690535,
+        0.008423434471575456,
+        0.007187588477786965,
+        0.00772212597611624,
+        0.007802347405236003,
+        0.007241130004501508,
+        0.00844048832566838,
+        0.008598459247532213,
+        0.008031048143880361
+      ],
+      "ridge|16b/CORDIC16": [
+        0.0085814270774124,
+        0.008085022158491953,
+        0.006354635131347606,
+        0.007525301611822852,
+        0.006243705975433334,
+        0.007322321813833389,
+        0.008043953211895109,
+        0.007494710916648796,
+        0.0076142834298369155,
+        0.007766092933283749,
+        0.00797570572085664,
+        0.007262201477279868,
+        0.008414790640037112,
+        0.007178398302220043,
+        0.007710743743011929,
+        0.0077899067287618895,
+        0.007233741422074278,
+        0.00843611785288645,
+        0.008585560769265962,
+        0.008022776383475311
+      ],
+      "ridge|14b/CORDIC16": [
+        0.010335122328603983,
+        0.009619429578928704,
+        0.0064716028681367395,
+        0.010078793820902082,
+        0.007396805077612413,
+        0.008099974092402238,
+        0.009088520360802417,
+        0.008766317214875422,
+        0.008792101879867087,
+        0.008538778364671807,
+        0.009327736543925545,
+        0.0091449510284865,
+        0.011263269801362687,
+        0.00943758637683222,
+        0.008045854819248806,
+        0.010255572013179486,
+        0.008413149113191899,
+        0.011686135023584466,
+        0.010084895121612696,
+        0.009031624371099172
+      ],
+      "ridge|12b/CORDIC16": [
+        0.1476114936687386,
+        0.147516771721762,
+        0.15093257740148747,
+        0.13827047503308623,
+        0.14930270464439782,
+        0.14861583830520875,
+        0.1472172496089232,
+        0.15335496085793848,
+        0.14720236167599693,
+        0.15325357643883875,
+        0.15982917659044937,
+        0.1521563735147717,
+        0.12857800349809084,
+        0.1399260740223192,
+        0.14870620834092238,
+        0.14573637869427652,
+        0.14296006967218736,
+        0.15396367326945387,
+        0.1371815755182004,
+        0.14662718718801912
+      ],
+      "mlp|replay": [
+        0.007688088117452055,
+        0.007510077120535499,
+        0.005711098946293074,
+        0.0074121749066121114,
+        0.0063892773213751084,
+        0.006667745596346643,
+        0.007048912748416792,
+        0.0071548305451647086,
+        0.006454063958182914,
+        0.007366662092923731,
+        0.007500022414174495,
+        0.007092050953588345,
+        0.008149339560604365,
+        0.006887881675142618,
+        0.006833561487698886,
+        0.007877396332090284,
+        0.006734543392868694,
+        0.008373677061944309,
+        0.008103004085515205,
+        0.00745594555547811
+      ],
+      "mlp|author-float": [
+        0.007688088117452055,
+        0.007510077120535499,
+        0.005711098946293074,
+        0.0074121749066121114,
+        0.0063892773213751084,
+        0.006667745596346643,
+        0.007048912748416792,
+        0.0071548305451647086,
+        0.006454063958182914,
+        0.007366662092923731,
+        0.007500022414174495,
+        0.007092050953588345,
+        0.008149339560604365,
+        0.006887881675142618,
+        0.006833561487698886,
+        0.007877396332090284,
+        0.006734543392868694,
+        0.008373677061944309,
+        0.008103004085515205,
+        0.00745594555547811
+      ],
+      "mlp|16b/CORDIC8": [
+        0.008356257523885429,
+        0.007908365636399316,
+        0.005922304932491751,
+        0.007529161881212327,
+        0.006180392705290161,
+        0.007010376964098097,
+        0.007596787806052342,
+        0.007414060733737111,
+        0.007099952669068339,
+        0.0075451848856996975,
+        0.007862848518193966,
+        0.0071372113064878265,
+        0.00839681664913252,
+        0.006993543705589329,
+        0.007363438772450625,
+        0.007929697061795912,
+        0.007068676535527676,
+        0.008559667278048808,
+        0.008336299188077186,
+        0.007696601696734854
+      ],
+      "mlp|16b/CORDIC16": [
+        0.008349480107198213,
+        0.007903846727020651,
+        0.00591412852921091,
+        0.007523119165841158,
+        0.006171934440088708,
+        0.007004497010701937,
+        0.007585412984152512,
+        0.0074009329461338326,
+        0.007092965993813635,
+        0.007535993196402845,
+        0.007856896397042974,
+        0.00713032519436597,
+        0.008391136933554297,
+        0.0069850476615088905,
+        0.007354933567272345,
+        0.00792463317368598,
+        0.007061264731467893,
+        0.00855360203245928,
+        0.00832587275181353,
+        0.007686596147789097
+      ],
+      "mlp|14b/CORDIC16": [
+        0.008013738157906118,
+        0.007809471610045071,
+        0.005430059809410556,
+        0.007961019202157336,
+        0.005994843587606556,
+        0.006524240868318907,
+        0.007255898784227858,
+        0.006844534369161099,
+        0.007057353591132384,
+        0.006784482587596261,
+        0.006983854817110801,
+        0.007337109056876197,
+        0.00845968781854358,
+        0.007182606092069176,
+        0.005902260027970506,
+        0.008294048209007364,
+        0.006905930503989208,
+        0.009083088030125091,
+        0.00781807770847966,
+        0.007089669139226416
+      ],
+      "mlp|12b/CORDIC16": [
+        0.1659298285875644,
+        0.16666561949176775,
+        0.1710488995827827,
+        0.15663003886097396,
+        0.16699275203845823,
+        0.1676981652246419,
+        0.1673757484077862,
+        0.1733504257119699,
+        0.1650658459170548,
+        0.1733645060050616,
+        0.18011372674355874,
+        0.1710821523750245,
+        0.14541085183787666,
+        0.1586049023550204,
+        0.1704463917652884,
+        0.1642403140148644,
+        0.16102099355506194,
+        0.17383884013547105,
+        0.15396049209619092,
+        0.16799389596824094
+      ],
+      "alpha_beta": [
+        0.03597207778148891,
+        0.03752972600041848,
+        0.03653451490606096,
+        0.034638073996315924,
+        0.03522733361242556,
+        0.03632504681207364,
+        0.03602381733404951,
+        0.03639141824597457,
+        0.03869709515918507,
+        0.03618034839302203,
+        0.03817898390931419,
+        0.03796122975969562,
+        0.0319565254671806,
+        0.0344353951751684,
+        0.03421104856747224,
+        0.03767148437629403,
+        0.035868260454342,
+        0.03875275316857542,
+        0.03327226576301623,
+        0.03684431306284999
+      ]
+    }
+  },
+  "supervisor_faults": {
+    "calibrado": {
+      "ridge|replay": 0,
+      "ridge|author-float": 0,
+      "ridge|16b/CORDIC8": 0,
+      "ridge|16b/CORDIC16": 0,
+      "ridge|14b/CORDIC16": 0,
+      "ridge|12b/CORDIC16": 0,
+      "mlp|replay": 0,
+      "mlp|author-float": 0,
+      "mlp|16b/CORDIC8": 0,
+      "mlp|16b/CORDIC16": 0,
+      "mlp|14b/CORDIC16": 0,
+      "mlp|12b/CORDIC16": 0,
+      "alpha_beta": 0
+    },
+    "desenvolvimento": {
+      "ridge|replay": 0,
+      "ridge|author-float": 0,
+      "ridge|16b/CORDIC8": 0,
+      "ridge|16b/CORDIC16": 0,
+      "ridge|14b/CORDIC16": 0,
+      "ridge|12b/CORDIC16": 0,
+      "mlp|replay": 0,
+      "mlp|author-float": 0,
+      "mlp|16b/CORDIC8": 0,
+      "mlp|16b/CORDIC16": 0,
+      "mlp|14b/CORDIC16": 0,
+      "mlp|12b/CORDIC16": 0,
+      "alpha_beta": 0
+    }
+  },
+  "fixed_point": {
+    "calibrado": {
+      "ridge|16b/CORDIC8": {
+        "saturations": 0,
+        "max_projection_frobenius": 7.636563578004392e-05
+      },
+      "ridge|16b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 8.157840794863632e-05
+      },
+      "ridge|14b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.00030436570896854654
+      },
+      "ridge|12b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.001258406558607668
+      },
+      "mlp|16b/CORDIC8": {
+        "saturations": 0,
+        "max_projection_frobenius": 7.957510633740956e-05
+      },
+      "mlp|16b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 7.904659338869304e-05
+      },
+      "mlp|14b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.00031044904061110895
+      },
+      "mlp|12b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.0012712634086014954
+      }
+    },
+    "desenvolvimento": {
+      "ridge|16b/CORDIC8": {
+        "saturations": 0,
+        "max_projection_frobenius": 7.609455394889146e-05
+      },
+      "ridge|16b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 7.909975447336334e-05
+      },
+      "ridge|14b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.00030893151149117697
+      },
+      "ridge|12b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.0012712634086011242
+      },
+      "mlp|16b/CORDIC8": {
+        "saturations": 0,
+        "max_projection_frobenius": 7.865174786712836e-05
+      },
+      "mlp|16b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 7.723003717099919e-05
+      },
+      "mlp|14b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.000321373881929047
+      },
+      "mlp|12b/CORDIC16": {
+        "saturations": 0,
+        "max_projection_frobenius": 0.0012576201505735923
+      }
+    }
+  },
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "limitations": [
+    "Ideal actuator; the fixed-point model is the author's bit-exact reference, not the synthesised hardware.",
+    "Ranges calibrated on four tuning seeds of each point."
+  ]
+}

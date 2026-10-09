@@ -1,0 +1,66 @@
+--- a/src/qnet_network/compat/__init__.py
++++ b/src/qnet_network/compat/__init__.py
+@@ -185,7 +185,10 @@
+ 
+     missing: set[str] = set()
+     for name in SHIMMABLE:
+-        if name in sys.modules and not getattr(sys.modules[name], "__file__", None):
++        if name in sys.modules and (
++            getattr(sys.modules[name], "__orion_q_shim__", False)
++            or not getattr(sys.modules[name], "__file__", None)
++        ):
+             # already shimmed by an earlier call
+             status.shimmed.append(name)
+             continue
+--- a/src/qnet_network/compat/_gmpy2_shim.py
++++ b/src/qnet_network/compat/_gmpy2_shim.py
+@@ -39,6 +39,16 @@
+ from decimal import Decimal
+ 
+ __all__ = ["mpfr", "mpz", "floor", "ceil", "rint", "get_context", "context"]
++
++# This implements timing arithmetic only, never the full GMPY algebra API.
++# A below-minimum version lets SymPy/mpmath select their Python backend.
++__orion_q_shim__ = True
++__version__ = "0.0.0"
++
++
++def version() -> str:
++    """Advertise no GMPY compatibility to optional numerical backends."""
++    return __version__
+ 
+ _BITS_PER_DIGIT = math.log10(2)
+ 
+--- a/src/qnet_qkd/compat/__init__.py
++++ b/src/qnet_qkd/compat/__init__.py
+@@ -185,7 +185,10 @@
+ 
+     missing: set[str] = set()
+     for name in SHIMMABLE:
+-        if name in sys.modules and not getattr(sys.modules[name], "__file__", None):
++        if name in sys.modules and (
++            getattr(sys.modules[name], "__orion_q_shim__", False)
++            or not getattr(sys.modules[name], "__file__", None)
++        ):
+             # already shimmed by an earlier call
+             status.shimmed.append(name)
+             continue
+--- a/src/qnet_qkd/compat/_gmpy2_shim.py
++++ b/src/qnet_qkd/compat/_gmpy2_shim.py
+@@ -39,6 +39,16 @@
+ from decimal import Decimal
+ 
+ __all__ = ["mpfr", "mpz", "floor", "ceil", "rint", "get_context", "context"]
++
++# This implements timing arithmetic only, never the full GMPY algebra API.
++# A below-minimum version lets SymPy/mpmath select their Python backend.
++__orion_q_shim__ = True
++__version__ = "0.0.0"
++
++
++def version() -> str:
++    """Advertise no GMPY compatibility to optional numerical backends."""
++    return __version__
+ 
+ _BITS_PER_DIGIT = math.log10(2)
+ 

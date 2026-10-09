@@ -1,0 +1,363 @@
+{
+  "schema": "orion.author-rtl-verification.v1",
+  "tools": {
+    "iverilog": "Icarus Verilog version 12.0 (stable) ()",
+    "yosys": "Yosys 0.33 (git sha1 2584903a060)",
+    "python": "3.11.15",
+    "numpy": "2.4.4"
+  },
+  "compensator": {
+    "ridge_author_bench": {
+      "output": "PASS: 64 vectors x 3 outputs bit-exact",
+      "passed": true
+    },
+    "mlp_author_bench": {
+      "output": [
+        "WARNING: qnet_tb.v:46: $readmemh(vectors_out.hex): Not enough words in the file for the requested range [0:12287].",
+        "MISMATCH vector 0 unit 0: rtl 1690 ref -1609",
+        "MISMATCH vector 0 unit 1: rtl 453 ref 3595",
+        "qnet_tb.v:64: $finish called at 4375000 (1ps)"
+      ],
+      "passed": false,
+      "golden_words": 192,
+      "bench_expects": 12288,
+      "diagnosis": "vectors_out.hex holds the network output (64 x 3); the bench compares the first layer's 192 outputs per vector with it"
+    },
+    "mlp_chain": {
+      "bias_fractions": [
+        13,
+        14,
+        15
+      ],
+      "bias_shifts": [
+        13,
+        10,
+        8
+      ],
+      "candidates_tried": 256,
+      "unique": true,
+      "words_checked": [
+        12288,
+        12288,
+        192
+      ],
+      "mismatches": [
+        0,
+        0,
+        0
+      ],
+      "passed": true
+    },
+    "cordic": {
+      "vector_domain": {
+        "cases": 3000,
+        "mismatches": 0
+      },
+      "vector_edge": {
+        "cases": 6,
+        "mismatches": 0
+      },
+      "vector_outside_q4": {
+        "cases": 513,
+        "mismatches": 0
+      },
+      "vector_outside_q3": {
+        "cases": 487,
+        "mismatches": 487
+      },
+      "rotation": {
+        "cases": 3000,
+        "mismatches": 0
+      }
+    },
+    "ridge_cordic_identical": true,
+    "mlp_cordic_identical": true
+  },
+  "qkd_archive_sha256": "94352f15b6dcb132a3c03559b9d94b28f42b6e9adb8b2cdaab18f46720a55a79",
+  "qkd_sync": {
+    "vectors": 512,
+    "mismatches": 0,
+    "passed": true,
+    "identity": {
+      "coefficient_codes_equal": true,
+      "coefficient_format": "Q1.10 (12b)",
+      "accumulator_format": "Q1.18 (20b)",
+      "coefficients.hex_identical": true,
+      "intercept.hex_identical": true,
+      "sync_params_identical_but_vector_count": true
+    },
+    "exported_model_vs_rom_max_lsb": 8
+  },
+  "qkd_trees": {
+    "dataset_csv_sha256": "fb69e0795d93ef6c500b3669a5c326834bf02d8ab9af9a5499fa7cdebea19a32",
+    "rounds": 5,
+    "memories_identical": {
+      "nodes.hex": true,
+      "trees.hex": true,
+      "baseline.hex": true,
+      "tree_params.vh": true
+    },
+    "runs": [
+      {
+        "vectors": 64,
+        "block_ram_mode": true,
+        "score_mismatches": 0,
+        "class_mismatches": 0,
+        "nodes": 1830,
+        "trees": 30,
+        "node_width": 42
+      },
+      {
+        "vectors": 1024,
+        "block_ram_mode": true,
+        "score_mismatches": 0,
+        "class_mismatches": 0,
+        "nodes": 1830,
+        "trees": 30,
+        "node_width": 42
+      },
+      {
+        "vectors": 1024,
+        "block_ram_mode": false,
+        "score_mismatches": 0,
+        "class_mismatches": 0,
+        "nodes": 1830,
+        "trees": 30,
+        "node_width": 42
+      }
+    ],
+    "passed": true
+  },
+  "synthesis": [
+    {
+      "design": "compensador ridge, camada 0",
+      "top": "qnet_mac",
+      "parameters": {
+        "INPUTS": 48,
+        "OUTPUTS": 3,
+        "SHIFT": 15,
+        "BIAS_SHIFT": 4,
+        "ACC_WIDTH": 38,
+        "RELU": 0
+      },
+      "cells": 295,
+      "estimated_logic_cells": null,
+      "luts": 123,
+      "flip_flops": 73,
+      "dsp48": 1,
+      "block_ram": 0,
+      "carry": 21,
+      "by_type": {
+        "BUFG": 1,
+        "CARRY4": 21,
+        "DSP48E1": 1,
+        "FDCE": 73,
+        "INV": 76,
+        "LUT2": 42,
+        "LUT4": 1,
+        "LUT5": 15,
+        "LUT6": 65
+      }
+    },
+    {
+      "design": "compensador mlp, camada 0",
+      "top": "qnet_mac",
+      "parameters": {
+        "INPUTS": 48,
+        "OUTPUTS": 192,
+        "SHIFT": 16,
+        "BIAS_SHIFT": 13,
+        "ACC_WIDTH": 38,
+        "RELU": 1
+      },
+      "cells": 361,
+      "estimated_logic_cells": null,
+      "luts": 156,
+      "flip_flops": 85,
+      "dsp48": 1,
+      "block_ram": 0,
+      "carry": 25,
+      "by_type": {
+        "BUFG": 1,
+        "CARRY4": 25,
+        "DSP48E1": 1,
+        "FDCE": 85,
+        "INV": 89,
+        "LUT2": 56,
+        "LUT3": 17,
+        "LUT4": 2,
+        "LUT5": 24,
+        "LUT6": 57,
+        "MUXF7": 3,
+        "MUXF8": 1
+      }
+    },
+    {
+      "design": "compensador mlp, camada 1",
+      "top": "qnet_mac",
+      "parameters": {
+        "INPUTS": 192,
+        "OUTPUTS": 192,
+        "SHIFT": 16,
+        "BIAS_SHIFT": 10,
+        "ACC_WIDTH": 40,
+        "RELU": 1
+      },
+      "cells": 389,
+      "estimated_logic_cells": null,
+      "luts": 172,
+      "flip_flops": 91,
+      "dsp48": 1,
+      "block_ram": 0,
+      "carry": 27,
+      "by_type": {
+        "BUFG": 1,
+        "CARRY4": 27,
+        "DSP48E1": 1,
+        "FDCE": 91,
+        "INV": 94,
+        "LUT2": 70,
+        "LUT3": 2,
+        "LUT4": 3,
+        "LUT5": 19,
+        "LUT6": 78,
+        "MUXF7": 2,
+        "MUXF8": 1
+      }
+    },
+    {
+      "design": "compensador mlp, camada 2",
+      "top": "qnet_mac",
+      "parameters": {
+        "INPUTS": 192,
+        "OUTPUTS": 3,
+        "SHIFT": 19,
+        "BIAS_SHIFT": 8,
+        "ACC_WIDTH": 40,
+        "RELU": 0
+      },
+      "cells": 312,
+      "estimated_logic_cells": null,
+      "luts": 125,
+      "flip_flops": 79,
+      "dsp48": 1,
+      "block_ram": 0,
+      "carry": 21,
+      "by_type": {
+        "BUFG": 1,
+        "CARRY4": 21,
+        "DSP48E1": 1,
+        "FDCE": 79,
+        "INV": 82,
+        "LUT2": 38,
+        "LUT3": 2,
+        "LUT4": 1,
+        "LUT5": 13,
+        "LUT6": 71,
+        "MUXF7": 2,
+        "MUXF8": 1
+      }
+    },
+    {
+      "design": "CORDIC (32 bits, 8 est\u00e1gios)",
+      "top": "qnet_cordic",
+      "parameters": {},
+      "cells": 1389,
+      "estimated_logic_cells": null,
+      "luts": 698,
+      "flip_flops": 200,
+      "dsp48": 0,
+      "block_ram": 0,
+      "carry": 107,
+      "by_type": {
+        "BUFG": 1,
+        "CARRY4": 107,
+        "FDCE": 104,
+        "FDRE": 96,
+        "INV": 270,
+        "LUT2": 52,
+        "LUT3": 105,
+        "LUT4": 187,
+        "LUT5": 82,
+        "LUT6": 272,
+        "MUXF7": 113
+      }
+    },
+    {
+      "design": "sync_top",
+      "top": "sync_top",
+      "parameters": {},
+      "cells": 358,
+      "estimated_logic_cells": null,
+      "luts": 161,
+      "flip_flops": 56,
+      "dsp48": 1,
+      "block_ram": 0,
+      "carry": 33,
+      "by_type": {
+        "BUFG": 1,
+        "CARRY4": 33,
+        "DSP48E1": 1,
+        "FDCE": 56,
+        "INV": 102,
+        "LUT2": 13,
+        "LUT3": 73,
+        "LUT4": 27,
+        "LUT5": 32,
+        "LUT6": 16,
+        "MUXF7": 4
+      }
+    },
+    {
+      "design": "detector_top",
+      "top": "detector_top",
+      "parameters": {},
+      "cells": 3072,
+      "estimated_logic_cells": null,
+      "luts": 2178,
+      "flip_flops": 395,
+      "dsp48": 0,
+      "block_ram": 6,
+      "carry": 36,
+      "by_type": {
+        "BUFG": 1,
+        "CARRY4": 36,
+        "FDCE": 156,
+        "FDPE": 1,
+        "FDRE": 238,
+        "INV": 166,
+        "LUT1": 226,
+        "LUT2": 74,
+        "LUT3": 808,
+        "LUT4": 92,
+        "LUT5": 228,
+        "LUT6": 750,
+        "MUXF7": 244,
+        "MUXF8": 46,
+        "RAMB18E1": 6
+      }
+    }
+  ],
+  "rtl_sources_sha256": {
+    "external/qnet_network/rtl/mlp/README.md": "7ca4c64926856b03602dd9365e298260948506a6275f5c145fb63ad0f689c9f0",
+    "external/qnet_network/rtl/mlp/qnet_cordic.v": "20f4d7636af19cc6e96b8a85ae8e4851f6eeb637ad3a2c7cf11708422b1c7efc",
+    "external/qnet_network/rtl/mlp/qnet_layer0_b.hex": "3848b9c73c667b3aec1d11bd641385c3dc0f4abd16865c8535f3822666f331ed",
+    "external/qnet_network/rtl/mlp/qnet_layer0_w.hex": "736b2ac27b5e924a9c7fa7bdad448c2e71ab8dc2091caedb8477f70fe4ca2500",
+    "external/qnet_network/rtl/mlp/qnet_layer1_b.hex": "522845f2f09d359a79c015dc53cb39922dc897c51b6cfda53385ad33fceb2d11",
+    "external/qnet_network/rtl/mlp/qnet_layer1_w.hex": "6c2e55743b8268a70764dad65f2c6b6184c3d7649a6e12d525c69f5e94eb45e0",
+    "external/qnet_network/rtl/mlp/qnet_layer2_b.hex": "61ce37a541e9253059537bc83afff9d87ed04827989e3b4f5a8b932b05a83ca1",
+    "external/qnet_network/rtl/mlp/qnet_layer2_w.hex": "904769ec0d5dea3b88c1c0bae821a43631e4aaafe102be56cdd6be5d9995f313",
+    "external/qnet_network/rtl/mlp/qnet_mac.v": "9a6d9b21bbc68007788e5766ffa65f04cf41b4c665af8221c29a07d135b9c59e",
+    "external/qnet_network/rtl/mlp/qnet_tb.v": "feaa8147f9a5876577a849101b97a5431136a2c0bb1e38c77bdfb9c62a9bafb0",
+    "external/qnet_network/rtl/mlp/vectors_in.hex": "f215ae9696a07dbb89e0a57a0ec03335e28f55af225aeb4b04a6e77502d108c8",
+    "external/qnet_network/rtl/mlp/vectors_out.hex": "6cb054b2fb9a01c091ac8c51a688bca2c2e13285957748521af10a2eb0d0568c",
+    "external/qnet_network/rtl/ridge/README.md": "f9a05665124bed7edbc7c03651b54b53f79984667f48609e492fa01af8b4b64c",
+    "external/qnet_network/rtl/ridge/qnet_cordic.v": "20f4d7636af19cc6e96b8a85ae8e4851f6eeb637ad3a2c7cf11708422b1c7efc",
+    "external/qnet_network/rtl/ridge/qnet_layer0_b.hex": "82f78230a2afaa5d9dd9b27fa545c8b747a0e1d6b229bef3f609e345fb3ca367",
+    "external/qnet_network/rtl/ridge/qnet_layer0_w.hex": "9995becb8d148b03f1e96532ec71b296183e52b63b9b4927a6671d3b2f343465",
+    "external/qnet_network/rtl/ridge/qnet_mac.v": "9a6d9b21bbc68007788e5766ffa65f04cf41b4c665af8221c29a07d135b9c59e",
+    "external/qnet_network/rtl/ridge/qnet_tb.v": "52ebf538d94db4d708e428258e4e05531a59bdf95c36abd0f1b1da8eceea50bd",
+    "external/qnet_network/rtl/ridge/vectors_in.hex": "f215ae9696a07dbb89e0a57a0ec03335e28f55af225aeb4b04a6e77502d108c8",
+    "external/qnet_network/rtl/ridge/vectors_out.hex": "3ac1b01331d3ca7b13f801ef9ad0e139fb5b87b6a139fa173d42c76cfb373a5c"
+  }
+}

@@ -1,0 +1,4507 @@
+{
+  "schema_version": "1.0.0",
+  "formalized_at": "2026-09-30",
+  "formalization_status": "post_results_platform_evidence_not_preregistered",
+  "status_semantics": "supported_simulation_only: vale nas plantas simuladas do autor; not_supported: a afirmação do manuscrito não se manteve.",
+  "headline_claim": {
+    "claim_id": "P-REPRO",
+    "text": "Cada modelo roda na planta em que foi treinado, depois de reproduzir os resultados do autor."
+  },
+  "evidence_source": {
+    "table": "docs/results/orion_q_platform_evidence_20260930.csv",
+    "builder": "tools/build_platform_evidence.py",
+    "summaries": "docs/results/orion_q_*_summary.json"
+  },
+  "claims": [
+    {
+      "id": "P-REPRO",
+      "role": "platform_result",
+      "statement": "Antes de pontuar, cada campanha do ORION-Q regenera pela réplica da plataforma os resultados que o autor publicou ou exportou, e nenhum portão falhou.",
+      "status": "supported_simulation_only",
+      "estimand": "Número de portões de reprodução por campanha e quantos falharam.",
+      "evidence": [
+        {
+          "id": "P-REPRO-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E17",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E18",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E19",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E20",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E21",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-REPRO-E22",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/gates_total"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Reproduzir o autor mostra que a integração preserva o modelo, não que a planta representa uma rede real."
+      ],
+      "permitted_language": [
+        "A plataforma reproduz os resultados exportados e publicados pelo autor antes de avaliar em sementes novas."
+      ],
+      "forbidden_language": [
+        "A reprodução valida fisicamente os modelos."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-COMP-LF",
+      "role": "platform_result",
+      "statement": "Em laço fechado com atuador ideal, os compensadores Ridge e MLP ficam abaixo do filtro alfa-beta ressintonizado em QBER média em todas as 20 sementes novas, nos dois pontos de operação.",
+      "status": "supported_simulation_only",
+      "estimand": "QBER média por semente, modelo contra alfa-beta; teste de permutação pareado com Holm.",
+      "evidence": [
+        {
+          "id": "P-COMP-LF-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/comparisons[model_id=qnet.compensation.calibrado.ridge,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/comparisons[model_id=qnet.compensation.calibrado.ridge,baseline=baseline.alpha_beta]/holm_p_value"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.05
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/comparisons[model_id=qnet.compensation.calibrado.ridge,baseline=baseline.alpha_beta]/baseline_to_model_qber_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 3.0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/comparisons[model_id=qnet.compensation.calibrado.mlp,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/comparisons[model_id=qnet.compensation.calibrado.mlp,baseline=baseline.alpha_beta]/holm_p_value"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.05
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/comparisons[model_id=qnet.compensation.calibrado.mlp,baseline=baseline.alpha_beta]/baseline_to_model_qber_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 3.0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/comparisons[model_id=qnet.compensation.desenvolvimento.ridge,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/comparisons[model_id=qnet.compensation.desenvolvimento.ridge,baseline=baseline.alpha_beta]/holm_p_value"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.05
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/comparisons[model_id=qnet.compensation.desenvolvimento.ridge,baseline=baseline.alpha_beta]/baseline_to_model_qber_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 4.5
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/comparisons[model_id=qnet.compensation.desenvolvimento.mlp,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/comparisons[model_id=qnet.compensation.desenvolvimento.mlp,baseline=baseline.alpha_beta]/holm_p_value"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.05
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-LF-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/comparisons[model_id=qnet.compensation.desenvolvimento.mlp,baseline=baseline.alpha_beta]/baseline_to_model_qber_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 4.5
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Atuador ideal; planta do autor; execuções de 20 s."
+      ],
+      "permitted_language": [
+        "O compensador aprendido supera o alfa-beta ressintonizado na planta de treino, com atuador ideal."
+      ],
+      "forbidden_language": [
+        "O compensador funciona com qualquer controlador de polarização."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-COMP-ATU",
+      "role": "platform_result",
+      "statement": "Com o atuador limitado do autor, o compensador aprendido só supera o alfa-beta com dispositivo rápido: perde a 30 rad/s nos dois pontos e vence a partir de 120 rad/s (desenvolvimento) e 250 rad/s (calibrado).",
+      "status": "supported_simulation_only",
+      "estimand": "Veredito do teste bilateral com Holm por ponto e velocidade.",
+      "evidence": [
+        {
+          "id": "P-COMP-ATU-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/comparisons[operating_point=calibrado,slew_rate_rad_per_s=30.0,model_id=qnet.compensation.calibrado.ridge,baseline=baseline.alpha_beta]/verdict"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "alpha_beta_better"
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-ATU-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/comparisons[operating_point=calibrado,slew_rate_rad_per_s=250.0,model_id=qnet.compensation.calibrado.ridge,baseline=baseline.alpha_beta]/verdict"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "learned_better"
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-ATU-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/comparisons[operating_point=desenvolvimento,slew_rate_rad_per_s=30.0,model_id=qnet.compensation.desenvolvimento.ridge,baseline=baseline.alpha_beta]/verdict"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "alpha_beta_better"
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-ATU-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/comparisons[operating_point=desenvolvimento,slew_rate_rad_per_s=250.0,model_id=qnet.compensation.desenvolvimento.ridge,baseline=baseline.alpha_beta]/verdict"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "learned_better"
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-ATU-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/comparisons[operating_point=calibrado,slew_rate_rad_per_s=120.0,model_id=qnet.compensation.calibrado.ridge,baseline=baseline.alpha_beta]/verdict"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "no_significant_difference"
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-ATU-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/comparisons[operating_point=desenvolvimento,slew_rate_rad_per_s=120.0,model_id=qnet.compensation.desenvolvimento.ridge,baseline=baseline.alpha_beta]/verdict"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "learned_better"
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Dispositivo simulado do autor; pesos treinados com atuador ideal."
+      ],
+      "permitted_language": [
+        "O ganho do compensador exige um controlador de polarização de centenas de rad/s."
+      ],
+      "forbidden_language": [
+        "O compensador ganha com qualquer atuador."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-SEGURANCA",
+      "role": "platform_result",
+      "statement": "Um modelo só entra no laço por ativação preparada, revisada, aprovada e lida de volta; o contrato recusa o checkpoint da planta errada; uma falha injetada é contida pelo supervisor, que passa ao filtro clássico após oito saídas inválidas seguidas; a reversão usa o mesmo fluxo; nenhuma campanha ativa política ou executa ação física.",
+      "status": "supported_simulation_only",
+      "estimand": "Leituras do slot de controle, livro do supervisor e marcadores das campanhas.",
+      "evidence": [
+        {
+          "id": "P-SEGURANCA-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/readbacks/inicial/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "NO_LOCAL_ACTIVATION"
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/refusal/refused"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/readbacks/modelo/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "ACTIVE"
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/readbacks/modelo/operator_authenticated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/cycles/falha-injetada/faults"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 8,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/cycles/falha-injetada/degraded_at_s"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 5.014,
+              "absolute_tolerance": 1e-09
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/readbacks/reversao/controller_id"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "baseline.alpha_beta"
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/readbacks/reversao/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "ACTIVE"
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "demo:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/fault_injection/degraded_runs"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/fault_injection/degraded_runs"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_calibrado:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_desenvolvimento:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E17",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "polarisation_actuator:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E18",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E19",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E20",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E21",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E22",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E23",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E24",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E25",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E26",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E27",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E28",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E29",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E30",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E31",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E32",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/policy_activated"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-SEGURANCA-E33",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/physical_action_performed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "A aprovação declara um rótulo de operador; não o autentica.",
+        "Laço simulado; nenhum atuador real."
+      ],
+      "permitted_language": [
+        "A ativação é explícita, auditada e reversível, e o supervisor contém uma falha do modelo."
+      ],
+      "forbidden_language": [
+        "O fluxo autentica o operador.",
+        "O sistema controla hardware."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-COMP-PF",
+      "role": "platform_result",
+      "statement": "Em ponto fixo de 16 bits com CORDIC de 8 estágios (a configuração do RTL), o compensador fica a no máximo 5% do ponto flutuante nos dois pontos de operação e vence o alfa-beta em 20 de 20 sementes; a 12 bits o laço colapsa.",
+      "status": "supported_simulation_only",
+      "estimand": "QBER média por semente, ponto fixo contra ponto flutuante; não inferioridade com margem de 5%, Holm sobre quatro casos.",
+      "evidence": [
+        {
+          "id": "P-COMP-PF-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=calibrado,model=ridge,configuration=16b/CORDIC8]/non_inferior"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=calibrado,model=ridge,configuration=16b/CORDIC8]/beats_alpha_beta_seeds"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=calibrado,model=ridge,configuration=12b/CORDIC16]/fixed_to_float_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 5
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=calibrado,model=mlp,configuration=16b/CORDIC8]/non_inferior"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=calibrado,model=mlp,configuration=16b/CORDIC8]/beats_alpha_beta_seeds"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=calibrado,model=mlp,configuration=12b/CORDIC16]/fixed_to_float_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 5
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=desenvolvimento,model=ridge,configuration=16b/CORDIC8]/non_inferior"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=desenvolvimento,model=ridge,configuration=16b/CORDIC8]/beats_alpha_beta_seeds"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=desenvolvimento,model=ridge,configuration=12b/CORDIC16]/fixed_to_float_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 5
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=desenvolvimento,model=mlp,configuration=16b/CORDIC8]/non_inferior"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=desenvolvimento,model=mlp,configuration=16b/CORDIC8]/beats_alpha_beta_seeds"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-COMP-PF-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "quantisation:/comparisons[operating_point=desenvolvimento,model=mlp,configuration=12b/CORDIC16]/fixed_to_float_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 5
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Referência em ponto fixo do autor, com projeção em SO(3) do ORION-Q; atuador ideal."
+      ],
+      "permitted_language": [
+        "Dezesseis bits bastam nos dois pontos de operação."
+      ],
+      "forbidden_language": [
+        "O compensador foi medido em FPGA."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-BLOC",
+      "role": "platform_result",
+      "statement": "No laço supervisionado do ORION-Q, com o enlace compensado por persistência, o controlador de blocagem do autor entrega de 7,9 a 10,9 vezes a chave do melhor temporizador nos dois pontos de operação, em 20 de 20 sementes, e mais de 90% do seu oráculo.",
+      "status": "supported_simulation_only",
+      "estimand": "Chave média por semente, controlador agrupado contra o melhor temporizador escolhido com retrospectiva; teste unilateral com Holm sobre os dois pontos.",
+      "evidence": [
+        {
+          "id": "P-BLOC-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/supervisor_faults"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=calibrado,controller_id=baseline.persistence,hypothesis=above_best_timer]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=calibrado,controller_id=baseline.persistence,hypothesis=above_best_timer]/seeds_won"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=calibrado,controller_id=baseline.persistence,hypothesis=above_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 8.0
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=calibrado,controller_id=baseline.persistence,hypothesis=above_best_timer]/of_pooled_oracle"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.9
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=desenvolvimento,controller_id=baseline.persistence,hypothesis=above_best_timer]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=desenvolvimento,controller_id=baseline.persistence,hypothesis=above_best_timer]/seeds_won"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=desenvolvimento,controller_id=baseline.persistence,hypothesis=above_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 6.0
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/persistence[point=desenvolvimento,controller_id=baseline.persistence,hypothesis=above_best_timer]/of_pooled_oracle"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.9
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Contabilidade com a cota de chave finita do autor; sem sinalização entre as pontas e sem prova de segurança para blocos não contíguos."
+      ],
+      "permitted_language": [
+        "Num enlace mal compensado, o controlador de blocagem tira chave onde temporizadores longos não tiram nenhuma."
+      ],
+      "forbidden_language": [
+        "O controlador de blocagem é seguro.",
+        "A blocagem aumenta a chave de qualquer enlace."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-BLOC-LF",
+      "role": "platform_result",
+      "statement": "Com os compensadores aprendidos, em que o melhor bloco é a execução inteira, o controlador de blocagem fica a menos de 0,5% do melhor temporizador nos dois pontos (não inferior com margem de 1%); com o alfa-beta, fica cerca de 2% abaixo.",
+      "status": "supported_simulation_only",
+      "estimand": "Chave média por semente, controlador contra 0,99 vez o melhor temporizador; teste unilateral com Holm sobre quatro casos.",
+      "evidence": [
+        {
+          "id": "P-BLOC-LF-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=calibrado,controller_id=qnet.compensation.calibrado.ridge,hypothesis=non_inferior_to_best_timer]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=calibrado,controller_id=qnet.compensation.calibrado.ridge,hypothesis=non_inferior_to_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.995
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=calibrado,controller_id=qnet.compensation.calibrado.mlp,hypothesis=non_inferior_to_best_timer]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=calibrado,controller_id=qnet.compensation.calibrado.mlp,hypothesis=non_inferior_to_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.995
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=desenvolvimento,controller_id=qnet.compensation.desenvolvimento.ridge,hypothesis=non_inferior_to_best_timer]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=desenvolvimento,controller_id=qnet.compensation.desenvolvimento.ridge,hypothesis=non_inferior_to_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.995
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=desenvolvimento,controller_id=qnet.compensation.desenvolvimento.mlp,hypothesis=non_inferior_to_best_timer]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/primary/learned[point=desenvolvimento,controller_id=qnet.compensation.desenvolvimento.mlp,hypothesis=non_inferior_to_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.995
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/secondary/alpha_beta[point=calibrado,controller_id=baseline.alpha_beta,hypothesis=above_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.99
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/secondary/alpha_beta[point=calibrado,controller_id=baseline.alpha_beta,hypothesis=above_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.97
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/secondary/alpha_beta[point=desenvolvimento,controller_id=baseline.alpha_beta,hypothesis=above_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.99
+            }
+          ]
+        },
+        {
+          "id": "P-BLOC-LF-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "blocking:/secondary/alpha_beta[point=desenvolvimento,controller_id=baseline.alpha_beta,hypothesis=above_best_timer]/ratio_to_best_timer"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.97
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Com QBER moderada, o ruído das estimativas custa cerca de 2%."
+      ],
+      "permitted_language": [
+        "Num enlace bem compensado, o controlador custa menos de 0,5% da chave."
+      ],
+      "forbidden_language": [
+        "O controlador nunca perde para um temporizador."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-TAXA-LF",
+      "role": "platform_result",
+      "statement": "Em laço fechado no enlace do autor, o ator de taxa de chave supera o comissionamento de 25 a 65 km em sementes novas.",
+      "status": "supported_simulation_only",
+      "estimand": "Taxa de chave média por episódio, ator contra parâmetros de comissionamento; Holm sobre os vãos.",
+      "evidence": [
+        {
+          "id": "P-TAXA-LF-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=25.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-LF-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=25.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/model_to_baseline_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 1.13
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-LF-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=35.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-LF-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=35.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/model_to_baseline_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 1.13
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-LF-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=50.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-LF-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=50.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/model_to_baseline_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 1.13
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-LF-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=65.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-LF-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=65.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/model_to_baseline_ratio"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 1.13
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Chave provável do modelo decoy-state do autor; não é chave medida."
+      ],
+      "permitted_language": [
+        "O ator eleva a taxa de chave simulada de 13,6% a 20,8% até 65 km."
+      ],
+      "forbidden_language": [
+        "O ator eleva a taxa de chave em qualquer vão."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-TAXA-80",
+      "role": "platform_result",
+      "statement": "O ganho do ator de taxa de chave a 80 km, registrado pelo autor, é significativo em sementes novas.",
+      "status": "not_supported",
+      "estimand": "Mesmo teste a 80 km.",
+      "evidence": [
+        {
+          "id": "P-TAXA-80-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=80.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-TAXA-80-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/keyrate/comparisons[length_km=80.0,model_id=qkd.keyrate.actor,baseline=baseline.static]/holm_p_value"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.05
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Resultado refinado em relação ao manuscrito."
+      ],
+      "permitted_language": [
+        "A 80 km a diferença não é significativa."
+      ],
+      "forbidden_language": [
+        "O ator ganha a 80 km."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-SINC-LF",
+      "role": "platform_result",
+      "statement": "Em laço fechado no laço de porta do autor, o sincronizador Ridge supera o alfa-beta em todas as 160 execuções (8 condições × 20 sementes).",
+      "status": "supported_simulation_only",
+      "estimand": "Taxa de chave por execução, Ridge contra alfa-beta; Holm sobre as 8 condições.",
+      "evidence": [
+        {
+          "id": "P-SINC-LF-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=200.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=200.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=200.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=200.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=350.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=350.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=350.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=350.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=500.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=500.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=500.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=500.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=1000.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=1000.0,dark_count_rate_hz=10.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=1000.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-SINC-LF-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "qkd:/sync/comparisons[gate_width_ps=1000.0,dark_count_rate_hz=1000000.0,model_id=qkd.sync.ridge.1s.h2s,baseline=baseline.alpha_beta]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Só a 50 km; margem de até 5,1%."
+      ],
+      "permitted_language": [
+        "O sincronizador Ridge vence o alfa-beta por margem pequena."
+      ],
+      "forbidden_language": [
+        "O sincronizador Ridge é muito superior ao alfa-beta."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-ALOC-LF",
+      "role": "platform_result",
+      "statement": "Em laço fechado na planta metropolitana com chave finita, o alocador carrega mais tráfego clássico que quântico-primeiro, com chave não inferior, em 20 de 20 sementes e nas duas convenções.",
+      "status": "supported_simulation_only",
+      "estimand": "Frações servidas de chave e tráfego clássico; testes unilaterais com Holm sobre oito hipóteses.",
+      "evidence": [
+        {
+          "id": "P-ALOC-LF-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=classical_superiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=classical_superiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=classical_superiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=classical_superiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=A,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=classical_superiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=classical_superiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.persistence,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=classical_superiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=classical_superiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ALOC-LF-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "allocation:/primary[convention=B,model_id=qnet.allocator.ridge,baseline=baseline.quantum_first,hypothesis=key_non_inferiority]/wins"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 20,
+              "absolute_tolerance": 0
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Chave de bloco finito por período, não prova de segurança."
+      ],
+      "permitted_language": [
+        "O alocador serve 2,4 a 2,6 vezes o tráfego clássico com a mesma chave."
+      ],
+      "forbidden_language": [
+        "O ganho vem da previsão aprendida."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-ROT-LONGO",
+      "role": "platform_result",
+      "statement": "No gêmeo analítico do autor, com prazo quádruplo, o agente de roteamento empata com a heurística gulosa de fidelidade.",
+      "status": "supported_simulation_only",
+      "estimand": "Taxa de sucesso por bloco de 50 episódios; teste bilateral com Holm.",
+      "evidence": [
+        {
+          "id": "P-ROT-LONGO-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/primary[variant=prazo_longo,model_id=qnet.routing.prazo_longo,baseline=greedy_fidelity,metric=success_rate]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-LONGO-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/primary[variant=prazo_longo,model_id=qnet.routing.prazo_longo,baseline=greedy_fidelity,metric=success_rate]/holm_p_value"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.5
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Topologia em cadeia de quatro nós; ambiente analítico do autor.",
+        "No SeQUeNCe, o empate vira desvantagem de 1,3 ponto (P-ROT-SEQ)."
+      ],
+      "permitted_language": [
+        "No gêmeo analítico, no prazo longo, o agente empata com a melhor heurística."
+      ],
+      "forbidden_language": [
+        "O agente supera as heurísticas.",
+        "O agente empata com a heurística no SeQUeNCe."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-ROT-SEQ",
+      "role": "platform_result",
+      "statement": "Com o SeQUeNCe como planta, depois de regenerar as tabelas do autor nesse simulador, o agente de roteamento fica abaixo da heurística gulosa de fidelidade nos dois prazos (19,0% contra 22,9% no nominal; 45,4% contra 46,7% no prazo quádruplo).",
+      "status": "supported_simulation_only",
+      "estimand": "Taxa de sucesso por bloco de 50 episódios no SeQUeNCe; teste bilateral com Holm sobre as duas variantes.",
+      "evidence": [
+        {
+          "id": "P-ROT-SEQ-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/gates_failed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/blocks_won"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 2
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/model_mean"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.18
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/model_mean"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.2
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=prazo_longo,model_id=qnet.routing.prazo_longo,baseline=greedy_fidelity,metric=success_rate]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=prazo_longo,model_id=qnet.routing.prazo_longo,baseline=greedy_fidelity,metric=success_rate]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=prazo_longo,model_id=qnet.routing.prazo_longo,baseline=greedy_fidelity,metric=success_rate]/blocks_won"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 2
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=prazo_longo,model_id=qnet.routing.prazo_longo,baseline=greedy_fidelity,metric=success_rate]/model_mean"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.44
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/primary[variant=prazo_longo,model_id=qnet.routing.prazo_longo,baseline=greedy_fidelity,metric=success_rate]/model_mean"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.46
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/policies[variant=nominal,policy=qnet.routing.nominal]/legality_disagreements"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/policies[variant=nominal,policy=greedy_fidelity]/legality_disagreements"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/policies[variant=prazo_longo,policy=qnet.routing.prazo_longo]/legality_disagreements"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/policies[variant=prazo_longo,policy=greedy_fidelity]/legality_disagreements"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/supervisor/nominal/faults"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-SEQ-E17",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/supervisor/prazo_longo/faults"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "SeQUeNCe com os parâmetros do autor e heralding simples; uma topologia.",
+        "Agente treinado no gêmeo analítico."
+      ],
+      "permitted_language": [
+        "No SeQUeNCe, o agente não supera a heurística em nenhum prazo."
+      ],
+      "forbidden_language": [
+        "O agente empata com a heurística no SeQUeNCe.",
+        "O resultado vale para uma rede real."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-ROT-GEMEO",
+      "role": "platform_result",
+      "statement": "O gêmeo analítico do autor, cobrando 4,1 travessias por tentativa, prevê o SeQUeNCe: nas mesmas 1.000 requisições por prazo, nenhuma das oito taxas de sucesso muda mais de 2 pontos nem de forma significativa.",
+      "status": "supported_simulation_only",
+      "estimand": "Taxa de sucesso por bloco, SeQUeNCe contra gêmeo, mesma política e mesmas requisições; Holm sobre oito.",
+      "evidence": [
+        {
+          "id": "P-ROT-GEMEO-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=qnet.routing.nominal]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=qnet.routing.nominal]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=qnet.routing.nominal]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=greedy_fidelity]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=greedy_fidelity]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=greedy_fidelity]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=shortest_path]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=shortest_path]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=shortest_path]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=threshold_0.90]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=threshold_0.90]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=nominal,policy=threshold_0.90]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=qnet.routing.prazo_longo]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=qnet.routing.prazo_longo]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=qnet.routing.prazo_longo]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=greedy_fidelity]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E17",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=greedy_fidelity]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E18",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=greedy_fidelity]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E19",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=shortest_path]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E20",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=shortest_path]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E21",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=shortest_path]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E22",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=threshold_0.90]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E23",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=threshold_0.90]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.02
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-GEMEO-E24",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing_sequence:/transfer[variant=prazo_longo,policy=threshold_0.90]/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.02
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Uma topologia; parâmetros de hardware do autor."
+      ],
+      "permitted_language": [
+        "Para estas políticas, o gêmeo analítico e o SeQUeNCe dão a mesma taxa de sucesso."
+      ],
+      "forbidden_language": [
+        "O gêmeo substitui o SeQUeNCe em qualquer cenário."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-ROT-NOMINAL",
+      "role": "platform_result",
+      "statement": "No prazo nominal, o agente de roteamento fica abaixo da heurística gulosa de fidelidade.",
+      "status": "supported_simulation_only",
+      "estimand": "Taxa de sucesso por bloco de 50 episódios; teste bilateral com Holm.",
+      "evidence": [
+        {
+          "id": "P-ROT-NOMINAL-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-NOMINAL-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/holm_p_value"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.05
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-NOMINAL-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/model_mean"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.21
+            }
+          ]
+        },
+        {
+          "id": "P-ROT-NOMINAL-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "routing:/primary[variant=nominal,model_id=qnet.routing.nominal,baseline=greedy_fidelity,metric=success_rate]/baseline_mean"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.23
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Resultado refinado: o manuscrito lia a diferença como empate."
+      ],
+      "permitted_language": [
+        "No prazo nominal, o agente fica três pontos abaixo da heurística."
+      ],
+      "forbidden_language": [
+        "O agente empata com a heurística em qualquer prazo."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-DET",
+      "role": "platform_result",
+      "statement": "O detector do autor roda no ORION-Q sem desserializar o pickle, reproduz exatamente as métricas publicadas e, em sessões de fluxos aleatórios novos, marca mais de 80% dos períodos de ataque contra menos de 15% do limiar de QBER.",
+      "status": "supported_simulation_only",
+      "estimand": "Fração dos períodos com evento marcados como ataque, por episódio; teste do sinal com Holm.",
+      "evidence": [
+        {
+          "id": "P-DET-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/reproduction/records/scores.csv/values_checked"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 240,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/reproduction/records/scores.csv/max_absolute_error"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/safe_export/npz_sha256"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "5a7442e906cae5f5c00246a42d3009b68ca60e752fcff34f409486766d1f68fe"
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/safe_export/archive_member_sha256"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "900d4d16e0790fafd10d06281c9619b350889349df0eff78996c408c4cc5a3e1"
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/evaluation[seed=1000]/primary/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/evaluation[seed=1000]/primary/deployed_mean_flagged"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.8
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/evaluation[seed=1000]/primary/threshold_mean_flagged"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.15
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/evaluation[seed=2000]/primary/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/evaluation[seed=2000]/primary/deployed_mean_flagged"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.8
+            }
+          ]
+        },
+        {
+          "id": "P-DET-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector:/evaluation[seed=2000]/primary/threshold_mean_flagged"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0.15
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Sessões do gerador do autor; sem dados de campo rotulados.",
+        "Intercept-and-resend é a classe fraca."
+      ],
+      "permitted_language": [
+        "O detector vê ataques que o alarme de QBER não vê, nas sessões simuladas do autor."
+      ],
+      "forbidden_language": [
+        "O detector garante a segurança do enlace.",
+        "O detector foi validado em campo."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-DET-CAUSAL",
+      "role": "platform_result",
+      "statement": "Com as variáveis calculadas como um monitor em tempo real, sem o período seguinte que a diferença central do autor usa, o detector implantado perde menos de 0,3 ponto percentual dos períodos de ataque marcados, diferença detectável, e continua marcando mais de 80% com F1 macro acima de 0,85.",
+      "status": "supported_simulation_only",
+      "estimand": "Fração dos períodos com evento marcados, variáveis causais contra as do autor; teste do sinal com Holm.",
+      "evidence": [
+        {
+          "id": "P-DET-CAUSAL-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/gate/episodes"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 168,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/gate/free_features_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/gate/last_row_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/primary/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/primary/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/primary/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.003
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/primary/causal_mean_flagged"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.8
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=1000]/features/causal/boosting + limiar + histerese/macro_f1"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.85
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/gate/episodes"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 168,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/gate/free_features_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/gate/last_row_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/primary/significant"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/primary/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "less_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/primary/mean_difference"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": -0.003
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/primary/causal_mean_flagged"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.8
+            }
+          ]
+        },
+        {
+          "id": "P-DET-CAUSAL-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "detector_causal:/evaluation[seed=2000]/features/causal/boosting + limiar + histerese/macro_f1"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0.85
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Modelo treinado com as variáveis antecipadas e não retreinado.",
+        "Sessões do gerador do autor."
+      ],
+      "permitted_language": [
+        "O resultado do detector vale para um monitor em tempo real, com custo de 0,2 ponto."
+      ],
+      "forbidden_language": [
+        "As variáveis do autor não olham para o futuro.",
+        "A antecipação não tem efeito."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-WINDOWS",
+      "role": "platform_result",
+      "statement": "Repetidas no Windows 11 com os arquivos fixados originais, as doze campanhas dão as mesmas conclusões que na nuvem (Linux), e onze delas os mesmos números a 1e-9; a exceção é uma célula do atuador limitado (MLP a 60 rad/s), sensível ao caminho.",
+      "status": "supported_simulation_only",
+      "estimand": "Comparação número a número dos resumos (tools/compare_campaign_summaries.py): leitura estrita a 1e-9 e leitura de conclusões.",
+      "evidence": [
+        {
+          "id": "P-WINDOWS-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/passed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-calibrado]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-calibrado]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-desenvolvimento]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-desenvolvimento]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-actuator]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-actuator]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "different"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-actuator]/differences"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 6,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-quantisation]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-quantisation]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-blocking]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-blocking]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E14",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-demo]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E15",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=polarisation-demo]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E16",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=qkd]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E17",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=qkd]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E18",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=allocation]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E19",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=allocation]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E20",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=routing]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E21",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=routing]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E22",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=routing-sequence]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E23",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=routing-sequence]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E24",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=detector]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E25",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=detector]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E26",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=detector-causal]/conclusions_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-WINDOWS-E27",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "windows:/campaigns[campaign=detector-causal]/status"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": "identical"
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Hashes de CSV gerados e igualdade de bytes de valores simulados variam no último bit entre plataformas e são relatados à parte.",
+        "O Verilog não foi repetido no Windows (sem simulador HDL)."
+      ],
+      "permitted_language": [
+        "As conclusões se reproduzem em outro sistema operacional, com os arquivos originais."
+      ],
+      "forbidden_language": [
+        "Todos os números são idênticos no Windows."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-RTL",
+      "role": "platform_result",
+      "statement": "O Verilog dos dois pacotes do autor é exato ao bit em relação às referências em ponto fixo do autor em todas as palavras conferidas, no domínio de uso.",
+      "status": "supported_simulation_only",
+      "estimand": "Palavras divergentes entre simulação HDL e referência em ponto fixo.",
+      "evidence": [
+        {
+          "id": "P-RTL-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/ridge_author_bench/passed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/mlp_chain/mismatches[0]"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/mlp_chain/mismatches[1]"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E4",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/mlp_chain/mismatches[2]"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E5",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/cordic/vector_domain/mismatches"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E6",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/cordic/vector_edge/mismatches"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E7",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/cordic/rotation/mismatches"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E8",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/qkd_sync/mismatches"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E9",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/qkd_sync/identity/coefficients.hex_identical"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E10",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/qkd_trees/passed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E11",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/qkd_trees/memories_identical/nodes.hex"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E12",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/qkd_trees/memories_identical/trees.hex"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-E13",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/qkd_trees/memories_identical/baseline.hex"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": true
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Simulação funcional e síntese lógica; sem posicionamento, roteamento ou placa."
+      ],
+      "permitted_language": [
+        "O RTL do autor foi simulado e é exato ao bit no domínio de uso."
+      ],
+      "forbidden_language": [
+        "O RTL foi validado em hardware."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    },
+    {
+      "id": "P-RTL-DEFEITOS",
+      "role": "platform_result",
+      "statement": "O testbench do MLP gerado pelo autor não pode passar e o CORDIC diverge da referência no 3º quadrante, fora do domínio usado pelo logaritmo de SO(3).",
+      "status": "supported_simulation_only",
+      "estimand": "Resultado do testbench do autor e divergências do CORDIC por quadrante.",
+      "evidence": [
+        {
+          "id": "P-RTL-DEFEITOS-E1",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/mlp_author_bench/passed"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "equals",
+              "expected": false
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-DEFEITOS-E2",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/cordic/vector_outside_q3/mismatches"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "greater_than",
+              "expected": 0
+            }
+          ]
+        },
+        {
+          "id": "P-RTL-DEFEITOS-E3",
+          "artifact": "docs/results/orion_q_platform_evidence_20260930.csv",
+          "sha256": "e47c2687ae272c92da6d67b9137364b30f07ab257db72ef945af815d81f6bc19",
+          "selector": {
+            "key": "rtl:/compensator/cordic/vector_outside_q4/mismatches"
+          },
+          "assertions": [
+            {
+              "field": "value",
+              "operator": "approx",
+              "expected": 0,
+              "absolute_tolerance": 0
+            }
+          ]
+        }
+      ],
+      "boundaries": [
+        "Defeitos localizados fora do caminho de dados usado."
+      ],
+      "permitted_language": [
+        "Há dois defeitos no RTL gerado, fora do caminho de dados usado."
+      ],
+      "forbidden_language": [
+        "O RTL do autor está errado."
+      ],
+      "product_behavior": {
+        "badge": "SIMULATED",
+        "automation_allowed": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+ "v": 4,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-09-30T05:34:37Z"
+ },
+ "lists": "css",
+ "title": "ORION-Q — Pré-banca",
+ "order": [
+  "capa",
+  "pergunta",
+  "licao",
+  "metodo",
+  "compensador",
+  "qkd",
+  "rede",
+  "detector",
+  "sintese",
+  "plataforma",
+  "portoes",
+  "rtl",
+  "verificacao",
+  "demo",
+  "limites",
+  "conclusao"
+ ],
+ "sections": {
+  "abertura": {
+   "description": "Tema, pergunta e a lição que organiza o trabalho",
+   "start": "capa"
+  },
+  "metodo": {
+   "description": "Como cada controlador é avaliado",
+   "start": "metodo"
+  },
+  "resultados": {
+   "description": "Resultados dos controladores em sementes novas",
+   "start": "compensador"
+  },
+  "plataforma": {
+   "description": "ORION-Q, reprodução, hardware e verificação",
+   "start": "plataforma"
+  },
+  "fechamento": {
+   "description": "Demonstração, limitações e próximos passos",
+   "start": "demo"
+  }
+ },
+ "faces": {
+  "source-serif-4": {
+   "family": "Source Serif 4",
+   "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&display=swap"
+  },
+  "ibm-plex-sans": {
+   "family": "IBM Plex Sans",
+   "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap"
+  }
+ },
+ "designSystems": []
+}

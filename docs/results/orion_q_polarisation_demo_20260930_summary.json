@@ -1,0 +1,59 @@
+{
+  "schema": "orion.polarisation-control-demo.v1",
+  "model": "qnet.compensation.calibrado.ridge",
+  "plant_seed": 2026,
+  "operating_point": "calibrado",
+  "duration_s": 20.0,
+  "cycles": {
+    "baseline": {
+      "controller_id": "baseline.alpha_beta",
+      "mean_qber": 0.0447911410303089,
+      "mean_key_rate_hz": 49123.917575789725,
+      "faults": 0,
+      "degraded_at_s": null
+    },
+    "modelo-ativo": {
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "mean_qber": 0.012254285476973839,
+      "mean_key_rate_hz": 80872.07321828988,
+      "faults": 0,
+      "degraded_at_s": null
+    },
+    "falha-injetada": {
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "mean_qber": 0.03585697818470312,
+      "mean_key_rate_hz": 57460.88214792085,
+      "faults": 8,
+      "degraded_at_s": 5.014
+    },
+    "apos-reversao": {
+      "controller_id": "baseline.alpha_beta",
+      "mean_qber": 0.0447911410303089,
+      "mean_key_rate_hz": 49123.917575789725,
+      "faults": 0,
+      "degraded_at_s": null
+    }
+  },
+  "readbacks": {
+    "inicial": {
+      "status": "NO_LOCAL_ACTIVATION"
+    },
+    "modelo": {
+      "status": "ACTIVE",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "operator_authenticated": false
+    },
+    "reversao": {
+      "status": "ACTIVE",
+      "controller_id": "baseline.alpha_beta",
+      "operator_authenticated": false
+    }
+  },
+  "physical_action_performed": false,
+  "refusal": {
+    "model": "qnet.compensation.desenvolvimento.ridge",
+    "refused": true,
+    "reason": "contract refuses this checkpoint on this plant: checkpoint_regime_differs_from_plant, declared_training_fibre_differs_from_plant"
+  },
+  "evidence_sha256": "652bd502380a279394b400a34fdde403fdd0f21fdea7f06ce38a16e66778f76e"
+}

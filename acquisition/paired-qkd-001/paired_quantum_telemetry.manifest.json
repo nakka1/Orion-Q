@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_id": "paired-qkd-001",
+  "data_provenance": "recorded_hardware",
+  "experimental_campaign": true,
+  "target_provenance": {
+    "qber_ratio": "measured_quantum",
+    "secure_key_rate_bps": "measured_quantum",
+    "bell_fidelity_measured": "not_available"
+  },
+  "synchronization": {
+    "paired_on_same_link_and_clock": true,
+    "timestamp_timezone": "UTC",
+    "clock_source": "REPLACE_ME: NTP/PTP/GPS/instrument clock",
+    "maximum_alignment_error_ms": 1000.0
+  },
+  "fidelity_measurement": {
+    "method": null,
+    "uncertainty_reported": false,
+    "shots_reported": false
+  },
+  "contains_key_material": false,
+  "license": "REPLACE_ME"
+}

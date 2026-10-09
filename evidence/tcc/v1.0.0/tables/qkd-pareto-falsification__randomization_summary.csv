@@ -1,0 +1,3 @@
+model,metric,observed,null_mean,null_standard_deviation,observed_minus_null_mean,null_quantile_95,familywise_critical_value,null_exceedances,randomization_replicates,empirical_p_one_sided,bonferroni_adjusted_p,familywise_alpha,per_test_alpha,hypothesis_family_size,multiple_comparison_correction,familywise_significant
+trihead_pareto_qkd,dominance_pair_accuracy,0.5624716553287982,0.4089242743764172,0.0561112675785752,0.1535473809523809,0.5012495275888132,0.5338813303099017,58,20000,0.0029498525073746,0.0117994100294985,0.05,0.0125,4,Bonferroni,True
+trihead_pareto_qkd,pareto_jaccard,0.2297619047619047,0.2361792857142857,0.0758341855233355,-0.0064173809523809,0.3694444444444444,0.4246031746031745,10128,20000,0.5064246787660617,1.0,0.05,0.0125,4,Bonferroni,False

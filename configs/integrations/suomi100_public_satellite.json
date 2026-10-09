@@ -1,0 +1,60 @@
+{
+  "device_id": "SUOMI100-PUBLIC",
+  "node_id": "SUOMI100-PUBLIC",
+  "name": "Suomi100 · public radio capture",
+  "physical_type": "satellite",
+  "network_role": "intermediate",
+  "institution": "",
+  "manufacturer_model": "proposed simulated device",
+  "category": "Cenário simulado",
+  "description": "Suomi100 public radio telemetry example; no optical payload, no calibrated engineering units or onboard clock. Archived TLE requires renewal before current operational tracking.",
+  "operational_state": "enabled",
+  "technologies": [],
+  "protocols": [
+    "CSP1"
+  ],
+  "capabilities": [
+    "classical_telemetry"
+  ],
+  "location": {},
+  "integration": {
+    "mode": "measurement_file",
+    "adapter": "measurement_file",
+    "interface": "mission_file_v1",
+    "service_address": "https://network.satnogs.org/api/observations/15146588/",
+    "credential_ref": "",
+    "data_origin": "measured"
+  },
+  "optical": {},
+  "configuration": {},
+  "orbit": {
+    "model": "sgp4_tle",
+    "orbital_class": "LEO",
+    "epoch_utc": "2026-10-06T16:19:00.213312Z",
+    "epoch_network_s": 0.0,
+    "source": "Space-Track via SatNOGS observation 15146588",
+    "altitude_km": 500.0,
+    "inclination_deg": 60.0,
+    "reference_latitude": 0.0,
+    "reference_longitude": 0.0,
+    "orbit_phase_rad": 0.0,
+    "eccentricity": 0.0,
+    "raan_deg": 0.0,
+    "argument_perigee_deg": 0.0,
+    "mean_anomaly_deg": 0.0,
+    "compatible_stations": [],
+    "communication_windows": [],
+    "optical_payload": "none_classical_telemetry_only",
+    "tle_line1": "1 43804U 18099AY  26279.67986358  .00009315  00000-0  31628-3 0  9995",
+    "tle_line2": "2 43804  97.4067 339.7642 0008189 238.3418 121.7024 15.30686120430469",
+    "ephemeris_max_age_s": 259200.0,
+    "state_vectors": []
+  },
+  "mission": {
+    "mission_id": "suomi100",
+    "norad_catalog_id": 43804,
+    "decoder_profile": "satnogs-beacon0-dual-crc32c-v1"
+  },
+  "revision": 0,
+  "schema": "orion.communicator.v1"
+}

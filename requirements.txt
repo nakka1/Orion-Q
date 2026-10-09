@@ -1,0 +1,3 @@
+# Compatibility entry point. Canonical dependency metadata lives in
+# pyproject.toml so `pip install -e .` and wheel installs use the same graph.
+-e .[analysis,dev]

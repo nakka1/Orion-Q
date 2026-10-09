@@ -1,0 +1,16 @@
+{
+  "source_campaigns": [
+    "irelandqci-toshiba-controlled-injection",
+    "bristol-hcf-adjacent-switch-did"
+  ],
+  "outcome_families": [
+    "qber",
+    "log1p_secure_key_rate"
+  ],
+  "familywise_alpha": 0.05,
+  "verify_input_manifests": true,
+  "replication_test": "two-study one-sided partial conjunction",
+  "multiplicity_correction": "Holm",
+  "random_effects_magnitude_confirmatory": false,
+  "central_wdm_forecasting_claim_tested": false
+}

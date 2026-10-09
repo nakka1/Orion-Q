@@ -1,0 +1,33 @@
+{
+  "dataset_id": "irelandqci-toshiba-qkd-coexistence-21132088",
+  "campaign_id": "roadm_3dbm_injected_signal_no_added_fibre_full_sweep",
+  "device_id": "not_published",
+  "channel_id": "not_published",
+  "external_signal_present": true,
+  "external_signal_power_dbm": 3.0,
+  "fiber_length_km": 0.0,
+  "voa_attenuation_db": 10.0,
+  "qber_reported": 0.033308,
+  "qber_unit_status": "publisher_scale_ambiguous",
+  "secure_key_rate_bps": 302860.36,
+  "observation_level": "published_cell_mean",
+  "provenance": {
+    "evidence_kind": "measured",
+    "source": "outputs/qkd_coexistence_measured/experimental_cells.csv; doi:10.5281/zenodo.21132088",
+    "timestamp": "2026-08-27T00:00:00+00:00",
+    "git_commit": "",
+    "config_hash": "",
+    "dataset_hash": "afe5d110e8e32694591a6a454b6e5a84410e88b24992a193d31822133a0afe4b",
+    "artifact_hashes": {
+      "campaign_source": "0c145f7d70356a9449301f96fa28328b55b34ff6b27750d2d58f1bf19bbe19b8"
+    },
+    "metadata": {
+      "doi": "10.5281/zenodo.21132088",
+      "aggregation": "mean of the published campaign/fibre/VOA/condition cell"
+    },
+    "schema_version": "1.0.0"
+  },
+  "observation_time_utc": null,
+  "time_basis": "not_published",
+  "schema_version": "1.0.0"
+}

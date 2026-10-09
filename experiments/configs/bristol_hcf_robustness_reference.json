@@ -1,0 +1,7 @@
+{
+  "dataset_doi": "10.5523/bris.61193flfovbn2puknndsr3qm5",
+  "bootstrap_replicates": 50000,
+  "familywise_alpha": 0.05,
+  "seed": 42,
+  "sensitivity_families_are_confirmatory": false
+}

@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0.0",
+  "bundle_version": "1.0.0",
+  "generated_at": "2026-09-03",
+  "requested_source_registry": "docs/thesis/tcc_claim_registry.json",
+  "resolved_source_registry": "evidence/tcc/v1.0.0/generation_registry.json",
+  "source_registry_sha256": "af4296b9f8a72d4873dd2c825d5dbde71258c8b43c074cbb9bbb11a472ad5fbe",
+  "generation_registry_snapshot": {
+    "file": "evidence/tcc/v1.0.0/generation_registry.json",
+    "sha256": "af4296b9f8a72d4873dd2c825d5dbde71258c8b43c074cbb9bbb11a472ad5fbe"
+  },
+  "portable_registry": "docs/thesis/tcc_claim_registry.json",
+  "portable_registry_sha256": "5f7d329d5b70fe80c0d010e1693d9f4521d7ed418feecec926805bdb832d3b39",
+  "derivation": "Exact selector-matched aggregate evidence rows extracted from validated experimental result tables; duplicate rows removed.",
+  "artifacts": [
+    {
+      "source_artifact": "outputs/classical-quantum-pareto/joint_model_comparisons.csv",
+      "source_sha256": "10c7ead9f82c8463ff78ee26721719ca4986e0f2c8beac33db113a0a87c267bd",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/classical-quantum-pareto__joint_model_comparisons.csv",
+      "portable_sha256": "e675c7609193eba9c60257e386ac7a4e3a404c05764735d5af1bc635cca56237",
+      "portable_rows": 2,
+      "evidence_items": [
+        "pareto-front-trained-control",
+        "pareto-trained-permutation-control"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        }
+      ]
+    },
+    {
+      "source_artifact": "outputs/cross-platform-qkd-replication/replication_results.csv",
+      "source_sha256": "cfe30ed0955d5e81e100076e4cd33c2564331a319c45e642745364919f31dba2",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/cross-platform-qkd-replication__replication_results.csv",
+      "portable_sha256": "506412b05e73467d98a33e55a9f3a5e77d54af986594bb17f6d3c6df669673e6",
+      "portable_rows": 2,
+      "evidence_items": [
+        "cross-platform-qber-direction",
+        "cross-platform-skr-direction"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        },
+        {
+          "name": "Bristol HCF measured-QKD coexistence data",
+          "doi": "10.5523/bris.61193flfovbn2puknndsr3qm5",
+          "license": "Non-Commercial Government Licence",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows for academic, research and non-commercial use; review the source licence before any broader redistribution or use."
+        }
+      ]
+    },
+    {
+      "source_artifact": "outputs/qkd-dose-order-falsification/corrected_comparisons.csv",
+      "source_sha256": "3aa059a650573ecd8e09062ca081a54da25de2d7a6ae031b9ff2966e6991392e",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/qkd-dose-order-falsification__corrected_comparisons.csv",
+      "portable_sha256": "a5c1e0700145c2a869061d7bc8ceddebf452729d8cd18bdc5f98fe912df3e427",
+      "portable_rows": 1,
+      "evidence_items": [
+        "pareto-versus-fixed-dose-order"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        }
+      ]
+    },
+    {
+      "source_artifact": "outputs/qkd-hierarchical-robustness/design_audit.csv",
+      "source_sha256": "808bedd9e0bf51da7998c5736bbe11dea60b18734aba7684e6aa08d670e643b5",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/qkd-hierarchical-robustness__design_audit.csv",
+      "portable_sha256": "5a387f9d815060630cf5bcf967f96889946266eb62959801b7f62869a1fa6a19",
+      "portable_rows": 1,
+      "evidence_items": [
+        "ireland-session-alias-audit"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        }
+      ]
+    },
+    {
+      "source_artifact": "outputs/qkd-hierarchical-robustness/hierarchical_primary_intervals.csv",
+      "source_sha256": "73fbf0cf0467b6ac2ce5550dcbfd2ac50df2d2fcaf2ece5e5faf7a3e4e51ca6f",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/qkd-hierarchical-robustness__hierarchical_primary_intervals.csv",
+      "portable_sha256": "b4819d1d9d393c226f928746f1d65febace83b5de702769668d451316b94a9f4",
+      "portable_rows": 2,
+      "evidence_items": [
+        "ireland-hierarchical-qber-block10",
+        "ireland-hierarchical-skr-block10"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        }
+      ]
+    },
+    {
+      "source_artifact": "outputs/qkd-pareto-falsification/power_holdout_comparisons.csv",
+      "source_sha256": "d3d8a9938802d7a5ccd0f90244651c99a72b1fae8d4f06b82a12e1315055b334",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/qkd-pareto-falsification__power_holdout_comparisons.csv",
+      "portable_sha256": "a3fb7698525304e428360b4e6b2f4df8277a3f1d662d0628a241ae09e93a3c3d",
+      "portable_rows": 2,
+      "evidence_items": [
+        "conventional-unseen-log-skr",
+        "pareto-unseen-log-skr"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        }
+      ]
+    },
+    {
+      "source_artifact": "outputs/qkd-pareto-falsification/randomization_summary.csv",
+      "source_sha256": "fe85172587277fa7611a8cb00fb0c0a73e9e58034893bcd899c19017b601688c",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/qkd-pareto-falsification__randomization_summary.csv",
+      "portable_sha256": "435371beb1fdba39d5ac1a6c48b026fcc706eb3b1155b51615e2a84384648bb8",
+      "portable_rows": 2,
+      "evidence_items": [
+        "pareto-front-randomization",
+        "pareto-joint-label-randomization"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        }
+      ]
+    },
+    {
+      "source_artifact": "outputs/qkd_coexistence_measured/primary_matched_contrasts.csv",
+      "source_sha256": "c2efcc1d35d9f5f085d0a487d3317b61b93a6bc1685fd0818432ab75cf6d79fc",
+      "portable_artifact": "evidence/tcc/v1.0.0/tables/qkd_coexistence_measured__primary_matched_contrasts.csv",
+      "portable_sha256": "43c5b6bce86e5ea25ec395785a700fee8b95cf31a928436a93ef2991a5a4c16f",
+      "portable_rows": 2,
+      "evidence_items": [
+        "ireland-qber-effect",
+        "ireland-skr-effect"
+      ],
+      "source_datasets": [
+        {
+          "name": "IrelandQCI/Toshiba measured QKD coexistence data",
+          "doi": "10.5281/zenodo.21132088",
+          "license": "CC-BY-4.0",
+          "attribution_required": true,
+          "reuse_boundary": "Derived aggregate rows with source attribution."
+        }
+      ]
+    }
+  ]
+}

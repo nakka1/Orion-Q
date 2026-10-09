@@ -1,0 +1,496 @@
+{
+  "schema": "orion.routing-closed-loop-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.routing-closed-loop-protocol.v1",
+      "target_id": "routing.repeater.v1",
+      "evidence": "simulated",
+      "mode": "simulation",
+      "variants": {
+        "nominal": {
+          "attempt_cost": 0.01,
+          "deadline_scale": 1.0,
+          "temperature": 1.0
+        },
+        "prazo_longo": {
+          "attempt_cost": 0.0025,
+          "deadline_scale": 4.0,
+          "temperature": 0.0
+        }
+      },
+      "heralding_round_trips": 4.1,
+      "memory_slots": 6,
+      "max_faults": 3,
+      "standby": "greedy_fidelity",
+      "evaluation_seed": 600000,
+      "episodes": 1000,
+      "blocks": 20,
+      "policy_generator": "numpy.random.default_rng(0), one stream over the episodes in order (export convention)",
+      "baselines": [
+        "greedy_fidelity",
+        "shortest_path",
+        "nao_fazer_nada",
+        "random",
+        "threshold_0.90"
+      ],
+      "author_seed_sets": {
+        "training": "1-3000",
+        "validation": "900000-900099",
+        "test": "500000-500399",
+        "attempt_cost_study": "510000-"
+      },
+      "reproduction": {
+        "exported_episodes": "examples/episodes.json of each variant",
+        "held_out": {
+          "nominal": {
+            "seed": 500000,
+            "episodes": 400,
+            "agent_generator": "ActorCriticPolicy(rng=0).rng (evaluate_phase2)"
+          },
+          "prazo_longo": {
+            "seed": 510000,
+            "episodes": 160,
+            "agent_generator": "greedy"
+          }
+        },
+        "tolerance": 1e-12
+      },
+      "primary": "agent vs greedy fidelity, success rate and raw return, per variant (two-sided)",
+      "test": "exact paired sign-flip test over 20 block means of 50 episodes",
+      "multiplicity": "Holm over the 4 primary tests",
+      "alpha": 0.05,
+      "interpretation": "the author's analytic repeater environment; not a deployed network or permission to act"
+    },
+    "protocol_file_sha256": "96095487368bb5ace1bc1f175da8550a3eee72ee52b0bdd3bca0033ee5003c72",
+    "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "expected_archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "source_sha256": {
+      "quantum_autopilot/control_plane/routing_campaign.py": "ea08df42672f0da66e43be7ccee928b2fa42cc62c48aed5d88a7465ef635327e",
+      "quantum_autopilot/control_plane/routing_loop.py": "410c9844cef2b05cfdf95eb88b26d84b8ea5db4bdf4903d9277b59a3322f86f8",
+      "quantum_autopilot/control_plane/comparative_evaluation.py": "4a019cb5c527c67234a4ef896a53701e61ec16ab668277cbfa44eff271097cfd",
+      "quantum_autopilot/model_intake/inference.py": "e8521e49b97abbba59f9a1f986e4af992d54fb9e8c1f7db67cdf0e54e2acfe32",
+      "quantum_autopilot/model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+      "qnet_network/env/network_env.py": "19ffd239217b492ea5ba1ca0078534e8115376035976fc7494d38ad6fa62960d",
+      "qnet_network/env/features.py": "3d9c5574e9d25bd328dff7bc455b9a8b168ff5e03972e1ab7f46e02314fa6ebe",
+      "qnet_network/env/actions.py": "4dd3e898088cefd97b2ec3683ba2caa414d6d7c6eeb439239bac226ce24df9ec",
+      "qnet_network/env/state.py": "46618de8c669282b95f8e2a33d7490ec5fc2b5033be7d203b384f2e4d837b311",
+      "qnet_network/agents/baselines.py": "1cc3fe75817a6a0180217dfe4b8e819ea5603743d8a383cbf6717cb0f032f0b3",
+      "qnet_network/agents/rollout.py": "139f32996ae11edaa2e859a65e805410222601e5381fb9ab1016a01c052732f1"
+    }
+  },
+  "contracts": {
+    "nominal": {
+      "model_id": "qnet.routing.nominal",
+      "status": "admitted",
+      "reasons": [],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3"
+    },
+    "prazo_longo": {
+      "model_id": "qnet.routing.prazo_longo",
+      "status": "admitted",
+      "reasons": [],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3"
+    }
+  },
+  "reproduction": [
+    {
+      "gate": "exported_episodes",
+      "model_id": "qnet.routing.nominal",
+      "episodes": 24,
+      "decisions": 549,
+      "chosen_index_mismatches": 0,
+      "outcome_mismatches": 0,
+      "passed": true
+    },
+    {
+      "gate": "held_out_table",
+      "model_id": "qnet.routing.nominal",
+      "episodes": 400,
+      "seed": 500000,
+      "reproduced": {
+        "qnet.routing.nominal": {
+          "success": 0.2175,
+          "raw_return": -0.39665166089621645
+        },
+        "greedy_fidelity": {
+          "success": 0.24,
+          "raw_return": -0.3684853181013326
+        },
+        "random": {
+          "success": 0.0,
+          "raw_return": -0.6839594784585921
+        },
+        "shortest_path": {
+          "success": 0.24,
+          "raw_return": -0.36864740901487336
+        },
+        "threshold_0.90": {
+          "success": 0.0875,
+          "raw_return": -0.6113845747897847
+        },
+        "threshold_0.94": {
+          "success": 0.075,
+          "raw_return": -0.627325354497986
+        }
+      },
+      "max_absolute_error": 0.0,
+      "passed": true
+    },
+    {
+      "gate": "exported_episodes",
+      "model_id": "qnet.routing.prazo_longo",
+      "episodes": 24,
+      "decisions": 1542,
+      "chosen_index_mismatches": 0,
+      "outcome_mismatches": 0,
+      "passed": true
+    },
+    {
+      "gate": "held_out_table",
+      "model_id": "qnet.routing.prazo_longo",
+      "episodes": 160,
+      "seed": 510000,
+      "reproduced": {
+        "qnet.routing.prazo_longo": {
+          "success": 0.45625,
+          "raw_return": -0.009787261581439017
+        },
+        "nao_fazer_nada": {
+          "success": 0.0,
+          "raw_return": -0.4460814254312864
+        },
+        "random": {
+          "success": 0.0,
+          "raw_return": -0.6402386608117797
+        },
+        "shortest_path": {
+          "success": 0.30625,
+          "raw_return": -0.21312583447625766
+        },
+        "greedy_fidelity": {
+          "success": 0.4625,
+          "raw_return": 0.0019413019862559242
+        }
+      },
+      "max_absolute_error": 5.551115123125783e-17,
+      "passed": true
+    }
+  ],
+  "primary": [
+    {
+      "variant": "nominal",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "greedy_fidelity",
+      "model_mean": 0.204,
+      "baseline_mean": 0.234,
+      "mean_difference": -0.03,
+      "blocks_won": 3,
+      "blocks_lost": 15,
+      "p_value": 0.00238037109375,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 0.009521484375,
+      "significant": true
+    },
+    {
+      "variant": "nominal",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "greedy_fidelity",
+      "model_mean": -0.416046677224428,
+      "baseline_mean": -0.38200878306853264,
+      "mean_difference": -0.034037894155895344,
+      "blocks_won": 5,
+      "blocks_lost": 15,
+      "p_value": 0.0054874420166015625,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 0.016462326049804688,
+      "significant": true
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "greedy_fidelity",
+      "model_mean": 0.451,
+      "baseline_mean": 0.45,
+      "mean_difference": 0.001,
+      "blocks_won": 4,
+      "blocks_lost": 4,
+      "p_value": 1.0,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 1.0,
+      "significant": false
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "greedy_fidelity",
+      "model_mean": -0.022577725146301676,
+      "baseline_mean": -0.02496913096694105,
+      "mean_difference": 0.0023914058206393786,
+      "blocks_won": 11,
+      "blocks_lost": 9,
+      "p_value": 0.5628395080566406,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 1.0,
+      "significant": false
+    }
+  ],
+  "secondary": [
+    {
+      "variant": "nominal",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "shortest_path",
+      "model_mean": 0.204,
+      "baseline_mean": 0.234,
+      "mean_difference": -0.03,
+      "blocks_won": 3,
+      "blocks_lost": 15,
+      "p_value": 0.00238037109375,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "nominal",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "shortest_path",
+      "model_mean": -0.416046677224428,
+      "baseline_mean": -0.3819211467481648,
+      "mean_difference": -0.03412553047626312,
+      "blocks_won": 5,
+      "blocks_lost": 15,
+      "p_value": 0.005664825439453125,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "nominal",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "nao_fazer_nada",
+      "model_mean": 0.204,
+      "baseline_mean": 0.0,
+      "mean_difference": 0.204,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "nominal",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "nao_fazer_nada",
+      "model_mean": -0.416046677224428,
+      "baseline_mean": -0.5081746390105707,
+      "mean_difference": 0.0921279617861427,
+      "blocks_won": 18,
+      "blocks_lost": 2,
+      "p_value": 0.000324249267578125,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "nominal",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "random",
+      "model_mean": 0.204,
+      "baseline_mean": 0.001,
+      "mean_difference": 0.203,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "nominal",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "random",
+      "model_mean": -0.416046677224428,
+      "baseline_mean": -0.686471319677711,
+      "mean_difference": 0.2704246424532831,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "nominal",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "threshold_0.90",
+      "model_mean": 0.204,
+      "baseline_mean": 0.072,
+      "mean_difference": 0.132,
+      "blocks_won": 19,
+      "blocks_lost": 0,
+      "p_value": 3.814697265625e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "nominal",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.nominal",
+      "baseline": "threshold_0.90",
+      "model_mean": -0.416046677224428,
+      "baseline_mean": -0.6345293574714147,
+      "mean_difference": 0.21848268024698683,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "shortest_path",
+      "model_mean": 0.451,
+      "baseline_mean": 0.299,
+      "mean_difference": 0.152,
+      "blocks_won": 19,
+      "blocks_lost": 0,
+      "p_value": 3.814697265625e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "shortest_path",
+      "model_mean": -0.022577725146301676,
+      "baseline_mean": -0.22852510667280107,
+      "mean_difference": 0.2059473815264994,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "nao_fazer_nada",
+      "model_mean": 0.451,
+      "baseline_mean": 0.0,
+      "mean_difference": 0.451,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "nao_fazer_nada",
+      "model_mean": -0.022577725146301676,
+      "baseline_mean": -0.4426564254384066,
+      "mean_difference": 0.4200787002921049,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "random",
+      "model_mean": 0.451,
+      "baseline_mean": 0.009,
+      "mean_difference": 0.442,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "random",
+      "model_mean": -0.022577725146301676,
+      "baseline_mean": -0.6320613123489538,
+      "mean_difference": 0.6094835872026522,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "success_rate",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "threshold_0.90",
+      "model_mean": 0.451,
+      "baseline_mean": 0.226,
+      "mean_difference": 0.225,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    },
+    {
+      "variant": "prazo_longo",
+      "metric": "raw_return",
+      "model_id": "qnet.routing.prazo_longo",
+      "baseline": "threshold_0.90",
+      "model_mean": -0.022577725146301676,
+      "baseline_mean": -0.4339203003540523,
+      "mean_difference": 0.41134257520775064,
+      "blocks_won": 20,
+      "blocks_lost": 0,
+      "p_value": 1.9073486328125e-06,
+      "alternative": "two-sided",
+      "method": "exact paired sign-flip randomization test"
+    }
+  ],
+  "supervisor": {
+    "nominal": {
+      "faults": 0,
+      "degraded_episodes": 0
+    },
+    "prazo_longo": {
+      "faults": 0,
+      "degraded_episodes": 0
+    }
+  },
+  "artifacts": [
+    {
+      "file": "routing-episodes.csv",
+      "sha256": "f1801d0fad8e5f27be816b6c51682c7e46228f20c0a9d092b2a85f9226e7e376"
+    }
+  ],
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "simulator_action_performed": true,
+  "limitations": [
+    "The author's analytic repeater chain (four nodes), checked against SeQUeNCe by the author; not SeQUeNCe itself in the loop.",
+    "One topology and one request pair; contention between concurrent requests not tested.",
+    "Success is binary per episode; blocks of 50 episodes carry the paired test."
+  ]
+}

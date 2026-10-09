@@ -1,0 +1,297 @@
+{
+  "schema": "orion.qkd-closed-loop-protocol.v1",
+  "evidence": "simulated",
+  "mode": "simulation",
+  "plants": "qnet_qkd (vendored author QKD source that produced the pinned modelo_qkd_ml.zip)",
+  "keyrate": {
+    "target_id": "qkd.keyrate.v1",
+    "spans_km": [
+      25.0,
+      35.0,
+      50.0,
+      65.0,
+      80.0
+    ],
+    "periods": 240,
+    "period_s": 1.0,
+    "evaluation_plant_seeds": [
+      950000,
+      950001,
+      950002,
+      950003,
+      950004,
+      950005,
+      950006,
+      950007,
+      950008,
+      950009,
+      950010,
+      950011,
+      950012,
+      950013,
+      950014,
+      950015,
+      950016,
+      950017,
+      950018,
+      950019
+    ],
+    "policy_generator": "numpy.random.default_rng(plant_seed), as in the author's export",
+    "model_id": "qkd.keyrate.actor",
+    "baseline": "baseline.static",
+    "reference": "reference.oracle",
+    "supervisor": {
+      "max_faults": 8
+    },
+    "fault_injection": {
+      "length_km": 50.0,
+      "plant_seed": 950000,
+      "periods": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107
+      ]
+    },
+    "author_seed_sets": {
+      "training": "0-9999",
+      "validation": "700000-",
+      "test": "900000-900047"
+    },
+    "reproduction": {
+      "export_episode": "exemplos/agente_episodio_50km.json",
+      "published_table": {
+        "25": {
+          "baseline.static": [
+            3.18,
+            0.451
+          ],
+          "qkd.keyrate.actor": [
+            3.782,
+            0.506
+          ],
+          "reference.oracle": [
+            3.817,
+            0.584
+          ]
+        },
+        "35": {
+          "baseline.static": [
+            2.732,
+            0.425
+          ],
+          "qkd.keyrate.actor": [
+            3.092,
+            0.397
+          ],
+          "reference.oracle": [
+            3.059,
+            0.417
+          ]
+        },
+        "50": {
+          "baseline.static": [
+            1.899,
+            0.319
+          ],
+          "qkd.keyrate.actor": [
+            2.128,
+            0.312
+          ],
+          "reference.oracle": [
+            2.152,
+            0.353
+          ]
+        },
+        "65": {
+          "baseline.static": [
+            1.038,
+            0.169
+          ],
+          "qkd.keyrate.actor": [
+            1.138,
+            0.213
+          ],
+          "reference.oracle": [
+            1.22,
+            0.244
+          ]
+        },
+        "80": {
+          "baseline.static": [
+            0.489,
+            0.072
+          ],
+          "qkd.keyrate.actor": [
+            0.532,
+            0.113
+          ],
+          "reference.oracle": [
+            0.713,
+            0.107
+          ]
+        }
+      },
+      "published_seeds": [
+        900000,
+        900001,
+        900002,
+        900003,
+        900004,
+        900005,
+        900006,
+        900007,
+        900008,
+        900009,
+        900010,
+        900011,
+        900012,
+        900013,
+        900014,
+        900015,
+        900016,
+        900017,
+        900018,
+        900019,
+        900020,
+        900021,
+        900022,
+        900023
+      ],
+      "tolerance_mbit_s": 0.0005,
+      "policy_generator": "KeyRatePolicy(rng=0).rng per span, as the author's evaluation"
+    },
+    "primary_endpoint": "per-episode mean provable key rate",
+    "hypothesis": "actor key rate higher than static commissioning, per span"
+  },
+  "sync": {
+    "target_id": "qkd.sync.v1",
+    "length_km": 50.0,
+    "duration_s": 3600.0,
+    "gate_widths_ps": [
+      200.0,
+      350.0,
+      500.0,
+      1000.0
+    ],
+    "dark_count_rates_hz": [
+      10.0,
+      1000000.0
+    ],
+    "evaluation_seeds": [
+      600,
+      601,
+      602,
+      603,
+      604,
+      605,
+      606,
+      607,
+      608,
+      609,
+      610,
+      611,
+      612,
+      613,
+      614,
+      615,
+      616,
+      617,
+      618,
+      619
+    ],
+    "trajectory_seed_offset": 10000,
+    "model_id": "qkd.sync.ridge.1s.h2s",
+    "baselines": [
+      "baseline.none",
+      "baseline.periodic_60s",
+      "baseline.alpha_beta"
+    ],
+    "comparator": "baseline.alpha_beta",
+    "warmup": "author's LearnedSync rule: alpha-beta tracker for the first seven updates",
+    "author_seed_sets": {
+      "training": "0-7",
+      "test": "500-511"
+    },
+    "reproduction": {
+      "published_table": {
+        "10": {
+          "200": [
+            0.136,
+            1.001,
+            1.464,
+            1.508
+          ],
+          "500": [
+            0.309,
+            1.631,
+            1.958,
+            1.971
+          ],
+          "1000": [
+            0.53,
+            1.924,
+            2.007,
+            2.007
+          ]
+        },
+        "1000000": {
+          "200": [
+            0.0,
+            0.429,
+            0.948,
+            0.998
+          ],
+          "350": [
+            0.0,
+            0.536,
+            1.064,
+            1.099
+          ],
+          "1000": [
+            0.0,
+            0.128,
+            0.253,
+            0.253
+          ]
+        }
+      },
+      "published_seeds": [
+        500,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507,
+        508,
+        509,
+        510,
+        511
+      ],
+      "column_order": [
+        "baseline.none",
+        "baseline.periodic_60s",
+        "baseline.alpha_beta",
+        "qkd.sync.ridge.1s.h2s"
+      ],
+      "tolerance_mbit_s": 0.0005
+    },
+    "primary_endpoint": "per-run key rate left by the synchroniser",
+    "hypothesis": "ridge key rate higher than the alpha-beta tracker, per gate width and dark rate"
+  },
+  "test": "exact one-sided paired sign-flip test",
+  "multiplicity": "Holm within each family",
+  "alpha": 0.05,
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20261022,
+    "confidence": 0.95
+  },
+  "interpretation": "simulated closed loops on the author's plants; not physical validation or permission to actuate"
+}

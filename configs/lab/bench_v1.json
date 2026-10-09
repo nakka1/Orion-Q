@@ -1,0 +1,92 @@
+{
+  "schema": "orion.lab.configuration.v1",
+  "mode": "emulation",
+  "photon": {
+    "seed": 810,
+    "source_model": "Thorlabs SPDC810N (technical reference only)",
+    "source_transport": "USB",
+    "wavelength_nm": 810.0,
+    "bandwidth_nm": 0.25,
+    "detector_band_nm": [
+      780.0,
+      850.0
+    ],
+    "optical_connector": "FC/PC",
+    "detector_connector": "FC/PC",
+    "pair_rate_hz": 40000.0,
+    "duration_ps": 100000000000,
+    "channels": [
+      1,
+      2
+    ],
+    "trigger_levels_v": [
+      0.35,
+      0.35
+    ],
+    "input_delays_ps": [
+      0,
+      -125
+    ],
+    "physical_delays_ps": [
+      0,
+      125
+    ],
+    "efficiency": [
+      0.7,
+      0.7
+    ],
+    "loss_db": [
+      3.0,
+      3.0
+    ],
+    "background_hz": [
+      200.0,
+      200.0
+    ],
+    "jitter_sigma_ps": [
+      60.0,
+      60.0
+    ],
+    "deadtime_ps": [
+      30000,
+      30000
+    ],
+    "coincidence_window_ps": 500,
+    "histogram_bin_ps": 50,
+    "histogram_radius_ps": 2000,
+    "buffer_capacity": 100000,
+    "pulse_level_v": 0.75,
+    "pulse_width_ps": 2000,
+    "input_impedance_ohm": 50,
+    "conditioning": "amplified analog pulse; TTL converter optional and requires level verification",
+    "clock_domain": "emulator-clock-810",
+    "timestamp_unit": "ps",
+    "clock_epoch_utc": null,
+    "reference_channel": null,
+    "reference_frequency_hz": 10000000.0,
+    "clock_tolerance_ppm": 10.0
+  },
+  "qkd": {
+    "seed": 20261007,
+    "emitted_pulses": 80000,
+    "acquisition_s": 1.0,
+    "channel_loss_db": 3.0,
+    "detector_efficiency": 0.7,
+    "bit_error_probability": 0.01,
+    "parameter_sample_fraction": 0.25,
+    "parameter_estimation_error": 1e-10,
+    "privacy_amplification_error": 1e-10,
+    "verification_bits": 64
+  },
+  "hardware_action_performed": false,
+  "native_replay": {
+    "status": "blocked_missing_event_chunks_sdk_license_and_metadata_normalizer"
+  },
+  "references_only": [
+    "Clavis XGR",
+    "Toshiba MU",
+    "SPDC810N",
+    "Time Tagger Ultra",
+    "Single Quantum SNSPD"
+  ]
+}

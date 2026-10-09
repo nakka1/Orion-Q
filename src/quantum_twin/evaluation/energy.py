@@ -1,0 +1,183 @@
+"""
+quantum_twin/evaluation/energy.py
+=====================================
+
+REAL implementation of the separated six-way energy accounting (master
+audit Section 22: E_total = E_QPU + E_inference + E_memory +
+E_communication + E_optical + E_control) -- migrated here from root
+-level energy_model.py in the ninety-seventh addendum (TCC item 6), the
+twelfth and final large-consumer-count module migrated after the
+eighty-fifth addendum's lazy-loading fix.
+
+Root-level energy_model.py is now the thin re-export (direction
+reversed), kept so its twelve pre-existing consumers
+(run_multi_metric_scorecard.py, risk_aware_controller.py,
+closed_loop_multihop_environment.py, tests/test_energy_break_even_map.py,
+tests/test_energy_model.py, tests/test_multi_metric_scorecard.py,
+tests/test_energy_sensitivity.py, policy_engine.py,
+run_pareto_frontier.py, run_risk_aware_sensitivity.py,
+run_energy_sensitivity_analysis.py, run_energy_analysis.py) continue to
+work completely UNCHANGED.
+
+Original module docstring, preserved from the migrated source:
+
+Master audit Section 22 / master prompt v4 Fase 18: separated energy
+accounting.
+
+    E_total = E_QPU + E_inference + E_memory + E_communication + E_optical
+
+TERMINOLOGY, per master prompt v4 Fase 18's explicit instruction ("Não
+utilizar resultados do modelo energético para afirmar: hardware
+-efficient; energy-efficient; hardware validated. sem medição física.
+Utilizar termos: simulation-based energy estimate; model-based energy
+analysis"): every number this module produces is a simulation-based
+energy estimate (computed by combining measured LATENCIES from this
+project's real benchmarks with explicitly-labeled per-unit energy
+CONSTANTS that are themselves unmeasured order-of-magnitude estimates,
+not a physical power measurement of any kind) -- collectively, this
+module performs model-based energy analysis, not hardware energy
+profiling. This project has NEVER measured energy on real hardware, and
+nothing in this module's output should be read as such. See
+docs/validation_levels.md for the formal RealismLevel/ValidationLevel
+taxonomy this project applies to every result, including this one.
+
+CRITICAL, EXPLICIT DISCLOSURE (per the master audit's own instruction:
+"Se os parâmetros forem estimados, declarar explicitamente que são
+estimativas"): every per-unit energy constant below is an ORDER-OF
+-MAGNITUDE ILLUSTRATIVE ESTIMATE drawn from commonly-cited ranges in the
+literature for the relevant hardware class, NOT a measurement from this
+project's own hardware (there is none -- everything here is simulated) and
+NOT validated against any specific vendor datasheet. Real systems vary by
+1-3 orders of magnitude depending on platform (e.g. superconducting vs.
+trapped-ion vs. photonic qubits; cryogenic cooling overhead, which
+typically DOMINATES total system power for superconducting platforms, is
+explicitly NOT included below -- only per-operation control-pulse energy
+is estimated). These numbers exist to demonstrate the ACCOUNTING STRUCTURE
+the audit asks for, not to make a validated claim about real energy
+consumption.
+
+Default per-unit estimates (all explicitly labeled, all overridable):
+    E_QPU_PER_GATE_J           ~1 uJ   -- superconducting-qubit-class
+                                           control-pulse energy per gate
+                                           (order-of-magnitude only;
+                                           excludes cryostat/cooling power,
+                                           which typically dominates)
+    P_INFERENCE_EDGE_W         ~100 mW -- active-compute power draw for a
+                                           small edge AI accelerator /
+                                           low-power microcontroller
+    P_MEMORY_HOLD_W            ~10 mW  -- power to maintain quantum-memory
+                                           coherence while a pair is stored
+                                           (highly platform-dependent)
+    E_COMMUNICATION_PER_MSG_J  ~1 uJ   -- one short classical control
+                                           message (order-of-magnitude)
+    P_OPTICAL_W                ~20 mW  -- laser/amplifier power during
+                                           active optical transmission
+"""
+
+from dataclasses import dataclass
+
+
+@dataclass
+class EnergyConfig:
+    """All fields are explicit ESTIMATES -- see module docstring."""
+    E_QPU_PER_GATE_J: float = 1.0e-6
+    P_INFERENCE_EDGE_W: float = 0.1
+    P_MEMORY_HOLD_W: float = 0.01
+    E_COMMUNICATION_PER_MSG_J: float = 1.0e-6
+    P_OPTICAL_W: float = 0.02
+    P_CONTROL_EDGE_W: float = 0.1  # same edge device running the admission-decision logic
+    # (threshold comparison / argmin over cost terms) as runs inference --
+    # kept as a SEPARATE field (not silently folded into P_INFERENCE_EDGE_W)
+    # so E_control can be reported as its own line item, per master prompt
+    # v4 Fase 17's explicit five-way split: E_inference/E_QPU/E_memory/
+    # E_communication/E_control.
+
+
+def estimate_energy_breakdown(n_qpu_gates: int, inference_latency_s: float, memory_storage_time_s: float,
+                               n_communication_messages: int, optical_transmission_time_s: float,
+                               energy_cfg: EnergyConfig = None, control_latency_s: float = 0.0) -> dict:
+    """
+    Computes the SIX-way energy breakdown for ONE round (one admission
+    decision + its downstream quantum operation, if any) -- extended in
+    the sixty-seventh addendum (master prompt v4 Fase 17) to separate
+    E_control (the admission-DECISION logic itself: threshold comparison,
+    or RiskAwareController's argmin over cost terms) from E_inference
+    (the model's forward pass) as its own explicit line item, rather than
+    silently folding decision cost into inference cost.
+
+    control_latency_s defaults to 0.0 for full backward compatibility
+    with every pre-existing caller of this function (addenda 24, 39, 43,
+    55, 58, 60, 64) -- passing the fifty-sixth addendum's real measured
+    decision-stage P50 latency (3.863us) here connects this energy model
+    to an ACTUAL measurement rather than a fresh estimate.
+
+    n_qpu_gates: number of quantum gate operations actually executed this
+        round (0 if HALTed -- no QPU operation means no E_QPU cost).
+    inference_latency_s: the CONFIGURED deployment latency (Section 23's
+        fix) -- NOT the raw measured tau_inf, for the same reproducibility
+        reason latency itself must be configured, not measured, when used
+        to drive downstream physical/resource quantities.
+
+    Returns a simulation-based energy estimate (master prompt v4 Fase 18)
+    -- never a hardware measurement. Every value in the returned dict
+    should be read and cited as such.
+    """
+    cfg = energy_cfg or EnergyConfig()
+
+    e_qpu = n_qpu_gates * cfg.E_QPU_PER_GATE_J
+    e_inference = inference_latency_s * cfg.P_INFERENCE_EDGE_W
+    e_memory = memory_storage_time_s * cfg.P_MEMORY_HOLD_W
+    e_communication = n_communication_messages * cfg.E_COMMUNICATION_PER_MSG_J
+    e_optical = optical_transmission_time_s * cfg.P_OPTICAL_W
+    e_control = control_latency_s * cfg.P_CONTROL_EDGE_W
+
+    e_total = e_qpu + e_inference + e_memory + e_communication + e_optical + e_control
+
+    return {
+        "E_QPU_J": e_qpu, "E_inference_J": e_inference, "E_memory_J": e_memory,
+        "E_communication_J": e_communication, "E_optical_J": e_optical, "E_control_J": e_control,
+        "E_total_J": e_total,
+    }
+
+
+def summarize_run_energy(rounds: list, energy_cfg: EnergyConfig = None) -> dict:
+    """
+    Aggregates estimate_energy_breakdown() across many rounds, and
+    reports the delta_E_QPU_avoided / E_inference ratio the master audit
+    explicitly asks for (Section 22: "verificar se o ganho quântico
+    justifica o custo clássico") -- here interpreted as: for every joule
+    spent on classical inference, how many joules of QPU energy were
+    AVOIDED by halting instead of blindly attempting.
+
+    rounds: list of dicts, each with keys matching
+    estimate_energy_breakdown()'s parameters PLUS a boolean halted and
+    blind_would_have_run_gates (the gate count a BLIND policy would have
+    spent on this same round, for computing the avoided-energy delta).
+    """
+    cfg = energy_cfg or EnergyConfig()
+    totals = {"E_QPU_J": 0.0, "E_inference_J": 0.0, "E_memory_J": 0.0,
+              "E_communication_J": 0.0, "E_optical_J": 0.0, "E_total_J": 0.0}
+    e_qpu_avoided_total = 0.0
+
+    for r in rounds:
+        breakdown = estimate_energy_breakdown(
+            n_qpu_gates=r["n_qpu_gates"], inference_latency_s=r["inference_latency_s"],
+            memory_storage_time_s=r["memory_storage_time_s"],
+            n_communication_messages=r["n_communication_messages"],
+            optical_transmission_time_s=r["optical_transmission_time_s"], energy_cfg=cfg,
+        )
+        for key in totals:
+            totals[key] += breakdown[key]
+
+        if r.get("halted", False):
+            avoided_gates = r.get("blind_would_have_run_gates", 0)
+            e_qpu_avoided_total += avoided_gates * cfg.E_QPU_PER_GATE_J
+
+    ratio = (e_qpu_avoided_total / totals["E_inference_J"]) if totals["E_inference_J"] > 0 else float("inf")
+
+    return {
+        **totals,
+        "E_QPU_avoided_J": e_qpu_avoided_total,
+        "delta_E_QPU_avoided_over_E_inference": ratio,
+        "n_rounds": len(rounds),
+    }

@@ -1,0 +1,65 @@
+% sbc-template.sty -- REPLICA APROXIMADA para compilacao local.
+% No Overleaf, prefira o template oficial "SBC Conferences Template":
+% o main.tex usa somente os comandos daquele pacote (\address, \email,
+% \inst, ambientes abstract/resumo), entao a troca e direta.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{sbc-template}[2026/09/28 replica local do template SBC]
+
+\RequirePackage{times}
+\RequirePackage[scaled=0.92]{helvet}
+\RequirePackage[a4paper,top=35mm,bottom=25mm,left=30mm,right=30mm]{geometry}
+\RequirePackage{caption}
+
+% ---------- paragrafos ----------
+\setlength{\parindent}{1.27cm}
+\setlength{\parskip}{6pt}
+\linespread{1.0}
+
+% ---------- secoes (numeracao "1." e "1.1.") ----------
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\@seccntformat}[1]{\csname the#1\endcsname.\hspace{0.5em}}
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+  {-12pt \@plus -2pt \@minus -1pt}{6pt}{\fontsize{13}{15}\selectfont\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+  {-12pt \@plus -2pt \@minus -1pt}{6pt}{\fontsize{12}{14}\selectfont\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
+  {-6pt \@plus -2pt}{3pt}{\normalsize\bfseries}}
+
+% ---------- legendas ----------
+\captionsetup{font={small,sf,bf},labelsep=period,justification=justified,
+  singlelinecheck=true,format=hang,margin=1cm,skip=6pt}
+
+% ---------- titulo, autores, enderecos ----------
+\def\@address{}\def\@email{}
+\newcommand{\address}[1]{\gdef\@address{#1}}
+\newcommand{\email}[1]{\gdef\@email{#1}}
+\newcommand{\inst}[1]{\unskip$^{#1}$}
+\newcommand{\nextinstitute}{\par\vspace{6pt}}
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\fontsize{16}{19}\selectfont\bfseries \@title\par}\vspace{12pt}
+    {\bfseries \@author\par}\vspace{12pt}
+    {\@address\par}\vspace{6pt}
+    {\small\ttfamily \@email\par}
+  \end{center}\vspace{6pt}}
+
+% ---------- abstract / resumo ----------
+\renewenvironment{abstract}{%
+  \list{}{\leftmargin=0.8cm\rightmargin=0.8cm\parsep=6pt\itemindent=0pt}%
+  \item\relax\itshape\textbf{Abstract.}\ \ignorespaces}{\endlist}
+\newenvironment{resumo}{%
+  \list{}{\leftmargin=0.8cm\rightmargin=0.8cm\parsep=6pt\itemindent=0pt}%
+  \item\relax\itshape\textbf{Resumo.}\ \ignorespaces}{\endlist}
+
+% ---------- referencias sem rotulo, com recuo pendente ----------
+\renewenvironment{thebibliography}[1]{%
+  \section*{\refname}%
+  \list{}{\leftmargin=0.5cm\itemindent=-0.5cm\labelwidth=0pt\labelsep=0pt
+          \itemsep=6pt\parsep=0pt}%
+  \def\@biblabel##1{}%
+  \sloppy\clubpenalty4000\widowpenalty4000\sfcode`\.\@m}
+  {\endlist}
+
+\pagestyle{empty}
+\endinput

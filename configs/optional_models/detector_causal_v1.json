@@ -1,0 +1,30 @@
+{
+  "schema": "orion.detector-causal-protocol.v1",
+  "model_id": "qkd.detector.boosting",
+  "evidence": "simulated",
+  "mode": "offline_monitoring",
+  "question": "the author's temperature rate is a central difference (one period of lookahead in temperature_rate and error_temperature_correlation); a real-time monitor computes each period's features from the log up to that period",
+  "causal_features": "qnet_qkd.qkd.detection._episode_features on frame[:t + 1], last row, for every period t",
+  "datasets": {
+    "seeds": [
+      1000,
+      2000
+    ],
+    "episodes_per_class": 24,
+    "source": "the detector campaign v1 (configs/optional_models/detector_evaluation_v1.json)"
+  },
+  "gate": "the 15 lookahead-free features bitwise equal to the author's; the last period of every episode equal in all 17",
+  "deployed": "boosting + limiar + histerese",
+  "baseline": "limiar de QBER",
+  "primary": "per episode with an event (trainable classes): share of event-active periods flagged by the deployed detector, causal features against the author's",
+  "test": "exact two-sided sign test over episodes (ties dropped)",
+  "multiplicity": "Holm over the two datasets",
+  "alpha": 0.05,
+  "bootstrap": {
+    "resamples": 2000,
+    "seed": 20261022,
+    "confidence": 0.95,
+    "unit": "episode"
+  },
+  "interpretation": "simulated sessions of the author's plant; a monitor, never acting on alarms"
+}

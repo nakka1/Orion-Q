@@ -1,0 +1,66 @@
+{
+  "schema": "orion.technology-sources.v1",
+  "retrieved_at": "2026-10-06",
+  "sources": {
+    "briegel1998": {
+      "year": "1998",
+      "url": "https://doi.org/10.1103/PhysRevLett.81.5932",
+      "scope": "repeaters/purification architecture; experiment not claimed"
+    },
+    "bennett1996": {
+      "year": "1996",
+      "url": "https://arxiv.org/abs/quant-ph/9511027",
+      "scope": "BBPSSW recurrence in Werner approximation"
+    },
+    "sns2018": {
+      "year": "2018",
+      "url": "https://arxiv.org/abs/1805.09222",
+      "scope": "SNS architecture; current reduced model not a finite-key proof"
+    },
+    "memory2024": {
+      "year": "2024",
+      "url": "https://www.nature.com/articles/s41586-024-07252-z",
+      "scope": "experimental urban memory nodes; demonstration parameters are independent assumptions"
+    },
+    "detector2013": {
+      "year": "2013",
+      "url": "https://www.nature.com/articles/nphoton.2013.13",
+      "scope": "experimental SNSPD; no single device realizes every demonstration parameter"
+    },
+    "micius2017": {
+      "year": "2017",
+      "url": "https://arxiv.org/abs/1707.01339",
+      "scope": "experimental entanglement distribution; hypothetical ORION orbit distinct"
+    },
+    "engineering_assumptions_v1": {
+      "year": "2026",
+      "url": "docs/product/orion_q_modular_quantum_protocols.md",
+      "scope": "explicit assumptions; not measured performance"
+    },
+    "satellite_ogs_v2": {
+      "year": "2026",
+      "url": "docs/product/orion_q_satellite_ogs_v2.md",
+      "scope": "OGS contracts, detector events, optical parameters, approximations and external qualification gates"
+    },
+    "vallado2006": {
+      "year": "2006",
+      "url": "https://celestrak.org/publications/AIAA/2006-6753/",
+      "scope": "SGP4 reference vectors; TEME to approximate ECEF, not mission tracking qualification"
+    },
+    "tomamichel2017": {
+      "year": "2017",
+      "url": "https://arxiv.org/abs/1506.08458",
+      "scope": "finite random sampling and QKD processing; conditional ORION model is not a reviewed composable implementation"
+    },
+    "han2018": {
+      "year": "2018",
+      "url": "https://arxiv.org/abs/1912.06317",
+      "scope": "point-ahead convention received beacon to outgoing aim, transverse velocity rather than radial Doppler"
+    },
+    "marulanda_ao2024": {
+      "year": "2024",
+      "url": "https://arxiv.org/abs/2111.06747",
+      "scope": "atmosphere and adaptive optics; constant-Cn2 Strehl approximation is explicitly reduced"
+    }
+  }
+}

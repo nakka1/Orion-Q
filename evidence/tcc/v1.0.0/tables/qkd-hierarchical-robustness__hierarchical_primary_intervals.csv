@@ -1,0 +1,3 @@
+target,target_unit,contrast,block_length,matched_strata,raw_readings,point_mean_degradation,bootstrap_mean_degradation,ci_low,ci_high,familywise_alpha,family_size,multiple_comparison_correction,interval_scope,positive_conditional_interval
+qber_reported,publisher-reported QBER scale (ratio or % ambiguous),average_injected_signal_vs_baseline,10,16,3893,0.0132042962916849,0.0132517515963777,0.000966122944136,0.0368177305621963,0.05,2,Bonferroni,conditional on the ten published sweep sessions,True
+log1p_secure_key_rate,log1p(bit/s),average_injected_signal_vs_baseline,10,16,3893,0.360127687000977,0.3606382045051929,0.0758569842536121,0.7333413918831739,0.05,2,Bonferroni,conditional on the ten published sweep sessions,True

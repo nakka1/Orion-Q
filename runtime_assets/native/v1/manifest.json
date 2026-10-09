@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "purpose": "Pinned runtime resources for the native sandbox; no new scientific experiment.",
+  "files": [
+    {
+      "source": "edge_lstm_dual_head_uniform_v1.wdmbundle.npz",
+      "destination": "outputs/wdm_model_bundle_v527/edge_lstm_dual_head_uniform_v1.wdmbundle.npz",
+      "sha256": "8ee7cd1df3b028c8ffe3f6be2b7ac44e819ef02870becfea7125cfceec7c9523",
+      "evidence_kind": "simulated_quantum_target"
+    },
+    {
+      "source": "experimental_cells.csv",
+      "destination": "outputs/qkd_coexistence_measured/experimental_cells.csv",
+      "sha256": "afe5d110e8e32694591a6a454b6e5a84410e88b24992a193d31822133a0afe4b",
+      "evidence_kind": "published_measured_qkd_cell_aggregates",
+      "provenance": "See configs/qkd_assurance and the hash-bound TCC evidence registry."
+    }
+  ]
+}

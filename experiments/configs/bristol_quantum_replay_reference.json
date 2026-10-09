@@ -1,0 +1,21 @@
+{
+  "dataset_source": "University of Bristol public multivendor NDFF repository",
+  "dataset_license": "academic research and non-commercial use",
+  "status": "exploratory hybrid replay",
+  "target": "Bell-state fidelity simulated by QuantumChannel.simulate_fidelity",
+  "horizons": [1, 4],
+  "models": ["ridge", "edge_lstm", "edge_gru", "edge_tcn"],
+  "seeds": [42],
+  "window_size": 20,
+  "folds": 2,
+  "min_train_fraction": 0.5,
+  "alignment_tolerance_seconds": 1200,
+  "bootstrap_replicates": 20000,
+  "bootstrap_block_length": 16,
+  "familywise_alpha": 0.05,
+  "aer_grid_points": 257,
+  "hidden_size": 8,
+  "max_epochs": 12,
+  "batch_size": 512,
+  "early_stopping_patience": 4
+}

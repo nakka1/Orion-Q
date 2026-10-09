@@ -1,0 +1,22 @@
+{
+  "schema": "orion.compensation-campaign-protocol.v1",
+  "evidence": "simulated",
+  "batches": 32,
+  "samples_per_batch": 16,
+  "period_s": 0.002,
+  "horizon_s": 0.04,
+  "seeds": [100, 101, 102, 103, 104, 105, 106, 107, 108, 109],
+  "scenarios": ["smooth", "rotation_noise", "thermal_reversal", "rotation_step", "packet_loss", "late_result"],
+  "model_ids": ["qnet.compensation.calibrado.ridge", "qnet.compensation.calibrado.mlp", "qnet.compensation.desenvolvimento.ridge", "qnet.compensation.desenvolvimento.mlp"],
+  "baselines": ["persistence", "constant_velocity"],
+  "noise_axis_std_rad": 0.002,
+  "step_rad": 0.02,
+  "transition_sample": 256,
+  "missing_batches": [10, 11, 20, 24],
+  "late_result_modulus": 4,
+  "late_result_remainder": 1,
+  "min_relative_mean_angle_reduction": 0.05,
+  "min_seed_wins": 8,
+  "min_target_coverage": 0.9,
+  "interpretation": "descriptive engineering filters; not significance, physical domain certification or activation authority"
+}

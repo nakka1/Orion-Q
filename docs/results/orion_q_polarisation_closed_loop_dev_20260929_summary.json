@@ -1,0 +1,915 @@
+{
+  "schema": "orion.polarisation-closed-loop-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.polarisation-closed-loop-protocol.v1.desenvolvimento",
+      "target_id": "polarisation.compensation.v1",
+      "evidence": "simulated",
+      "mode": "simulation",
+      "operating_point": "desenvolvimento",
+      "duration_s": 20.0,
+      "sample_interval_s": 0.001,
+      "control_period_s": 0.002,
+      "latency_s": 0.04,
+      "monitoring_photons_per_basis": 400,
+      "detector_efficiency": 0.85,
+      "sifted_rate_hz": 100000.0,
+      "evaluation_plant_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019
+      ],
+      "monitoring_seed_offset": 6000,
+      "learned_model_ids": [
+        "qnet.compensation.desenvolvimento.ridge",
+        "qnet.compensation.desenvolvimento.mlp"
+      ],
+      "contract_probe_model_ids": [
+        "qnet.compensation.calibrado.ridge",
+        "qnet.compensation.calibrado.mlp"
+      ],
+      "baselines": [
+        "baseline.none",
+        "baseline.persistence",
+        "baseline.alpha_beta"
+      ],
+      "alpha_beta_grid": {
+        "alpha": [
+          0.005,
+          0.01,
+          0.02,
+          0.03,
+          0.05,
+          0.1,
+          0.2,
+          0.35,
+          0.5,
+          0.7,
+          1.0
+        ],
+        "beta": [
+          0.0,
+          0.0005,
+          0.001,
+          0.002,
+          0.005,
+          0.02,
+          0.05,
+          0.1
+        ]
+      },
+      "tuning_plant_seeds": [
+        100,
+        101,
+        102,
+        103
+      ],
+      "tuning_monitoring_seeds": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "tuning_duration_s": 10.0,
+      "supervisor": {
+        "max_command_step_rad": 1.5707963267948966,
+        "max_consecutive_faults": 8,
+        "rotation_tolerance": 1e-07
+      },
+      "fallback": "baseline.alpha_beta",
+      "reproduction": {
+        "plant_seeds": [
+          500,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507
+        ],
+        "monitoring_seeds": [
+          7000,
+          7001,
+          7002,
+          7003,
+          7004,
+          7005,
+          7006,
+          7007
+        ],
+        "tolerance": 1e-09,
+        "reference": "held_out_mean_qber.estimate in each checkpoint's metadata"
+      },
+      "fault_injection": {
+        "model_id": "qnet.compensation.desenvolvimento.ridge",
+        "start_step": 2500,
+        "steps": 50
+      },
+      "primary_endpoint": "per-seed mean QBER over the whole run",
+      "test": "exact one-sided paired sign-flip test, H1: learned mean QBER lower than baseline",
+      "multiplicity": "Holm over the six learned-versus-baseline comparisons",
+      "alpha": 0.05,
+      "bootstrap": {
+        "resamples": 10000,
+        "seed": 20261022,
+        "confidence": 0.95
+      },
+      "interpretation": "simulated closed loop with an ideal actuator; not physical validation or permission to actuate"
+    },
+    "protocol_file_sha256": "419029f0e6cc43296405e1ecb8eec03e78bf11224ae3077928bbd71e34c901e2",
+    "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+    "expected_archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+    "source_sha256": {
+      "control_plane/polarisation_campaign.py": "2f561546d17ae89d06c940bb8b7203ab33e1ceb88183e1d4af7d7be5fa7efe37",
+      "control_plane/polarisation_loop.py": "bffe5034b0680e55d647432852c1fb0f3a52eb972dc3a0774df4daff871b27bf",
+      "control_plane/polarisation_plant.py": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+      "control_plane/comparative_evaluation.py": "4a019cb5c527c67234a4ef896a53701e61ec16ab668277cbfa44eff271097cfd",
+      "model_intake/compensation.py": "91ac7e614fa6941c57fd4f2015bb062cf9e945f3c7d5b9eb0ad9b9b33f0d0e05",
+      "model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+      "model_intake/catalog.py": "f333031b92cfa26312d92922710409076fe411b7b4e7668e33dae98c5c603369",
+      "model_intake/inference.py": "e8521e49b97abbba59f9a1f986e4af992d54fb9e8c1f7db67cdf0e54e2acfe32",
+      "model_intake/sync_session.py": "644cf4302ecfb8d7a1d62ae4f6d86ed91c66e2b70be87062d29489a68c94bcd4"
+    }
+  },
+  "contracts": [
+    {
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "operating_point": "desenvolvimento",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "operating_point": "desenvolvimento",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "operating_point": "desenvolvimento",
+      "status": "REFUSED",
+      "reasons": [
+        "checkpoint_regime_differs_from_plant",
+        "declared_training_fibre_differs_from_plant"
+      ],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "operating_point": "desenvolvimento",
+      "status": "REFUSED",
+      "reasons": [
+        "checkpoint_regime_differs_from_plant",
+        "declared_training_fibre_differs_from_plant"
+      ],
+      "archive_sha256": "4b8a18f1c55b5c98fa9d0460c78b9721d5d98dc08056ae1d525c0a79467b81b1",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      }
+    }
+  ],
+  "reproduction": [
+    {
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "declared_mean_qber": 0.0077386381942114,
+      "reproduced_mean_qber": 0.007738638194211411,
+      "absolute_difference": 1.0408340855860843e-17,
+      "passed": true
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "declared_mean_qber": 0.0073564991216088,
+      "reproduced_mean_qber": 0.007356499121608856,
+      "absolute_difference": 5.551115123125783e-17,
+      "passed": true
+    }
+  ],
+  "alpha_beta": {
+    "alpha": 0.03,
+    "beta": 0.005,
+    "mean_qber": 0.0375058382561925
+  },
+  "controllers": {
+    "qnet.compensation.desenvolvimento.ridge": {
+      "mean_qber": 0.007612920696349887,
+      "ci95": [
+        0.007325630444900623,
+        0.00788282846652483
+      ],
+      "min": 0.006086611594228742,
+      "max": 0.008636526277632502
+    },
+    "qnet.compensation.desenvolvimento.mlp": {
+      "mean_qber": 0.007220517693620397,
+      "ci95": [
+        0.006933585190446056,
+        0.007501034413209806
+      ],
+      "min": 0.005711098946293074,
+      "max": 0.008373677061944309
+    },
+    "baseline.none": {
+      "mean_qber": 0.19573639596883688,
+      "ci95": [
+        0.14840990008713298,
+        0.24761956235297364
+      ],
+      "min": 0.06036716210211006,
+      "max": 0.4424506344655143
+    },
+    "baseline.persistence": {
+      "mean_qber": 0.12813710812232165,
+      "ci95": [
+        0.12539974971161988,
+        0.13060705035189213
+      ],
+      "min": 0.11246406309784557,
+      "max": 0.13803863792389415
+    },
+    "baseline.alpha_beta": {
+      "mean_qber": 0.03613358559724617,
+      "ci95": [
+        0.03535549624968194,
+        0.03688476396264726
+      ],
+      "min": 0.0319565254671806,
+      "max": 0.03875275316857542
+    }
+  },
+  "comparisons": [
+    {
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "baseline": "baseline.none",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 25.71107775530687,
+      "ratio_ci95": [
+        19.4418688520232,
+        32.75930716024646
+      ],
+      "mean_qber_reduction": 0.188123475272487,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "baseline": "baseline.persistence",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 16.83153066125576,
+      "ratio_ci95": [
+        16.03672838103588,
+        17.636749876204924
+      ],
+      "mean_qber_reduction": 0.12052418742597175,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "baseline": "baseline.alpha_beta",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 4.746349927770939,
+      "ratio_ci95": [
+        4.531164624482239,
+        4.9632710114956575
+      ],
+      "mean_qber_reduction": 0.028520664900896286,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "baseline": "baseline.none",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 27.108360407700054,
+      "ratio_ci95": [
+        20.690928186873098,
+        34.503855223680404
+      ],
+      "mean_qber_reduction": 0.18851587827521651,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "baseline": "baseline.persistence",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 17.74624944628772,
+      "ratio_ci95": [
+        16.923036402171494,
+        18.59491784178421
+      ],
+      "mean_qber_reduction": 0.12091659042870125,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "baseline": "baseline.alpha_beta",
+      "wins": 20,
+      "ties": 0,
+      "n_seeds": 20,
+      "baseline_to_model_qber_ratio": 5.004292923369134,
+      "ratio_ci95": [
+        4.778163103098727,
+        5.241711438559456
+      ],
+      "mean_qber_reduction": 0.028913067903625772,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 5.7220458984375e-06,
+      "significant": true
+    }
+  ],
+  "secondary": {
+    "qnet.compensation.desenvolvimento.ridge": {
+      "p95_qber": 0.02026330209660928,
+      "uptime": 0.99834,
+      "mean_key_rate_hz": 87332.61311796776,
+      "mean_residual_mrad": 192.51020058835942
+    },
+    "qnet.compensation.desenvolvimento.mlp": {
+      "p95_qber": 0.019381985185298857,
+      "uptime": 0.9983899999999999,
+      "mean_key_rate_hz": 87884.95874613908,
+      "mean_residual_mrad": 187.00159062039745
+    },
+    "baseline.none": {
+      "p95_qber": 0.4416311521353487,
+      "uptime": 0.47120750000000006,
+      "mean_key_rate_hz": 19929.437923124588,
+      "mean_residual_mrad": 1066.1216558155882
+    },
+    "baseline.persistence": {
+      "p95_qber": 0.3185602878231833,
+      "uptime": 0.52008,
+      "mean_key_rate_hz": 18262.92005266515,
+      "mean_residual_mrad": 859.9821303242898
+    },
+    "baseline.alpha_beta": {
+      "p95_qber": 0.09424497967312952,
+      "uptime": 0.9716775,
+      "mean_key_rate_hz": 56006.51303447776,
+      "mean_residual_mrad": 436.5930341314044
+    }
+  },
+  "supervisor": {
+    "rate_limited": 3,
+    "faults": 0,
+    "degraded_runs": 0,
+    "commands": 1000000
+  },
+  "fault_injection": {
+    "runs": 20,
+    "degraded_runs": 20,
+    "degraded_at_s": [
+      5.014
+    ],
+    "mean_qber": 0.029175887418028967
+  },
+  "runs": 120,
+  "artifacts": [
+    {
+      "file": "1000-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "c846ba9a8cc4fe9ab43a121192c772672dcc1043cfb882dfe70a8d5f719af6fb"
+    },
+    {
+      "file": "1000-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "1fefa3e0d0032856851df1f585d313b09996f8e3c85982748fa71ce2241f5cce"
+    },
+    {
+      "file": "1000-baseline.none.json",
+      "sha256": "f4181cd603bc687ab531ccfab8fcc6da1de2c366df057faa0cf40f53dfabec29"
+    },
+    {
+      "file": "1000-baseline.persistence.json",
+      "sha256": "1a01bc4b8c5e5d7e59e1f964fffa444ebc1ecfb3ed419a5f6e7e72d2cb79df50"
+    },
+    {
+      "file": "1000-baseline.alpha_beta.json",
+      "sha256": "dd56600da17db196b5379af3472baac5bd2145d1eb6ae462be51b203edee28db"
+    },
+    {
+      "file": "1000-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "daf6091b6a5e2b1ba5fa5ab51eb7f30de79c4836fb1f0deb775e21576afa7ec7"
+    },
+    {
+      "file": "1001-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "09f792ca8ad3783a4328b03bc08cd3bdf66578319d4b648939a2ecc607d4cf1c"
+    },
+    {
+      "file": "1001-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "72df71ce6989e3b8e347c7d89da78ed6e31d8f63848fe8d4dc3c1b2f1804baf5"
+    },
+    {
+      "file": "1001-baseline.none.json",
+      "sha256": "15458c97d662991c166a9d69135a65008eec6ffa488a7d80d61ffcfbd943524f"
+    },
+    {
+      "file": "1001-baseline.persistence.json",
+      "sha256": "d4657b309fe2f8ac4aa8b89204a82e54aee1338af22b0fcfb9d588453cf29cff"
+    },
+    {
+      "file": "1001-baseline.alpha_beta.json",
+      "sha256": "512e680f40ea52c923d2440e38f931a884ca50e3d2f5b1fdb37349c8111f06e4"
+    },
+    {
+      "file": "1001-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "b9c9abd639ef860bcbc3317660d2966c1d2b9cc5d602439eb12330c9d93169b0"
+    },
+    {
+      "file": "1002-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "a2ef319b25b228cadf062e1d309afba028b08890f263c99e233040f254103dee"
+    },
+    {
+      "file": "1002-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "871569e5edd28efbeb32ef685a9d56809038e46955fdbdead8d7bbc7ce1b798c"
+    },
+    {
+      "file": "1002-baseline.none.json",
+      "sha256": "cc42cd6efab60946a908889ba9f42d5e38468de0cb75b77b274ca043d9e3b959"
+    },
+    {
+      "file": "1002-baseline.persistence.json",
+      "sha256": "b2b1e7bdbe815613c0101e6d677989dd142386c38dc5b5a6196642f2386c5e49"
+    },
+    {
+      "file": "1002-baseline.alpha_beta.json",
+      "sha256": "a91ffed38da6783cfd8765747b6928508f5d234504e0a74fffcb3fa0b98d60c9"
+    },
+    {
+      "file": "1002-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "9fec0e7e0129305692a7e88903697f96c51be464e167aa139df3fe75d9b4c738"
+    },
+    {
+      "file": "1003-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "d810c4c16f4d0fa75ab22074b70d57dad8cc84e84bd79feecbed975434301cd8"
+    },
+    {
+      "file": "1003-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "de13f2631847ec99e5885dc435d6e40ac01d1f52a36b96ea63e5a8f69710250d"
+    },
+    {
+      "file": "1003-baseline.none.json",
+      "sha256": "00411ed12075d09546cf931c4ac6204080f75ade9605f3ed050b8001fcc75465"
+    },
+    {
+      "file": "1003-baseline.persistence.json",
+      "sha256": "6725f607b1eafb00d263b20a629fd56492e2c6d5a319411f8adffb3652a67588"
+    },
+    {
+      "file": "1003-baseline.alpha_beta.json",
+      "sha256": "63d2a2f57d29c206224f5f8102f930453c2ae4257b86dc1eb0ad3d0113e5ec2a"
+    },
+    {
+      "file": "1003-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "2067be81f7a40a7d7d37bc03e4e2baf7d01c57ce23735cd659a94cd04b1814c6"
+    },
+    {
+      "file": "1004-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "943766fe4e020227756f85abc27536d8390aa2d63dae4759f4a093e811100fd7"
+    },
+    {
+      "file": "1004-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "b524adc29b1d19b91f4afd995583706d2ca22363ac9185e932a3feeaae917605"
+    },
+    {
+      "file": "1004-baseline.none.json",
+      "sha256": "fee1f18d3194be59ce4e4b613da1c9fae97840175f16318c749ddd35a786f3c7"
+    },
+    {
+      "file": "1004-baseline.persistence.json",
+      "sha256": "be924ce47c3c360c1ded41be1eda3cd8fdf0b5b36f27421a62e8fb13c7ce6da8"
+    },
+    {
+      "file": "1004-baseline.alpha_beta.json",
+      "sha256": "5bfa08ab86bf3e601264c230b2869521b3ce10bd1185a8b4dc729f9aa571b162"
+    },
+    {
+      "file": "1004-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "ea7b2b9968df690f9e023c6a63ce98c1089f4741f4b6bac906317fe3ca2e0928"
+    },
+    {
+      "file": "1005-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "796a4ceaf06f99b4a290ef07bb92396d53d58816d74b7673dc3e0d20b53c50aa"
+    },
+    {
+      "file": "1005-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "6a41d4237009f73c27e83441c480e808f55583b14af9dd37731821e8e964906a"
+    },
+    {
+      "file": "1005-baseline.none.json",
+      "sha256": "851de1257ab18a5e32311a36a1063f8a0c9d89cd6310fbc6c2cfaeb62159875c"
+    },
+    {
+      "file": "1005-baseline.persistence.json",
+      "sha256": "9cbe97309c195d16d5283334f06f3ee85b695432821f90d5b20c7469097cec52"
+    },
+    {
+      "file": "1005-baseline.alpha_beta.json",
+      "sha256": "db28ceec96b94e3660bbc993ad4168b496dffc7d21e7a3b365dfcedeeb2409e1"
+    },
+    {
+      "file": "1005-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "7b41e80d54fdecf46e1913d1495c4c12cfc429d4cd58d6dbc7a3474b98819ff1"
+    },
+    {
+      "file": "1006-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "3d2a8e00af277caa284c84c6dfee82743e496f219442255e209896748fed7ab5"
+    },
+    {
+      "file": "1006-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "5908435d05dbe2d7bd5532983e354d5dee32c4cabd70a74e5bdcdaa1a48ae7b0"
+    },
+    {
+      "file": "1006-baseline.none.json",
+      "sha256": "bb80a6aef6dbf164aee73dcd08b65c654af4e2a0d00d432f10eca862016c3118"
+    },
+    {
+      "file": "1006-baseline.persistence.json",
+      "sha256": "d066d09ec37da9dadf3fd7cffe03ea621fc4961aa5fdc1be24e39c02779b22f7"
+    },
+    {
+      "file": "1006-baseline.alpha_beta.json",
+      "sha256": "51503372012b64f051b4a0edbf3889d68a6e755bf6ec6ee68d74cbac3f7eac3a"
+    },
+    {
+      "file": "1006-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "ec3c99e0bca548453632e3db7abe3e15637462833c092484e841d2e5b0f7049b"
+    },
+    {
+      "file": "1007-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "2f953a1fe573035f0a3858f4be0f7347ccaa7349f173009e3acb35c6de27a81f"
+    },
+    {
+      "file": "1007-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "bf2e93e9056a6352f4f577bb91f8da1e1a7e9b206798ac495c4d5f1764873867"
+    },
+    {
+      "file": "1007-baseline.none.json",
+      "sha256": "aadcccff10e0827d31d161472dfec92d2a0c6a728e0c35087b6726ca55879f3b"
+    },
+    {
+      "file": "1007-baseline.persistence.json",
+      "sha256": "fc63c7562e389e1ba678ad454f50e5b98e7b176dbc135f20b239b2984bf747b7"
+    },
+    {
+      "file": "1007-baseline.alpha_beta.json",
+      "sha256": "57a02f698e3c1654f467295e636b8e351b977bb90dc6bcbe8cf25bd0d593afa0"
+    },
+    {
+      "file": "1007-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "3553153e3885c7f3fa05b8f46d714f850d3e6790162aa81e9be78e46d33ec65c"
+    },
+    {
+      "file": "1008-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "aa6274c603d07a4b59e75e62b59c75e2aa7ff9bbb4ba43eaa48fe522beac6480"
+    },
+    {
+      "file": "1008-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "22ef6e384e19c8b0da3c850cd719823f73468e768c21d7cbbbd154ee1c76d82a"
+    },
+    {
+      "file": "1008-baseline.none.json",
+      "sha256": "b267a304bf2788fc2ed8d4cecc099a19c4b89f0f808416b56d2b1113d6cba78a"
+    },
+    {
+      "file": "1008-baseline.persistence.json",
+      "sha256": "9f0c94812b6fb8e93f3f441898443ed47ba8ced574cdab69343f48d1c549768b"
+    },
+    {
+      "file": "1008-baseline.alpha_beta.json",
+      "sha256": "f30b855b476fa010439ed4587979a287182e2353c4a6c86df0054f926c4fc436"
+    },
+    {
+      "file": "1008-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "c8eafe862b465d53ea9a1f501194b40795e0f34482f80cada78499cef559c10f"
+    },
+    {
+      "file": "1009-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "198e228423ef584164d83599735ba361c82e3ab2f528bdee39d3712cdcf0a957"
+    },
+    {
+      "file": "1009-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "53f1f37e3f1c4f90b152f52909be8cf84378f68b9c916a4c893302970eaf6ac8"
+    },
+    {
+      "file": "1009-baseline.none.json",
+      "sha256": "676a382b60ab6a796f0f7c484777558e0017ea76cb4cfe34d986d9495aba4567"
+    },
+    {
+      "file": "1009-baseline.persistence.json",
+      "sha256": "19d3fce9f8ff6b524fb061932be52de7f7b0857112b49918660eb90340379b55"
+    },
+    {
+      "file": "1009-baseline.alpha_beta.json",
+      "sha256": "0048f40efaa6d6e3a745063b50c69284790ab68162da502c7f12c95c39b46d76"
+    },
+    {
+      "file": "1009-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "69625e37f3fdeb887929774c448b6c7ad5d97e7154aa08cd5c86a9fe5e7c2b9a"
+    },
+    {
+      "file": "1010-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "3cb9728844a60ea9c2a1f1054281b8bfb45d2958da554d066dae5b3edc724e91"
+    },
+    {
+      "file": "1010-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "798dfcb088eb787aac0b0e79ba497754972c14da062de7e5e864267e23b656d8"
+    },
+    {
+      "file": "1010-baseline.none.json",
+      "sha256": "d8ad8e937714ebd2fa06ea764fdb945da49091af082544dcc2323cbd650fd55c"
+    },
+    {
+      "file": "1010-baseline.persistence.json",
+      "sha256": "d4fee64c1984c7901a1d84fac6359cac8fc4fdbd687cc0b2f81dd3cccf9551e0"
+    },
+    {
+      "file": "1010-baseline.alpha_beta.json",
+      "sha256": "614e3c2352f850eb0ce66ea0be56cb0411733511a3182c3dea601ecfd758d5ef"
+    },
+    {
+      "file": "1010-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "4fc7fd072291611c117644dc5ac1721a4811b1de5c7d01439afe2ee34f158187"
+    },
+    {
+      "file": "1011-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "50145855c96530935039ad46fe78eec988686cf710556be823e3cf141b5b429e"
+    },
+    {
+      "file": "1011-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "a1dca384b0be84bf5cfe20de25d61b9b338a90d1afdf218b2e66db6366591f6d"
+    },
+    {
+      "file": "1011-baseline.none.json",
+      "sha256": "628d4cbe095e8a5d04b7d077a4e86f5afbdb117859084e38b10ab2a9bec74aa5"
+    },
+    {
+      "file": "1011-baseline.persistence.json",
+      "sha256": "675aaf7afca28043dd64fd16f733add926fa88c66e24994f347f0fa8a345cca3"
+    },
+    {
+      "file": "1011-baseline.alpha_beta.json",
+      "sha256": "55fe806269aa3e913f5c0678d9522bc39e5820a3b496a78930bc349add0d7d05"
+    },
+    {
+      "file": "1011-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "ec7e65bafaab762b4a9637d7b2b5f38630658fb422512a498abbaffbf86bdd98"
+    },
+    {
+      "file": "1012-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "b20943a25057a68a836dbf30bec547c00721127afddd8e02a10ec45298653a7b"
+    },
+    {
+      "file": "1012-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "d8e4fc94894f31238b43ca99cfc23c90883b9e76647c5c0871ef8b8afaa556cf"
+    },
+    {
+      "file": "1012-baseline.none.json",
+      "sha256": "d75e92c772d4e3102eff7125288d761defc5066e13d778d98af861b599ea3cd7"
+    },
+    {
+      "file": "1012-baseline.persistence.json",
+      "sha256": "bf23666ea04d035fdd3a44d5646aaf3fc4028cff5593bbc1a137174eaf39c0c4"
+    },
+    {
+      "file": "1012-baseline.alpha_beta.json",
+      "sha256": "2f19bc01a48c0daed27b2c0d8e46a6fd79cd0661474f2974c766347fd3bdeb95"
+    },
+    {
+      "file": "1012-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "9dbb6177f247e19b16ef05aaa5299bd4f4d06385204623016badeb45ecb3dbb3"
+    },
+    {
+      "file": "1013-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "5cfd6568d9c34c93204f2201cc5f9224db7d1dedcc3cdd198c9f9479bebca18d"
+    },
+    {
+      "file": "1013-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "57824cd7310d6e33f63908d31e6635ee5350ad97e12162d97ccbf465e70c3a61"
+    },
+    {
+      "file": "1013-baseline.none.json",
+      "sha256": "e34259388fc2b8b323f320237366d4917e9e1276f8eb415e3932942cb09d094c"
+    },
+    {
+      "file": "1013-baseline.persistence.json",
+      "sha256": "32261c978939af969504c0cd9a75735f2c0ee8eaa6c9bbd7635518bdb16c20a1"
+    },
+    {
+      "file": "1013-baseline.alpha_beta.json",
+      "sha256": "47ef89032c75c5f87453ef4aa4f485c50ce756448325783925d81064d0266a79"
+    },
+    {
+      "file": "1013-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "d0c008bb0c9a0e6ccaca463a93f597f97e23adae24453d3eec691abf0146d774"
+    },
+    {
+      "file": "1014-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "740d363b8664b72f7d7f02a85761d0b29d3d0e9141aa0f4db7f950d7e20dd2f3"
+    },
+    {
+      "file": "1014-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "db8096c4fa366ee4aad5b577b01d92f138d9dc9c826acbd61741997a5cd4c9db"
+    },
+    {
+      "file": "1014-baseline.none.json",
+      "sha256": "74c8df12902cf45862dbe4345a06db8310cdd6f57b250209705392676fa37bc7"
+    },
+    {
+      "file": "1014-baseline.persistence.json",
+      "sha256": "6df4a44a8ed03928a8c577f54f31842d36a9ecfb457b627a7c964778b455375d"
+    },
+    {
+      "file": "1014-baseline.alpha_beta.json",
+      "sha256": "83919742a1987a79a7871159bc7bd36289a2a190d9548b3bd066003c55c64bc8"
+    },
+    {
+      "file": "1014-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "04615467c063d44ba69ea3835ab250960a5d864caca000ce68ae6491b0a70b94"
+    },
+    {
+      "file": "1015-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "da1c3abb077c9eeb0e587040b91c9f339154631aee840104d0669b7be9e20268"
+    },
+    {
+      "file": "1015-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "39f81d64c80f329865d05e9584473baa7fd6cc6054f4a0946bfb163c85530626"
+    },
+    {
+      "file": "1015-baseline.none.json",
+      "sha256": "c99133128e8429afb6ed6e9f76b83f28d930478b18df77f9453abc2a738707a0"
+    },
+    {
+      "file": "1015-baseline.persistence.json",
+      "sha256": "a5a34dc806f0f51471c0b8035e034cc70c1c4d5f4dd0b5ce12309b75b7691dd1"
+    },
+    {
+      "file": "1015-baseline.alpha_beta.json",
+      "sha256": "eeb131258b4c842f4a699f1d579ca8278ad7fb904c3d4f9a343315e0db90f5f6"
+    },
+    {
+      "file": "1015-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "ca0b533ece709e7858af36d2892839c3ad4b652436d739e97ea559b3454ba2af"
+    },
+    {
+      "file": "1016-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "f5a8bcb29daff7108108a5529873155fc7fa215cc739435a20a7b6eb4bd98026"
+    },
+    {
+      "file": "1016-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "e982c30b783348b4a1f27c6d264f17384bbd2525c0619b681ef92e4629e21297"
+    },
+    {
+      "file": "1016-baseline.none.json",
+      "sha256": "a771bd0685edf5cd4d68f669d9646ae6bbf1e019a47270c43d0d4cb7127db14e"
+    },
+    {
+      "file": "1016-baseline.persistence.json",
+      "sha256": "d9b12627f8a24565de90556b032fbc80ed3ab58dbc41ef32561a758327812d23"
+    },
+    {
+      "file": "1016-baseline.alpha_beta.json",
+      "sha256": "0e52ad5641ad80d7a14063daf09bbd85c7f1232c0ac657986fea542189ddadcf"
+    },
+    {
+      "file": "1016-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "beb45ce6c6e2fc5eaf3b36ada35240b1c9d61e2833174604bea1c29ed7ad1e9c"
+    },
+    {
+      "file": "1017-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "d44e60baf5ad76a9e1b995a6159f3076a5ac396ac7eab29f1f1822783d763a15"
+    },
+    {
+      "file": "1017-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "05d92d3a902401d9828774fb95c01aa85b6fa6782220f9ff58cf2cc7f02f61c6"
+    },
+    {
+      "file": "1017-baseline.none.json",
+      "sha256": "4a38272685c253ef47e4a2813b2f605225eaba89193a532addd3a2dde1cb09e3"
+    },
+    {
+      "file": "1017-baseline.persistence.json",
+      "sha256": "218fd39b86607e1768bdbfa13ef7123e9622d7e337729b4a3209d6b4e7d74dc2"
+    },
+    {
+      "file": "1017-baseline.alpha_beta.json",
+      "sha256": "775955eeade2356312035359c61d91f1d2388bfc5a00fc080f11aabb5d2a288f"
+    },
+    {
+      "file": "1017-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "ef27fc5a894118ea24f7fb876ba46c0ab93e02c0533054668e5f38db35104493"
+    },
+    {
+      "file": "1018-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "ee138ba756bc43088ab45e44c9d8d478d88c606e17b7a6335f33421b287c900a"
+    },
+    {
+      "file": "1018-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "205f69a338bd1d7c6992de5e243dee3b15409687eb710a2de9118cfe8702fb3a"
+    },
+    {
+      "file": "1018-baseline.none.json",
+      "sha256": "3c2a836e751097c9b8fdc08159236c62f8cd489bc3a2e3be5044dde62c1f7f52"
+    },
+    {
+      "file": "1018-baseline.persistence.json",
+      "sha256": "8648bd5c7087874bdb62e4153893f8d4a658d4b19bf663295f468dc7eb203eee"
+    },
+    {
+      "file": "1018-baseline.alpha_beta.json",
+      "sha256": "698c17d25b42f6966717c10e411059173a5fdf2495029ef99ceab7d257f22ebe"
+    },
+    {
+      "file": "1018-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "78bd3852199110496488fa20cd68ba81a0febc559467bed64ad6622b1cd57ee3"
+    },
+    {
+      "file": "1019-qnet.compensation.desenvolvimento.ridge.json",
+      "sha256": "4d4a3a9665ac4c9fff7637f6813384d00f3a8e943d8a85faaea2d4d05d40956a"
+    },
+    {
+      "file": "1019-qnet.compensation.desenvolvimento.mlp.json",
+      "sha256": "fe6be01e86cdd2f8761db43df6b96de56fd5681d3b6e219bde91beab26cc7521"
+    },
+    {
+      "file": "1019-baseline.none.json",
+      "sha256": "70386e45d85498585751a7b4ae5a980098ce4646404efbed0b5edc605b7ec8e2"
+    },
+    {
+      "file": "1019-baseline.persistence.json",
+      "sha256": "9347d631db355dc522f02d101aae53c8a823db4a905c1a0c251208ff6858c4a4"
+    },
+    {
+      "file": "1019-baseline.alpha_beta.json",
+      "sha256": "0bae0600a007c42fede827e15d08aa8b3a6228ce86288e2850721cd8e358246e"
+    },
+    {
+      "file": "1019-qnet.compensation.desenvolvimento.ridge-fault.json",
+      "sha256": "e9bfa6a8a49154a56225c9aa17fd68db19f19924d9d3cfecba44153b87cd4557"
+    }
+  ],
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "simulator_action_performed": true,
+  "limitations": [
+    "Simulated plant parameterised by published field statistics, not recorded fibre data.",
+    "Ideal actuator here: the correction appears exactly one latency later; the author's bounded device is evaluated separately (polarisation_actuator_v1).",
+    "Checkpoints of the desenvolvimento point only; the other point's checkpoints do not transfer and the contract refuses them.",
+    "Python replay timing is not hardware latency; the 40 ms latency is a simulation parameter."
+  ]
+}

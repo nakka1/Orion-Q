@@ -1,0 +1,56 @@
+# config.yaml — Gêmeo Digital do Repetidor Quântico (v2: canais físicos)
+# Experimento 2: Qiskit Aer + canais de ruído físico substituindo o
+# gerador estatístico Ornstein-Uhlenbeck.
+
+seed: 42
+
+dataset:
+  n_steps: 4000
+  dt: 1.3e-5          # tempo de exposição ao canal por passo (s), calibrado para T1/T2 ~ dezenas de us
+  T1_base: 50e-6
+  T2_base: 30e-6
+  depol_prob_base: 0.01
+  distance_km_base: 20.0
+  window_size: 20
+  test_size: 0.2
+
+model:
+  hidden_size: 16
+  num_layers: 1
+
+loss:
+  threshold: 0.65
+  lambda_penalty: 0.5   # recalibrado nesta sessão: a reescrita causal WDM (Δφc, θ ambiental)
+                        # mudou a distribuição de F(t) o suficiente para exigir nova calibração;
+                        # 4.0 (valor anterior) causava colapso total (0 tentativas)
+  lambda_fn: 4.0
+  discard_penalty_weight: 25.0
+  max_discard_rate: 0.65
+
+training:
+  epochs: 250
+  lr: 0.02
+
+quantum_node:
+  T1: 50e-6
+  T2: 30e-6
+  depol_prob: 0.01
+  shots: 512
+  seed: 7
+
+# Master audit Section 23: the PHYSICAL environment (quantum-memory
+# decoherence during the classical decision window) must use a CONFIGURED,
+# reproducible latency budget -- never a raw time.perf_counter() wall-clock
+# measurement, which varies with machine load/CPU speed and is therefore
+# NOT reproducible across runs/machines. The benchmark (measured_inference_latency_s,
+# reported separately by orchestrator.run_intelligent) is kept distinct from
+# this configured value; see orchestrator.py's `use_configured_latency` parameter.
+deployment:
+  inference_latency_us: 500.0       # classical EdgeLSTM forward-pass budget on target edge hardware
+  communication_latency_us: 100.0   # classical control-plane messaging (e.g. repeater <-> controller)
+  controller_latency_us: 50.0       # admission-control decision-logic overhead
+
+output:
+  model_path: "outputs/edge_lstm_experiment2.pt"
+  plots_dir: "outputs/plots"
+  results_csv: "outputs/experiment2_metrics.csv"

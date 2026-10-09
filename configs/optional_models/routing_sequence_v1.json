@@ -1,0 +1,59 @@
+{
+  "schema": "orion.routing-sequence-protocol.v1",
+  "target_id": "routing.repeater.v1",
+  "evidence": "simulated",
+  "mode": "simulation",
+  "plant": "SeQUeNCe discrete-event simulator through the author's qnet_network.env.sequence_runner (run_sequence_episode), configured by routing_loop.make_config(variant)",
+  "variants": {
+    "nominal": {
+      "attempt_cost": 0.01,
+      "deadline_scale": 1.0,
+      "temperature": 1.0
+    },
+    "prazo_longo": {
+      "attempt_cost": 0.0025,
+      "deadline_scale": 4.0,
+      "temperature": 0.0
+    }
+  },
+  "memory_slots": 6,
+  "max_faults": 3,
+  "standby": "greedy_fidelity",
+  "evaluation_seed": 600000,
+  "episodes": 1000,
+  "blocks": 20,
+  "requests": "routing_loop.make_request(default_rng(seed), variant); SeQUeNCe nodes seeded with the same seed",
+  "policy_generator": "numpy.random.default_rng(0), one stream over the episodes in order (export convention)",
+  "baselines": [
+    "greedy_fidelity",
+    "shortest_path",
+    "threshold_0.90"
+  ],
+  "reproduction": {
+    "author_sequence": {
+      "script": "external/qnet_network/scripts/evaluate_sequence.py",
+      "tables": [
+        "comparison.csv",
+        "summary.csv",
+        "round_cost.csv"
+      ],
+      "weights": "runs/agent/policy.npz and runs/agent/temperature.json of the author's repository archive (external/VENDORED.json source_sha256)",
+      "seeds": 40,
+      "heralding_round_trips": [
+        1.0,
+        4.1
+      ],
+      "relative_tolerance": 1e-09
+    },
+    "analytic_side": {
+      "source": "docs/results/orion_q_routing_closed_loop_20260929_summary.json",
+      "tolerance": 0.0
+    }
+  },
+  "primary": "agent vs greedy fidelity, success rate, per variant, in SeQUeNCe (two-sided)",
+  "secondary": "each policy in SeQUeNCe vs the same policy in the analytic twin, success rate, same requests",
+  "test": "exact paired sign-flip test over 20 block means of 50 episodes",
+  "multiplicity": "Holm over the 2 primary tests; Holm over the 8 secondary tests",
+  "alpha": 0.05,
+  "interpretation": "SeQUeNCe with the author's hardware parameters; a simulator, not a deployed network or permission to act"
+}

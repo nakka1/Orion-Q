@@ -1,0 +1,25 @@
+Quantum font source and embedded notices
+
+The user supplied quantum_4.zip for the OrionQ wordmark. Quantum.otf was
+copied byte-for-byte; the font file was not modified. Wider lettering is
+applied to its rendered vector paths, not to the font program.
+ZIP SHA-256: 1a4dc2777c9ac4c388a1ebcfcb5b1daaa562f416f1f706b850d6639e1feae120
+FONT SHA-256: 86f257a808f4e160d338eb03186f9e10da2009c652037d1efaf56d7efa261740
+Font bytes: 17556
+
+Unmodified embedded name-table notices:
+Copyright 2018 Adobe Systems Incorporated. All rights reserved.
+Designer: Gregory "Sesohq" O.
+Manufacturer: FontSelf
+Trademark: Please refer to the Copyright section for the font trademark attribution notices.
+License description (name ID 13): 100% Free
+OS/2 fsType: 0 (no embedding restriction flags)
+
+Public distribution references checked on 2026-10-08:
+https://www.dafont.com/quantum-4.font (author attribution and 100% Free label)
+https://pixelsurplus.com/products/quantum-free-font (personal/commercial use label)
+Author portfolio: https://www.behance.net/gallery/61668561/QUANTUM-Free-Font
+
+This notice records the supplied file's provenance and embedded metadata.
+It does not relicense Quantum under the SIL OFL used by other bundled fonts,
+nor infer broader redistribution terms solely from an embedding flag.

@@ -1,0 +1,36 @@
+{
+  "schema": "orion.public-satellite-test-fixtures.v1",
+  "mission_id": "suomi100",
+  "norad_cat_id": 43804,
+  "observation_id": 15146588,
+  "publisher": "SatNOGS Network / Libre Space Foundation",
+  "receiving_station": "CIA_S4 (5112)",
+  "license": "CC-BY-SA-4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "license_source": "https://docs.satnogs.org/projects/satnogs-network/en/stable/api.html",
+  "observation_url": "https://network.satnogs.org/api/observations/15146588/",
+  "frame_kind": "public externally demodulated RF observation bytes, preserved without modification",
+  "layout_reference": "https://github.com/daniestevez/gr-satellites/blob/cb5d0fca22ed439e9ce029516b755491a57c5764/python/telemetry/suomi100.py",
+  "layout_reference_license": "GPL-3.0-or-later; reference facts only, no GPL implementation copied into product",
+  "decoder_implementation": "independent Python stdlib implementation in satellite_missions.py",
+  "physical_local_rf_reception": false,
+  "units_or_onboard_clock_qualified": false,
+  "fixtures": [
+    {
+      "file": "suomi100-frame-20261008-135420.bin",
+      "sha256": "4ae28a9e2a3871c7fe4d2fa7ee70ca253261cd377414f55731cbc7d4515fbc66",
+      "bytes": 96,
+      "reception_time_utc": "2026-10-08T13:54:20Z",
+      "source_url": "https://s3.eu-central-1.wasabisys.com/satnogs-network/data_obs/2026/10/8/13/15146588/data_15146588_2026-10-08T13-54-20",
+      "downloaded_at_utc": "2026-10-08T14:01:31.576297+00:00"
+    },
+    {
+      "file": "suomi100-frame-20261008-135520.bin",
+      "sha256": "464560d47534bebdfe99455aba43aa2c525ec000fbbcc2075136ed473b844d14",
+      "bytes": 96,
+      "reception_time_utc": "2026-10-08T13:55:20Z",
+      "source_url": "https://s3.eu-central-1.wasabisys.com/satnogs-network/data_obs/2026/10/8/13/15146588/data_15146588_2026-10-08T13-55-20",
+      "downloaded_at_utc": "2026-10-08T14:01:30.623341+00:00"
+    }
+  ]
+}

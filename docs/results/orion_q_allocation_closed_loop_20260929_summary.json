@@ -1,0 +1,643 @@
+{
+  "schema": "orion.allocation-closed-loop-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.allocation-closed-loop-protocol.v1",
+      "target_id": "allocation.admission.v1",
+      "evidence": "simulated",
+      "mode": "simulation",
+      "plant": {
+        "scenario": "metro",
+        "control_period_s": 5.0,
+        "duration_s": 1800.0,
+        "classical_power_full_w": 0.0003,
+        "finite_key": true,
+        "declared_by": "model/plant.json of the exported allocator"
+      },
+      "model_ids": [
+        "qnet.allocator.persistence",
+        "qnet.allocator.ridge"
+      ],
+      "max_faults": 3,
+      "fallback": "quantum-first",
+      "evaluation_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019
+      ],
+      "conventions": {
+        "A": "demand stream of seed 0, plant of the episode seed (author's evaluation)",
+        "B": "demand stream and plant of the episode seed (export's episodes)"
+      },
+      "author_seed_sets": {
+        "training": "0-11",
+        "validation": "100-105",
+        "test": "500-511"
+      },
+      "baselines": {
+        "quantum_first": "QuantumFirst",
+        "classical_first": "ClassicalFirst",
+        "static_levels": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "reactive_grid": [
+          [
+            0.02,
+            0.04
+          ],
+          [
+            0.02,
+            0.06
+          ],
+          [
+            0.02,
+            0.08
+          ],
+          [
+            0.02,
+            0.1
+          ],
+          [
+            0.035,
+            0.04
+          ],
+          [
+            0.035,
+            0.06
+          ],
+          [
+            0.035,
+            0.08
+          ],
+          [
+            0.035,
+            0.1
+          ],
+          [
+            0.05,
+            0.06
+          ],
+          [
+            0.05,
+            0.08
+          ],
+          [
+            0.05,
+            0.1
+          ],
+          [
+            0.07,
+            0.08
+          ],
+          [
+            0.07,
+            0.1
+          ]
+        ],
+        "reactive_tuning": {
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "convention": "A",
+          "criterion": "served key rounded to 3 decimals, ties by classical (author)"
+        }
+      },
+      "reproduction": {
+        "export_episodes": "qnet_network/qnet_network-alocador/qnet-alocador/examples/episodes_summary.csv",
+        "frontier": "external/qnet_network/runs/realism/finite_key_frontier.csv",
+        "frontier_sha256": "6b2f8ebd025727b1ac7fc20f5a46e551c4053c5bf8e8ca33fad22f7121023890",
+        "frontier_seeds": [
+          500,
+          501,
+          502,
+          503,
+          504,
+          505
+        ],
+        "tolerance": 1e-12
+      },
+      "primary": {
+        "superiority": "served classical fraction above quantum-first",
+        "non_inferiority": "served key fraction above quantum-first minus the margin",
+        "margin": 0.02
+      },
+      "test": "exact one-sided paired sign-flip test",
+      "multiplicity": "Holm over the 8 primary tests",
+      "alpha": 0.05,
+      "bootstrap": {
+        "resamples": 2000,
+        "seed": 20261022,
+        "confidence": 0.95
+      },
+      "interpretation": "simulated plant of the author; not a deployed network or permission to actuate"
+    },
+    "protocol_file_sha256": "4af5b9f25c68ff4740c65a39facaa858909441346a6c49f34694c46fd3c5ee62",
+    "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "expected_archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "source_sha256": {
+      "quantum_autopilot/control_plane/allocation_campaign.py": "82d4ced1c5109cb9713688f56e2e7b59e4011106008746ea36bc8df24029e73f",
+      "quantum_autopilot/control_plane/allocation_loop.py": "934b1a84794dc336c6c8fd8c3648ac5c42f9ce76db6bf087c85e7ea09fea5c95",
+      "quantum_autopilot/control_plane/comparative_evaluation.py": "4a019cb5c527c67234a4ef896a53701e61ec16ab668277cbfa44eff271097cfd",
+      "quantum_autopilot/model_intake/allocation.py": "407df0bc260b5953d80096b0a2fd98ec6562d512a64a6954017fe44ba4a2618c",
+      "quantum_autopilot/model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+      "quantum_autopilot/model_intake/inference.py": "e8521e49b97abbba59f9a1f986e4af992d54fb9e8c1f7db67cdf0e54e2acfe32",
+      "qnet_network/allocation/env.py": "8b1dd12622a87fbdd3427650640ec8f2f6afd1b384bf5e2f4dedf7c322ddeecc",
+      "qnet_network/allocation/policies.py": "9efacbfefe2678a9916ce491137625c43fb2133f26776d4270e3e4cf32eb127d",
+      "qnet_network/allocation/rollout.py": "de1919b61d4bd31782435bca5462d589a3c61346f67402779dcc05134b125114",
+      "qnet_network/allocation/forecast.py": "6fd36f7436877ac27821f944ec17849a68e766d5dfc9be91b9093db7acdd643b",
+      "qnet_network/allocation/scenario.py": "968b4be69627be373e48f241ffaee3ac818dd40e25e2909162a18eef3b4cbfad",
+      "qnet_network/allocation/state.py": "0d73d4377127e5375243a986cf75930133e22d2d6b3c0475d268eac17b66a868"
+    }
+  },
+  "contracts": {
+    "finite_key": {
+      "status": "admitted",
+      "reasons": [],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+      "finite_key": true
+    },
+    "asymptotic_probe": {
+      "status": "refused",
+      "reasons": [
+        "plant finite_key differs from the export"
+      ],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+      "finite_key": false
+    }
+  },
+  "reproduction": [
+    {
+      "gate": "export_episode",
+      "model_id": "qnet.allocator.persistence",
+      "seed": 500,
+      "served_qkd": 0.5243299820575587,
+      "served_classical": 0.26077911417875943,
+      "max_absolute_error": 0.0,
+      "passed": true
+    },
+    {
+      "gate": "export_episode",
+      "model_id": "qnet.allocator.persistence",
+      "seed": 501,
+      "served_qkd": 0.5391541994099023,
+      "served_classical": 0.229075918401933,
+      "max_absolute_error": 0.0,
+      "passed": true
+    },
+    {
+      "gate": "export_episode",
+      "model_id": "qnet.allocator.ridge",
+      "seed": 500,
+      "served_qkd": 0.5244979227053033,
+      "served_classical": 0.25974974924987154,
+      "max_absolute_error": 0.0,
+      "passed": true
+    },
+    {
+      "gate": "export_episode",
+      "model_id": "qnet.allocator.ridge",
+      "seed": 501,
+      "served_qkd": 0.5391796229185467,
+      "served_classical": 0.22741593706139263,
+      "max_absolute_error": 0.0,
+      "passed": true
+    },
+    {
+      "gate": "finite_key_frontier",
+      "model_id": "qnet.allocator.persistence",
+      "seeds": [
+        500,
+        501,
+        502,
+        503,
+        504,
+        505
+      ],
+      "served_qkd": 0.46131117457715604,
+      "served_classical": 0.23337245571024942,
+      "author_served_qkd": 0.46131117457715604,
+      "author_served_classical": 0.23337245571024942,
+      "max_absolute_error": 0.0,
+      "passed": true
+    }
+  ],
+  "reactive": {
+    "selected": {
+      "low": 0.02,
+      "high": 0.04
+    },
+    "grid": [
+      {
+        "low": 0.02,
+        "high": 0.04,
+        "served_qkd": 0.3700347992450115,
+        "served_classical": 0.6449184665409359
+      },
+      {
+        "low": 0.02,
+        "high": 0.06,
+        "served_qkd": 0.35863524937645064,
+        "served_classical": 0.6907501275246517
+      },
+      {
+        "low": 0.02,
+        "high": 0.08,
+        "served_qkd": 0.35602449519314905,
+        "served_classical": 0.6815247671509143
+      },
+      {
+        "low": 0.02,
+        "high": 0.1,
+        "served_qkd": 0.2762079404761298,
+        "served_classical": 0.7472391970359565
+      },
+      {
+        "low": 0.035,
+        "high": 0.04,
+        "served_qkd": 0.3570376892998392,
+        "served_classical": 0.6867394304159046
+      },
+      {
+        "low": 0.035,
+        "high": 0.06,
+        "served_qkd": 0.35383252662602516,
+        "served_classical": 0.7307427239476478
+      },
+      {
+        "low": 0.035,
+        "high": 0.08,
+        "served_qkd": 0.34818153162191684,
+        "served_classical": 0.7472410517914705
+      },
+      {
+        "low": 0.035,
+        "high": 0.1,
+        "served_qkd": 0.27173073551272015,
+        "served_classical": 0.7734216818274781
+      },
+      {
+        "low": 0.05,
+        "high": 0.06,
+        "served_qkd": 0.3484981731698753,
+        "served_classical": 0.7437662668674427
+      },
+      {
+        "low": 0.05,
+        "high": 0.08,
+        "served_qkd": 0.34104470857273855,
+        "served_classical": 0.7628552301556617
+      },
+      {
+        "low": 0.05,
+        "high": 0.1,
+        "served_qkd": 0.21102197351814853,
+        "served_classical": 0.883467017264015
+      },
+      {
+        "low": 0.07,
+        "high": 0.08,
+        "served_qkd": 0.3299637417652889,
+        "served_classical": 0.7825422972164949
+      },
+      {
+        "low": 0.07,
+        "high": 0.1,
+        "served_qkd": 0.19878106876147905,
+        "served_classical": 0.9452665384647955
+      }
+    ]
+  },
+  "means": {
+    "A": {
+      "qnet.allocator.persistence": {
+        "served_qkd": 0.45792107002604954,
+        "served_classical": 0.233290099447734
+      },
+      "qnet.allocator.ridge": {
+        "served_qkd": 0.4580217894721149,
+        "served_classical": 0.23355968477344097
+      },
+      "baseline.quantum_first": {
+        "served_qkd": 0.4633065575624885,
+        "served_classical": 0.09617879416787072
+      },
+      "baseline.classical_first": {
+        "served_qkd": 0.09559943556296664,
+        "served_classical": 0.9998706134656686
+      },
+      "baseline.reactive": {
+        "served_qkd": 0.36175672757288335,
+        "served_classical": 0.5875762704078281
+      },
+      "baseline.static_0": {
+        "served_qkd": 0.4678304453651999,
+        "served_classical": 0.0
+      },
+      "baseline.static_0.25": {
+        "served_qkd": 0.3454816913057417,
+        "served_classical": 0.5116584133238373
+      },
+      "baseline.static_0.5": {
+        "served_qkd": 0.2622474435109831,
+        "served_classical": 0.7083528391063569
+      },
+      "baseline.static_0.75": {
+        "served_qkd": 0.17137953627873634,
+        "served_classical": 0.884874183018151
+      },
+      "baseline.static_1": {
+        "served_qkd": 0.09559943556296664,
+        "served_classical": 0.9998706134656686
+      }
+    },
+    "B": {
+      "qnet.allocator.persistence": {
+        "served_qkd": 0.4957705123557936,
+        "served_classical": 0.24928248232593525
+      },
+      "qnet.allocator.ridge": {
+        "served_qkd": 0.49599119029202177,
+        "served_classical": 0.24748827925870573
+      },
+      "baseline.quantum_first": {
+        "served_qkd": 0.5010236659812242,
+        "served_classical": 0.09511499665198886
+      },
+      "baseline.classical_first": {
+        "served_qkd": 0.11235739792199148,
+        "served_classical": 0.9998752021961052
+      },
+      "baseline.reactive": {
+        "served_qkd": 0.3934770574297844,
+        "served_classical": 0.5870515815833849
+      },
+      "baseline.static_0": {
+        "served_qkd": 0.5033795734615824,
+        "served_classical": 0.0
+      },
+      "baseline.static_0.25": {
+        "served_qkd": 0.3763408434668738,
+        "served_classical": 0.5184775404240386
+      },
+      "baseline.static_0.5": {
+        "served_qkd": 0.28757991604616395,
+        "served_classical": 0.7084386019468395
+      },
+      "baseline.static_0.75": {
+        "served_qkd": 0.19469141834916068,
+        "served_classical": 0.8828609569416624
+      },
+      "baseline.static_1": {
+        "served_qkd": 0.11235739792199148,
+        "served_classical": 0.9998752021961052
+      }
+    }
+  },
+  "primary": [
+    {
+      "convention": "A",
+      "model_id": "qnet.allocator.persistence",
+      "hypothesis": "classical_superiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.13711130527986332,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    },
+    {
+      "convention": "A",
+      "model_id": "qnet.allocator.persistence",
+      "hypothesis": "key_non_inferiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.014614512463560964,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    },
+    {
+      "convention": "A",
+      "model_id": "qnet.allocator.ridge",
+      "hypothesis": "classical_superiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.13738089060557024,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    },
+    {
+      "convention": "A",
+      "model_id": "qnet.allocator.ridge",
+      "hypothesis": "key_non_inferiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.014715231909626375,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    },
+    {
+      "convention": "B",
+      "model_id": "qnet.allocator.persistence",
+      "hypothesis": "classical_superiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.1541674856739464,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    },
+    {
+      "convention": "B",
+      "model_id": "qnet.allocator.persistence",
+      "hypothesis": "key_non_inferiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.014746846374569519,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    },
+    {
+      "convention": "B",
+      "model_id": "qnet.allocator.ridge",
+      "hypothesis": "classical_superiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.15237328260671684,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    },
+    {
+      "convention": "B",
+      "model_id": "qnet.allocator.ridge",
+      "hypothesis": "key_non_inferiority",
+      "baseline": "baseline.quantum_first",
+      "n_seeds": 20,
+      "mean_difference": 0.014967524310797509,
+      "wins": 20,
+      "p_value": 9.5367431640625e-07,
+      "method": "exact paired sign-flip randomization test",
+      "holm_p_value": 7.62939453125e-06,
+      "significant": true
+    }
+  ],
+  "secondary": [
+    {
+      "convention": "A",
+      "model_id": "qnet.allocator.persistence",
+      "served_qkd": 0.45792107002604954,
+      "served_classical": 0.233290099447734,
+      "classical_vs_static_at_matched_key": 5.629495301667107,
+      "matched_ratio_ci95": [
+        5.090965578369928,
+        6.217842080252696
+      ],
+      "resamples_without_static_match": 0,
+      "vs_reactive": {
+        "served_qkd_difference": 0.09616434245316616,
+        "served_classical_difference": -0.3542861709600941
+      }
+    },
+    {
+      "convention": "A",
+      "model_id": "qnet.allocator.ridge",
+      "served_qkd": 0.4580217894721149,
+      "served_classical": 0.23355968477344097,
+      "classical_vs_static_at_matched_key": 5.693873481740043,
+      "matched_ratio_ci95": [
+        5.135595482578844,
+        6.272980570994958
+      ],
+      "resamples_without_static_match": 0,
+      "vs_reactive": {
+        "served_qkd_difference": 0.09626506189923159,
+        "served_classical_difference": -0.35401658563438726
+      }
+    },
+    {
+      "convention": "A",
+      "comparison": "ridge - persistence, served_qkd",
+      "mean_difference": 0.0001007194460654115,
+      "p_value_two_sided": 0.017742156982421875,
+      "ridge_wins": 16,
+      "ties": 0
+    },
+    {
+      "convention": "A",
+      "comparison": "ridge - persistence, served_classical",
+      "mean_difference": 0.00026958532570692527,
+      "p_value_two_sided": 0.5129299163818359,
+      "ridge_wins": 11,
+      "ties": 0
+    },
+    {
+      "convention": "B",
+      "model_id": "qnet.allocator.persistence",
+      "served_qkd": 0.4957705123557936,
+      "served_classical": 0.24928248232593525,
+      "classical_vs_static_at_matched_key": 8.027251761544715,
+      "matched_ratio_ci95": [
+        6.852593454323098,
+        9.549351044243348
+      ],
+      "resamples_without_static_match": 0,
+      "vs_reactive": {
+        "served_qkd_difference": 0.10229345492600934,
+        "served_classical_difference": -0.3377690992574497
+      }
+    },
+    {
+      "convention": "B",
+      "model_id": "qnet.allocator.ridge",
+      "served_qkd": 0.49599119029202177,
+      "served_classical": 0.24748827925870573,
+      "classical_vs_static_at_matched_key": 8.207510008767956,
+      "matched_ratio_ci95": [
+        6.998452770717131,
+        9.82957683161322
+      ],
+      "resamples_without_static_match": 0,
+      "vs_reactive": {
+        "served_qkd_difference": 0.10251413286223732,
+        "served_classical_difference": -0.3395633023246792
+      }
+    },
+    {
+      "convention": "B",
+      "comparison": "ridge - persistence, served_qkd",
+      "mean_difference": 0.00022067793622798925,
+      "p_value_two_sided": 0.09957122802734375,
+      "ridge_wins": 15,
+      "ties": 0
+    },
+    {
+      "convention": "B",
+      "comparison": "ridge - persistence, served_classical",
+      "mean_difference": -0.0017942030672294968,
+      "p_value_two_sided": 1.52587890625e-05,
+      "ridge_wins": 1,
+      "ties": 0
+    }
+  ],
+  "supervisor": {
+    "faults": 0,
+    "degraded_runs": 0
+  },
+  "runs": 400,
+  "artifacts": [
+    {
+      "file": "allocation-runs.jsonl",
+      "sha256": "cfbf12a70bbef93b1c928f11c9f4663bd207f61dd1e281baf65695b72db0442a"
+    }
+  ],
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "simulator_action_performed": true,
+  "limitations": [
+    "The author's simulated metro plant; not a deployed network.",
+    "Key accounting is the author's finite-block estimate per control period, not a security proof.",
+    "Only the exported configuration (coverage 1.0) exists as a reviewed model; the frontier across coverage targets is the author's, not re-run here."
+  ]
+}

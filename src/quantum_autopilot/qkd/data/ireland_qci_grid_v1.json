@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0.0",
+  "grid_id": "irelandqci-toshiba-coexistence-cells-v1",
+  "claim_id": "C-MEASURED",
+  "dataset_id": "irelandqci-toshiba-qkd-coexistence-21132088",
+  "doi": "10.5281/zenodo.21132088",
+  "license": "CC-BY-4.0",
+  "expected_cell_count": 80,
+  "interpolation_allowed": false,
+  "numeric_absolute_tolerance": 1e-09,
+  "classification_axes": [
+    "dataset_id",
+    "campaign_id",
+    "fiber_length_km",
+    "voa_attenuation_db",
+    "external_signal_present",
+    "external_signal_power_dbm",
+    "qber_unit_status"
+  ],
+  "non_classification_fields": {
+    "device_id": "The release identifies the Toshiba QKD system but does not publish a stable device identifier.",
+    "channel_id": "The release does not publish a stable wavelength/channel identifier.",
+    "observation_time_utc": "The release has sample order but no measurement timestamps.",
+    "observation_level": "The reviewed grid contains campaign/fibre/VOA/condition cell means, not raw single readings.",
+    "qber_reported": "Measured outcome; never used to decide whether its own input condition belongs to the grid.",
+    "secure_key_rate_bps": "Measured outcome; never used to decide whether its own input condition belongs to the grid."
+  },
+  "required_source_sentinels": {
+    "device_id": "not_published",
+    "channel_id": "not_published",
+    "time_basis": "not_published",
+    "observation_level": "published_cell_mean"
+  },
+  "qber_unit_status": "publisher_scale_ambiguous",
+  "voa_by_fiber_length_km": {
+    "0": [10, 15, 20, 25, 27, 28, 29, 30],
+    "50": [0, 2, 4, 6, 8, 9, 10, 12]
+  },
+  "campaigns": [
+    {
+      "campaign_id": "baseline_no_signal_no_added_fibre_full_sweep",
+      "fiber_length_km": 0,
+      "external_signal_present": false,
+      "external_signal_power_dbm": null,
+      "source_file_sha256": "fbac95647a80004f19944e2e7200ce1eef0e89b1c43aa4c6745dfa534530df41"
+    },
+    {
+      "campaign_id": "roadm_3dbm_injected_signal_no_added_fibre_full_sweep",
+      "fiber_length_km": 0,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 3,
+      "source_file_sha256": "0c145f7d70356a9449301f96fa28328b55b34ff6b27750d2d58f1bf19bbe19b8"
+    },
+    {
+      "campaign_id": "roadm_7dbm_injected_signal_no_added_fibre_full_sweep",
+      "fiber_length_km": 0,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 7,
+      "source_file_sha256": "9ee5782d3c4ba41af5ee53c946a4e5c6805e1b49f52ee166a428606e83ee91bb"
+    },
+    {
+      "campaign_id": "roadm_9dbm_injected_signal_no_added_fibre_full_sweep",
+      "fiber_length_km": 0,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 9,
+      "source_file_sha256": "47de1d6d5605e6381787192d863c3c3cb65d1a65d34b484a9a45318498f5c177"
+    },
+    {
+      "campaign_id": "roadm_12dbm_injected_signal_no_added_fibre_full_sweep",
+      "fiber_length_km": 0,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 12,
+      "source_file_sha256": "d31130607c1edb140379c2babd4971ff1ee1e9f235bb9d0033a9e5471479c7f2"
+    },
+    {
+      "campaign_id": "baseline_no_signal_50km_added_fibre_full_sweep",
+      "fiber_length_km": 50,
+      "external_signal_present": false,
+      "external_signal_power_dbm": null,
+      "source_file_sha256": "676f95ad7267acd2473b02ae3ce2342a6039bb1e89ef1c7c6ac3727caffd8b00"
+    },
+    {
+      "campaign_id": "roadm_3dbm_injected_signal_50km_added_fibre_full_sweep",
+      "fiber_length_km": 50,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 3,
+      "source_file_sha256": "e838d978ed8db7c3f57f7f6b8204bded40f41f25d48ba970eac4b25ac776637a"
+    },
+    {
+      "campaign_id": "roadm_7dbm_injected_signal_50km_added_fibre_full_sweep",
+      "fiber_length_km": 50,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 7,
+      "source_file_sha256": "36af3dad645afb58cd41c6559db82677e59c40765a2d4fa8020cf8a0d98e1559"
+    },
+    {
+      "campaign_id": "roadm_9dbm_injected_signal_50km_added_fibre_full_sweep",
+      "fiber_length_km": 50,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 9,
+      "source_file_sha256": "17c52e93c71be0502f2c33e186500a0540cbb67a9d47a2f5302d535e0f8c168e"
+    },
+    {
+      "campaign_id": "roadm_12dbm_injected_signal_50km_added_fibre_full_sweep",
+      "fiber_length_km": 50,
+      "external_signal_present": true,
+      "external_signal_power_dbm": 12,
+      "source_file_sha256": "3ea17584bbb223764677cf5cf6517d576e2dee38c354db6a04a8aed0fc5a50ee"
+    }
+  ],
+  "source_artifact": {
+    "path": "outputs/qkd_coexistence_measured/experimental_cells.csv",
+    "sha256": "afe5d110e8e32694591a6a454b6e5a84410e88b24992a193d31822133a0afe4b",
+    "rows": 80
+  },
+  "limitations": [
+    "Exact cell membership is not evidence of temporal prediction, causality or Bell-state fidelity.",
+    "Condition and acquisition session are confounded in the published design.",
+    "No interpolation, nearest-neighbour matching or transfer to another campaign, device or platform is authorized.",
+    "QBER keeps the publisher's ambiguous ratio-or-percent scalar without conversion.",
+    "Device, channel and measurement time were not published and cannot become validated axes retroactively."
+  ]
+}

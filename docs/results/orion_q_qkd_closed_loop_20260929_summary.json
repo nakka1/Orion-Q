@@ -1,0 +1,1071 @@
+{
+  "schema": "orion.qkd-closed-loop-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.qkd-closed-loop-protocol.v1",
+      "evidence": "simulated",
+      "mode": "simulation",
+      "plants": "qnet_qkd (vendored author QKD source that produced the pinned modelo_qkd_ml.zip)",
+      "keyrate": {
+        "target_id": "qkd.keyrate.v1",
+        "spans_km": [
+          25.0,
+          35.0,
+          50.0,
+          65.0,
+          80.0
+        ],
+        "periods": 240,
+        "period_s": 1.0,
+        "evaluation_plant_seeds": [
+          950000,
+          950001,
+          950002,
+          950003,
+          950004,
+          950005,
+          950006,
+          950007,
+          950008,
+          950009,
+          950010,
+          950011,
+          950012,
+          950013,
+          950014,
+          950015,
+          950016,
+          950017,
+          950018,
+          950019
+        ],
+        "policy_generator": "numpy.random.default_rng(plant_seed), as in the author's export",
+        "model_id": "qkd.keyrate.actor",
+        "baseline": "baseline.static",
+        "reference": "reference.oracle",
+        "supervisor": {
+          "max_faults": 8
+        },
+        "fault_injection": {
+          "length_km": 50.0,
+          "plant_seed": 950000,
+          "periods": [
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107
+          ]
+        },
+        "author_seed_sets": {
+          "training": "0-9999",
+          "validation": "700000-",
+          "test": "900000-900047"
+        },
+        "reproduction": {
+          "export_episode": "exemplos/agente_episodio_50km.json",
+          "published_table": {
+            "25": {
+              "baseline.static": [
+                3.18,
+                0.451
+              ],
+              "qkd.keyrate.actor": [
+                3.782,
+                0.506
+              ],
+              "reference.oracle": [
+                3.817,
+                0.584
+              ]
+            },
+            "35": {
+              "baseline.static": [
+                2.732,
+                0.425
+              ],
+              "qkd.keyrate.actor": [
+                3.092,
+                0.397
+              ],
+              "reference.oracle": [
+                3.059,
+                0.417
+              ]
+            },
+            "50": {
+              "baseline.static": [
+                1.899,
+                0.319
+              ],
+              "qkd.keyrate.actor": [
+                2.128,
+                0.312
+              ],
+              "reference.oracle": [
+                2.152,
+                0.353
+              ]
+            },
+            "65": {
+              "baseline.static": [
+                1.038,
+                0.169
+              ],
+              "qkd.keyrate.actor": [
+                1.138,
+                0.213
+              ],
+              "reference.oracle": [
+                1.22,
+                0.244
+              ]
+            },
+            "80": {
+              "baseline.static": [
+                0.489,
+                0.072
+              ],
+              "qkd.keyrate.actor": [
+                0.532,
+                0.113
+              ],
+              "reference.oracle": [
+                0.713,
+                0.107
+              ]
+            }
+          },
+          "published_seeds": [
+            900000,
+            900001,
+            900002,
+            900003,
+            900004,
+            900005,
+            900006,
+            900007,
+            900008,
+            900009,
+            900010,
+            900011,
+            900012,
+            900013,
+            900014,
+            900015,
+            900016,
+            900017,
+            900018,
+            900019,
+            900020,
+            900021,
+            900022,
+            900023
+          ],
+          "tolerance_mbit_s": 0.0005,
+          "policy_generator": "KeyRatePolicy(rng=0).rng per span, as the author's evaluation"
+        },
+        "primary_endpoint": "per-episode mean provable key rate",
+        "hypothesis": "actor key rate higher than static commissioning, per span"
+      },
+      "sync": {
+        "target_id": "qkd.sync.v1",
+        "length_km": 50.0,
+        "duration_s": 3600.0,
+        "gate_widths_ps": [
+          200.0,
+          350.0,
+          500.0,
+          1000.0
+        ],
+        "dark_count_rates_hz": [
+          10.0,
+          1000000.0
+        ],
+        "evaluation_seeds": [
+          600,
+          601,
+          602,
+          603,
+          604,
+          605,
+          606,
+          607,
+          608,
+          609,
+          610,
+          611,
+          612,
+          613,
+          614,
+          615,
+          616,
+          617,
+          618,
+          619
+        ],
+        "trajectory_seed_offset": 10000,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baselines": [
+          "baseline.none",
+          "baseline.periodic_60s",
+          "baseline.alpha_beta"
+        ],
+        "comparator": "baseline.alpha_beta",
+        "warmup": "author's LearnedSync rule: alpha-beta tracker for the first seven updates",
+        "author_seed_sets": {
+          "training": "0-7",
+          "test": "500-511"
+        },
+        "reproduction": {
+          "published_table": {
+            "10": {
+              "200": [
+                0.136,
+                1.001,
+                1.464,
+                1.508
+              ],
+              "500": [
+                0.309,
+                1.631,
+                1.958,
+                1.971
+              ],
+              "1000": [
+                0.53,
+                1.924,
+                2.007,
+                2.007
+              ]
+            },
+            "1000000": {
+              "200": [
+                0.0,
+                0.429,
+                0.948,
+                0.998
+              ],
+              "350": [
+                0.0,
+                0.536,
+                1.064,
+                1.099
+              ],
+              "1000": [
+                0.0,
+                0.128,
+                0.253,
+                0.253
+              ]
+            }
+          },
+          "published_seeds": [
+            500,
+            501,
+            502,
+            503,
+            504,
+            505,
+            506,
+            507,
+            508,
+            509,
+            510,
+            511
+          ],
+          "column_order": [
+            "baseline.none",
+            "baseline.periodic_60s",
+            "baseline.alpha_beta",
+            "qkd.sync.ridge.1s.h2s"
+          ],
+          "tolerance_mbit_s": 0.0005
+        },
+        "primary_endpoint": "per-run key rate left by the synchroniser",
+        "hypothesis": "ridge key rate higher than the alpha-beta tracker, per gate width and dark rate"
+      },
+      "test": "exact one-sided paired sign-flip test",
+      "multiplicity": "Holm within each family",
+      "alpha": 0.05,
+      "bootstrap": {
+        "resamples": 10000,
+        "seed": 20261022,
+        "confidence": 0.95
+      },
+      "interpretation": "simulated closed loops on the author's plants; not physical validation or permission to actuate"
+    },
+    "protocol_file_sha256": "43d8337ff6ce15b9ee0ad1e48775426ba42688cfc3324b532563127876d46235",
+    "archive_sha256": "94352f15b6dcb132a3c03559b9d94b28f42b6e9adb8b2cdaab18f46720a55a79",
+    "expected_archive_sha256": "94352f15b6dcb132a3c03559b9d94b28f42b6e9adb8b2cdaab18f46720a55a79",
+    "source_sha256": {
+      "quantum_autopilot/control_plane/qkd_campaign.py": "415d1a96f7d11b09b66af0aa2b01906d0c993315a3e6de0028f10ba0a3bd03b1",
+      "quantum_autopilot/control_plane/keyrate_loop.py": "19cbaa10f43b5b828d1a915a4c6e36469476e206be3f165e18cf736eabba8a06",
+      "quantum_autopilot/control_plane/sync_loop.py": "a94997fc3cee97e4c03471fb2015dae9683422484ce7336cd4a01934b70ede6e",
+      "quantum_autopilot/control_plane/comparative_evaluation.py": "4a019cb5c527c67234a4ef896a53701e61ec16ab668277cbfa44eff271097cfd",
+      "quantum_autopilot/model_intake/keyrate.py": "51e20f2dbdfc79ca77b8588a85cfa3fc12f86b026c4935929f993dfe17f22a43",
+      "quantum_autopilot/model_intake/inference.py": "e8521e49b97abbba59f9a1f986e4af992d54fb9e8c1f7db67cdf0e54e2acfe32",
+      "quantum_autopilot/model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+      "qnet_qkd/qkd/keyrate.py": "1fb70d267d3f45f7fbafb92aeb571fb7990818cb64171806140221f4a907c4fa",
+      "qnet_qkd/qkd/timing.py": "442f9d47e075c48d155f6d2acce4ed296dbf288e25511a397018f4ede1452371",
+      "qnet_qkd/physics/decoy.py": "230993c035e3c0af2355f40b579d2e46d0a9e755b1b0eb23a3b632eab7831096",
+      "qnet_qkd/qkd/session.py": "38f87179c30b909a2c16f77448f041f9fa35af163191486fa853de1da3e546a2"
+    }
+  },
+  "reproduction": {
+    "export_episode": {
+      "gate": "export_episode",
+      "model_id": "qkd.keyrate.actor",
+      "archive_sha256": "94352f15b6dcb132a3c03559b9d94b28f42b6e9adb8b2cdaab18f46720a55a79",
+      "length_km": 50.0,
+      "plant_seed": 900000,
+      "policy_generator": "numpy.random.default_rng(900000)",
+      "periods": 40,
+      "calibration_identical": true,
+      "calibration_max_relative_error": 0.0,
+      "mismatches": {
+        "sampled_action": 0,
+        "settings": 0,
+        "key_bits": 0,
+        "greedy_action": 0
+      },
+      "max_feature_absolute_error": 4.992086743982327e-10,
+      "max_probability_absolute_error": 4.954019076214289e-07,
+      "passed": true
+    },
+    "keyrate_table": [
+      {
+        "length_km": 25.0,
+        "controller_id": "qkd.keyrate.actor",
+        "mean_mbit_s": 3.7819783477175597,
+        "std_mbit_s": 0.5058176561435015,
+        "published_mean": 3.782,
+        "published_std": 0.506,
+        "passed": true
+      },
+      {
+        "length_km": 25.0,
+        "controller_id": "baseline.static",
+        "mean_mbit_s": 3.179842265713564,
+        "std_mbit_s": 0.45078254803253265,
+        "published_mean": 3.18,
+        "published_std": 0.451,
+        "passed": true
+      },
+      {
+        "length_km": 25.0,
+        "controller_id": "reference.oracle",
+        "mean_mbit_s": 3.8174358046638255,
+        "std_mbit_s": 0.5839720251456695,
+        "published_mean": 3.817,
+        "published_std": 0.584,
+        "passed": true
+      },
+      {
+        "length_km": 35.0,
+        "controller_id": "qkd.keyrate.actor",
+        "mean_mbit_s": 3.0916746383737874,
+        "std_mbit_s": 0.3970729426629655,
+        "published_mean": 3.092,
+        "published_std": 0.397,
+        "passed": true
+      },
+      {
+        "length_km": 35.0,
+        "controller_id": "baseline.static",
+        "mean_mbit_s": 2.7316025956795227,
+        "std_mbit_s": 0.42487185237496655,
+        "published_mean": 2.732,
+        "published_std": 0.425,
+        "passed": true
+      },
+      {
+        "length_km": 35.0,
+        "controller_id": "reference.oracle",
+        "mean_mbit_s": 3.058853873682929,
+        "std_mbit_s": 0.41709849252828063,
+        "published_mean": 3.059,
+        "published_std": 0.417,
+        "passed": true
+      },
+      {
+        "length_km": 50.0,
+        "controller_id": "qkd.keyrate.actor",
+        "mean_mbit_s": 2.1282564145662515,
+        "std_mbit_s": 0.3122290847032792,
+        "published_mean": 2.128,
+        "published_std": 0.312,
+        "passed": true
+      },
+      {
+        "length_km": 50.0,
+        "controller_id": "baseline.static",
+        "mean_mbit_s": 1.898759134850453,
+        "std_mbit_s": 0.31940421315433326,
+        "published_mean": 1.899,
+        "published_std": 0.319,
+        "passed": true
+      },
+      {
+        "length_km": 50.0,
+        "controller_id": "reference.oracle",
+        "mean_mbit_s": 2.151920415146759,
+        "std_mbit_s": 0.3533730652700564,
+        "published_mean": 2.152,
+        "published_std": 0.353,
+        "passed": true
+      },
+      {
+        "length_km": 65.0,
+        "controller_id": "qkd.keyrate.actor",
+        "mean_mbit_s": 1.1383152280529087,
+        "std_mbit_s": 0.21321958761157514,
+        "published_mean": 1.138,
+        "published_std": 0.213,
+        "passed": true
+      },
+      {
+        "length_km": 65.0,
+        "controller_id": "baseline.static",
+        "mean_mbit_s": 1.0384828858406436,
+        "std_mbit_s": 0.16882995034842235,
+        "published_mean": 1.038,
+        "published_std": 0.169,
+        "passed": true
+      },
+      {
+        "length_km": 65.0,
+        "controller_id": "reference.oracle",
+        "mean_mbit_s": 1.2198352825985703,
+        "std_mbit_s": 0.24416575168133461,
+        "published_mean": 1.22,
+        "published_std": 0.244,
+        "passed": true
+      },
+      {
+        "length_km": 80.0,
+        "controller_id": "qkd.keyrate.actor",
+        "mean_mbit_s": 0.5322673482238042,
+        "std_mbit_s": 0.11263077508730922,
+        "published_mean": 0.532,
+        "published_std": 0.113,
+        "passed": true
+      },
+      {
+        "length_km": 80.0,
+        "controller_id": "baseline.static",
+        "mean_mbit_s": 0.48930866617042595,
+        "std_mbit_s": 0.07170166173479232,
+        "published_mean": 0.489,
+        "published_std": 0.072,
+        "passed": true
+      },
+      {
+        "length_km": 80.0,
+        "controller_id": "reference.oracle",
+        "mean_mbit_s": 0.7132258991338533,
+        "std_mbit_s": 0.10673995259237043,
+        "published_mean": 0.713,
+        "published_std": 0.107,
+        "passed": true
+      }
+    ],
+    "sync_table": [
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "baseline.none",
+        "mean_mbit_s": 0.13637295410957131,
+        "published_mean": 0.136,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "baseline.periodic_60s",
+        "mean_mbit_s": 1.0012919019174622,
+        "published_mean": 1.001,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "baseline.alpha_beta",
+        "mean_mbit_s": 1.4642256316695157,
+        "published_mean": 1.464,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "qkd.sync.ridge.1s.h2s",
+        "mean_mbit_s": 1.5077636856360734,
+        "published_mean": 1.508,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 500.0,
+        "controller_id": "baseline.none",
+        "mean_mbit_s": 0.3086954628275716,
+        "published_mean": 0.309,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 500.0,
+        "controller_id": "baseline.periodic_60s",
+        "mean_mbit_s": 1.6305648271047155,
+        "published_mean": 1.631,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 500.0,
+        "controller_id": "baseline.alpha_beta",
+        "mean_mbit_s": 1.9581261037933029,
+        "published_mean": 1.958,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 500.0,
+        "controller_id": "qkd.sync.ridge.1s.h2s",
+        "mean_mbit_s": 1.9706365684267415,
+        "published_mean": 1.971,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "baseline.none",
+        "mean_mbit_s": 0.5301081853461372,
+        "published_mean": 0.53,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "baseline.periodic_60s",
+        "mean_mbit_s": 1.9244380681470268,
+        "published_mean": 1.924,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "baseline.alpha_beta",
+        "mean_mbit_s": 2.0071979062443024,
+        "published_mean": 2.007,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 10.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "qkd.sync.ridge.1s.h2s",
+        "mean_mbit_s": 2.007244498722522,
+        "published_mean": 2.007,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "baseline.none",
+        "mean_mbit_s": 0.0,
+        "published_mean": 0.0,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "baseline.periodic_60s",
+        "mean_mbit_s": 0.42919002962629593,
+        "published_mean": 0.429,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "baseline.alpha_beta",
+        "mean_mbit_s": 0.9484128343695322,
+        "published_mean": 0.948,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 200.0,
+        "controller_id": "qkd.sync.ridge.1s.h2s",
+        "mean_mbit_s": 0.9984037586497451,
+        "published_mean": 0.998,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 350.0,
+        "controller_id": "baseline.none",
+        "mean_mbit_s": 0.0,
+        "published_mean": 0.0,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 350.0,
+        "controller_id": "baseline.periodic_60s",
+        "mean_mbit_s": 0.5359941026695241,
+        "published_mean": 0.536,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 350.0,
+        "controller_id": "baseline.alpha_beta",
+        "mean_mbit_s": 1.0636267022748997,
+        "published_mean": 1.064,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 350.0,
+        "controller_id": "qkd.sync.ridge.1s.h2s",
+        "mean_mbit_s": 1.0993431469490698,
+        "published_mean": 1.099,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "baseline.none",
+        "mean_mbit_s": 0.0,
+        "published_mean": 0.0,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "baseline.periodic_60s",
+        "mean_mbit_s": 0.12803591067277395,
+        "published_mean": 0.128,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "baseline.alpha_beta",
+        "mean_mbit_s": 0.2533729835726229,
+        "published_mean": 0.253,
+        "passed": true
+      },
+      {
+        "dark_count_rate_hz": 1000000.0,
+        "gate_width_ps": 1000.0,
+        "controller_id": "qkd.sync.ridge.1s.h2s",
+        "mean_mbit_s": 0.2534443493971941,
+        "published_mean": 0.253,
+        "passed": true
+      }
+    ]
+  },
+  "keyrate": {
+    "comparisons": [
+      {
+        "length_km": 25.0,
+        "model_id": "qkd.keyrate.actor",
+        "baseline": "baseline.static",
+        "n_seeds": 20,
+        "wins": 18,
+        "ties": 0,
+        "model_mean": 3760562.7334383577,
+        "baseline_mean": 3245287.3294789037,
+        "model_to_baseline_ratio": 1.158776512415063,
+        "ratio_ci95": [
+          1.0916148386019224,
+          1.2219069437849293
+        ],
+        "mean_difference": 515275.4039594542,
+        "p_value": 0.00013065338134765625,
+        "method": "exact paired sign-flip randomization test",
+        "reference_mean": 3894869.4463552623,
+        "gap_fraction_closed": 0.7932413632894569,
+        "gap_fraction_ci95": [
+          0.47539077502027494,
+          1.1451431775123597
+        ],
+        "holm_p_value": 0.00039196014404296875,
+        "significant": true
+      },
+      {
+        "length_km": 35.0,
+        "model_id": "qkd.keyrate.actor",
+        "baseline": "baseline.static",
+        "n_seeds": 20,
+        "wins": 18,
+        "ties": 0,
+        "model_mean": 3032556.578878225,
+        "baseline_mean": 2670319.353886138,
+        "model_to_baseline_ratio": 1.1356531474278235,
+        "ratio_ci95": [
+          1.0809007957520829,
+          1.196785283485464
+        ],
+        "mean_difference": 362237.2249920865,
+        "p_value": 3.147125244140625e-05,
+        "method": "exact paired sign-flip randomization test",
+        "reference_mean": 3116429.264694831,
+        "gap_fraction_closed": 0.811990982974208,
+        "gap_fraction_ci95": [
+          0.5802803034230292,
+          1.0355832510735743
+        ],
+        "holm_p_value": 0.000125885009765625,
+        "significant": true
+      },
+      {
+        "length_km": 50.0,
+        "model_id": "qkd.keyrate.actor",
+        "baseline": "baseline.static",
+        "n_seeds": 20,
+        "wins": 18,
+        "ties": 0,
+        "model_mean": 2133840.136938499,
+        "baseline_mean": 1855096.8308580127,
+        "model_to_baseline_ratio": 1.1502580897362447,
+        "ratio_ci95": [
+          1.096110395099822,
+          1.2152249905563923
+        ],
+        "mean_difference": 278743.30608048645,
+        "p_value": 1.71661376953125e-05,
+        "method": "exact paired sign-flip randomization test",
+        "reference_mean": 2207888.7741367435,
+        "gap_fraction_closed": 0.7901067793383791,
+        "gap_fraction_ci95": [
+          0.5522430360562605,
+          1.0489324651607712
+        ],
+        "holm_p_value": 8.58306884765625e-05,
+        "significant": true
+      },
+      {
+        "length_km": 65.0,
+        "model_id": "qkd.keyrate.actor",
+        "baseline": "baseline.static",
+        "n_seeds": 20,
+        "wins": 17,
+        "ties": 0,
+        "model_mean": 1194754.7705363526,
+        "baseline_mean": 988627.9163081938,
+        "model_to_baseline_ratio": 1.208497909909213,
+        "ratio_ci95": [
+          1.120531775078766,
+          1.302411906204276
+        ],
+        "mean_difference": 206126.85422815857,
+        "p_value": 0.00014019012451171875,
+        "method": "exact paired sign-flip randomization test",
+        "reference_mean": 1264943.2907366226,
+        "gap_fraction_closed": 0.7459840215353264,
+        "gap_fraction_ci95": [
+          0.4981719854175811,
+          1.008923424268834
+        ],
+        "holm_p_value": 0.00039196014404296875,
+        "significant": true
+      },
+      {
+        "length_km": 80.0,
+        "model_id": "qkd.keyrate.actor",
+        "baseline": "baseline.static",
+        "n_seeds": 20,
+        "wins": 15,
+        "ties": 0,
+        "model_mean": 527738.1579805304,
+        "baseline_mean": 487771.11426728807,
+        "model_to_baseline_ratio": 1.0819381110201234,
+        "ratio_ci95": [
+          0.9588381716280484,
+          1.2010178787011425
+        ],
+        "mean_difference": 39967.043713242514,
+        "p_value": 0.10271358489990234,
+        "method": "exact paired sign-flip randomization test",
+        "reference_mean": 680780.7018971178,
+        "gap_fraction_closed": 0.20707284132379244,
+        "gap_fraction_ci95": [
+          -0.1371690376498655,
+          0.4426951978876111
+        ],
+        "holm_p_value": 0.10271358489990234,
+        "significant": false
+      }
+    ],
+    "zero_key_periods": {
+      "qkd.keyrate.actor": 1,
+      "baseline.static": 0,
+      "reference.oracle": 0
+    },
+    "proposals_verified": 24000,
+    "actor_periods": 24000,
+    "supervisor_faults": 0,
+    "fault_injection": {
+      "faults": 8,
+      "degraded_at_period": 107,
+      "mean_key_rate_hz": 1577505.756746175,
+      "proposals_verified": 100,
+      "periods": 240
+    }
+  },
+  "sync": {
+    "contract": {
+      "model_id": "qkd.sync.ridge.1s.h2s",
+      "status": "admitted",
+      "reasons": [],
+      "archive_sha256": "94352f15b6dcb132a3c03559b9d94b28f42b6e9adb8b2cdaab18f46720a55a79",
+      "length_km": 50.0
+    },
+    "comparisons": [
+      {
+        "gate_width_ps": 200.0,
+        "dark_count_rate_hz": 10.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 1507988.0126363721,
+        "baseline_mean": 1465522.0239959718,
+        "model_to_baseline_ratio": 1.0289766976852455,
+        "ratio_ci95": [
+          1.0277530957723477,
+          1.0301410206595802
+        ],
+        "mean_difference": 42465.98864040029,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      },
+      {
+        "gate_width_ps": 200.0,
+        "dark_count_rate_hz": 1000000.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 998661.6456937238,
+        "baseline_mean": 949899.378478559,
+        "model_to_baseline_ratio": 1.051334139509878,
+        "ratio_ci95": [
+          1.049140894895462,
+          1.0535080126372653
+        ],
+        "mean_difference": 48762.26721516457,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      },
+      {
+        "gate_width_ps": 350.0,
+        "dark_count_rate_hz": 10.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 1854923.41336779,
+        "baseline_mean": 1827258.145807778,
+        "model_to_baseline_ratio": 1.0151403169954303,
+        "ratio_ci95": [
+          1.0145080352432256,
+          1.015759124062563
+        ],
+        "mean_difference": 27665.26756001195,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      },
+      {
+        "gate_width_ps": 350.0,
+        "dark_count_rate_hz": 1000000.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 1099494.6087230367,
+        "baseline_mean": 1064617.8701530725,
+        "model_to_baseline_ratio": 1.032759865814529,
+        "ratio_ci95": [
+          1.0314052432225562,
+          1.034112835494729
+        ],
+        "mean_difference": 34876.73856996419,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      },
+      {
+        "gate_width_ps": 500.0,
+        "dark_count_rate_hz": 10.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 1970674.6514495504,
+        "baseline_mean": 1958420.9175609506,
+        "model_to_baseline_ratio": 1.0062569459806734,
+        "ratio_ci95": [
+          1.0059935796895798,
+          1.0065227047338217
+        ],
+        "mean_difference": 12253.733888599812,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      },
+      {
+        "gate_width_ps": 500.0,
+        "dark_count_rate_hz": 1000000.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 976918.0352242369,
+        "baseline_mean": 960363.7397001898,
+        "model_to_baseline_ratio": 1.0172375266159206,
+        "ratio_ci95": [
+          1.016498129917719,
+          1.0179881187672135
+        ],
+        "mean_difference": 16554.295524046953,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      },
+      {
+        "gate_width_ps": 1000.0,
+        "dark_count_rate_hz": 10.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 2007244.7311453442,
+        "baseline_mean": 2007196.3641881167,
+        "model_to_baseline_ratio": 1.0000240967740328,
+        "ratio_ci95": [
+          1.000022095470629,
+          1.0000263182584064
+        ],
+        "mean_difference": 48.366957227280366,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      },
+      {
+        "gate_width_ps": 1000.0,
+        "dark_count_rate_hz": 1000000.0,
+        "model_id": "qkd.sync.ridge.1s.h2s",
+        "baseline": "baseline.alpha_beta",
+        "n_seeds": 20,
+        "wins": 20,
+        "ties": 0,
+        "model_mean": 253444.7054015714,
+        "baseline_mean": 253370.62162095407,
+        "model_to_baseline_ratio": 1.0002923929386263,
+        "ratio_ci95": [
+          1.0002678708156685,
+          1.000318682745228
+        ],
+        "mean_difference": 74.08378061731055,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      }
+    ],
+    "mean_key_rate_hz": {
+      "200|10": {
+        "baseline.none": 151909.96618162218,
+        "baseline.periodic_60s": 1012372.6483486341,
+        "baseline.alpha_beta": 1465522.0239959718,
+        "qkd.sync.ridge.1s.h2s": 1507988.0126363721
+      },
+      "200|1e+06": {
+        "baseline.none": 0.0,
+        "baseline.periodic_60s": 441218.1286911356,
+        "baseline.alpha_beta": 949899.378478559,
+        "qkd.sync.ridge.1s.h2s": 998661.6456937238
+      },
+      "350|10": {
+        "baseline.none": 249805.55141691328,
+        "baseline.periodic_60s": 1413252.5464546988,
+        "baseline.alpha_beta": 1827258.145807778,
+        "qkd.sync.ridge.1s.h2s": 1854923.41336779
+      },
+      "350|1e+06": {
+        "baseline.none": 0.0,
+        "baseline.periodic_60s": 555383.8254093701,
+        "baseline.alpha_beta": 1064617.8701530725,
+        "qkd.sync.ridge.1s.h2s": 1099494.6087230367
+      },
+      "500|10": {
+        "baseline.none": 335826.9097119946,
+        "baseline.periodic_60s": 1649396.274416506,
+        "baseline.alpha_beta": 1958420.9175609506,
+        "qkd.sync.ridge.1s.h2s": 1970674.6514495504
+      },
+      "500|1e+06": {
+        "baseline.none": 0.0,
+        "baseline.periodic_60s": 552250.5769841066,
+        "baseline.alpha_beta": 960363.7397001898,
+        "qkd.sync.ridge.1s.h2s": 976918.0352242369
+      },
+      "1000|10": {
+        "baseline.none": 570793.1595639776,
+        "baseline.periodic_60s": 1935081.7104324065,
+        "baseline.alpha_beta": 2007196.3641881167,
+        "qkd.sync.ridge.1s.h2s": 2007244.7311453442
+      },
+      "1000|1e+06": {
+        "baseline.none": 0.0,
+        "baseline.periodic_60s": 143965.19998112725,
+        "baseline.alpha_beta": 253370.62162095407,
+        "qkd.sync.ridge.1s.h2s": 253444.7054015714
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "file": "keyrate-runs.jsonl",
+      "records": 300,
+      "sha256": "51c66214631fb53abe599c2fb79c2b12061e2b18333bfc5ab5a8ebb6b533aeec"
+    },
+    {
+      "file": "sync-runs.jsonl",
+      "records": 320,
+      "sha256": "5f58632f3626615024aab31fbc6c4d23b30581f406b3b61009536206b4feb326"
+    }
+  ],
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "simulator_action_performed": true,
+  "limitations": [
+    "Author's simulated plants (decoy-state link, thermal delay drift), not recorded link data.",
+    "Key rates are the author's per-period provable rates on finite counts; no finite-key security proof.",
+    "The synchroniser is admitted only at 50 km, the span it was trained on.",
+    "The oracle reads the true channel and is a reference, not a deployable baseline."
+  ]
+}

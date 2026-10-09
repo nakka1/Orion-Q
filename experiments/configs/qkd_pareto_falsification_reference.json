@@ -1,0 +1,32 @@
+{
+  "protocol_version": "1.0.0",
+  "status": "post_discovery_falsification_not_confirmatory",
+  "input_predictions": "outputs/qkd_multihead_measured/out_of_stratum_predictions.csv",
+  "input_manifest_verification": true,
+  "model_hyperparameters_frozen_from": "experiments/configs/qkd_multihead_default.json",
+  "seeds": [13, 42, 97],
+  "hidden_size": 10,
+  "epochs": 180,
+  "learning_rate": 0.003,
+  "weight_decay": 0.0001,
+  "pareto_dominance_weight": 0.25,
+  "pareto_margin": 0.05,
+  "randomization": {
+    "replicates": 20000,
+    "seed": 7319,
+    "operation": "jointly permute QBER and SKR prediction labels within physical stratum; share relabeling across model seeds",
+    "metrics": ["pareto_jaccard", "dominance_pair_accuracy"]
+  },
+  "condition_holdout": {
+    "levels": ["baseline", "3", "7", "9", "12"],
+    "validation": "leave_one_coexistence_condition_out",
+    "same_fibre_voa_strata_present_in_training": true,
+    "baseline": "within-stratum measured target mean over the other coexistence conditions"
+  },
+  "bootstrap_replicates": 20000,
+  "bootstrap_seed": 9317,
+  "familywise_alpha": 0.05,
+  "multiple_comparison_correction": "Bonferroni",
+  "hyperparameter_search": false,
+  "temporal_forecast_tested": false
+}

@@ -1,0 +1,14 @@
+{
+  "reference": "Quantum Network UI Technical Spec / Patterns A and B",
+  "license": "See per-family OFL files; Quantum has separate source and embedded metadata in quantum-NOTICE.txt",
+  "retrieved_on": "2026-09-09",
+  "fonts": [
+    {"file": "ChakraPetch-SemiBold.ttf", "family": "Chakra Petch", "sha256": "45264de3204ddbd5fb3e14a2402acd5c630d16650ae5fc221d2c52da46a6734b", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/chakrapetch/ChakraPetch-SemiBold.ttf"},
+    {"file": "ChakraPetch-Bold.ttf", "family": "Chakra Petch", "sha256": "65fbf76d95651697275e19db4d717c0e95a789ddd3476478b05292104db278a0", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/chakrapetch/ChakraPetch-Bold.ttf"},
+    {"file": "NotoSansJP.ttf", "family": "Noto Sans JP", "sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf"},
+    {"file": "Oswald.ttf", "family": "Oswald", "sha256": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald%5Bwght%5D.ttf"},
+    {"file": "JetBrainsMono.ttf", "family": "JetBrains Mono", "sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf"},
+    {"file": "Inter.ttf", "family": "Inter", "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031", "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz,wght%5D.ttf"},
+    {"file": "Quantum.otf", "family": "Quantum", "sha256": "86f257a808f4e160d338eb03186f9e10da2009c652037d1efaf56d7efa261740", "source": "User-supplied quantum_4.zip; https://www.dafont.com/quantum-4.font", "notice": "quantum-NOTICE.txt", "role": "OrionQ wordmark only", "added_on": "2026-10-08"}
+  ]
+}

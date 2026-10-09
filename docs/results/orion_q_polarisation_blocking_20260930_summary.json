@@ -1,0 +1,1294 @@
+{
+  "schema": "orion.polarisation-blocking-results.v1",
+  "status": "complete",
+  "manifest": {
+    "protocol": {
+      "schema": "orion.polarisation-blocking-protocol.v1",
+      "target_id": "polarisation.compensation.v1",
+      "evidence": "simulated",
+      "mode": "simulation",
+      "controller": "qnet_network.physics.blocks.adaptive_blocks(qber, sifted_rate_hz, dt_s, max_block_s=run, rng=seed + blocking_seed_offset, pooling=True): 10% of the bits published, 0.1 s segments, abort at 11%, no tuning constant",
+      "strategies": [
+        "fixo 0.1 s",
+        "fixo 1 s",
+        "fixo 5 s",
+        "fixo 10 s",
+        "fixo 20 s",
+        "adaptativo",
+        "adaptativo agrupado",
+        "or\u00e1culo",
+        "or\u00e1culo agrupado"
+      ],
+      "operating_points": [
+        "calibrado",
+        "desenvolvimento"
+      ],
+      "duration_s": 20.0,
+      "sifted_rate_hz": 100000.0,
+      "evaluation_plant_seeds": [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019
+      ],
+      "monitoring_seed_offset": 6000,
+      "blocking_seed_offset": 8000,
+      "compensators": [
+        "baseline.persistence",
+        "baseline.alpha_beta",
+        "learned ridge",
+        "learned mlp"
+      ],
+      "alpha_beta": {
+        "calibrado": {
+          "alpha": 0.01,
+          "beta": 0.0
+        },
+        "desenvolvimento": {
+          "alpha": 0.03,
+          "beta": 0.005
+        },
+        "source": "selected on the tuning seeds by the closed-loop campaigns v1 (their summaries)"
+      },
+      "supervisor": {
+        "max_command_step_rad": 1.5707963267948966,
+        "max_consecutive_faults": 8,
+        "rotation_tolerance": 1e-07
+      },
+      "fallback": "baseline.alpha_beta",
+      "reproduction": {
+        "adaptive_blocks": {
+          "tables": [
+            "runs/realism/adaptive_blocks.csv",
+            "runs/realism/adaptive_blocks_summary.csv"
+          ],
+          "point": "desenvolvimento",
+          "plant_seeds": [
+            500,
+            501,
+            502,
+            503,
+            504,
+            505,
+            506,
+            507,
+            508,
+            509,
+            510,
+            511
+          ],
+          "monitoring_seeds": "7000 + index",
+          "blocking_seeds": "9000 + index",
+          "alpha_beta": {
+            "alpha": 0.05,
+            "beta": 0.005
+          },
+          "path": "ORION-Q loop (replay, supervisor) and the author's block functions"
+        },
+        "blocking_stress": {
+          "tables": [
+            "runs/realism/blocking_stress.csv",
+            "runs/realism/blocking_stress_summary.csv"
+          ],
+          "plant_seeds": [
+            500,
+            501,
+            502,
+            503,
+            504,
+            505
+          ],
+          "vibration_amplitude_rad": [
+            0.3,
+            0.6,
+            0.9,
+            1.2
+          ],
+          "path": "the author's run_closed_loop and MLP rebuilt from the exported arrays (evaluate_realism.study_blocking_stress, transcribed)"
+        },
+        "closed_loop": {
+          "source": "docs/results/orion_q_polarisation_closed_loop*_20260929_summary.json",
+          "tolerance": 1e-12
+        },
+        "relative_tolerance": 1e-09
+      },
+      "primary": {
+        "persistence": "pooled controller key rate above the best timer (duration chosen with hindsight on the evaluation seeds), per point, one-sided",
+        "learned": "pooled controller key rate at least 0.99 times the best timer, per point and model, one-sided (difference controller - 0.99 x timer)"
+      },
+      "non_inferiority_margin": 0.01,
+      "test": "exact paired sign-flip test over the 20 seeds",
+      "multiplicity": "Holm over the 2 persistence tests; Holm over the 4 learned tests",
+      "alpha": 0.05,
+      "bootstrap": {
+        "resamples": 10000,
+        "seed": 20261022,
+        "confidence": 0.95,
+        "unit": "seed"
+      },
+      "interpretation": "key accounting on the simulated supervised loop; finite-key bound of the author, no signalling between the ends and no security proof for non-contiguous blocks"
+    },
+    "protocol_file_sha256": "8c645c01c1408773ab89c2852d485dd014d989bcfffb66bafc202ab56c4b2844",
+    "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "expected_archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+    "source_sha256": {
+      "quantum_autopilot/control_plane/polarisation_blocking.py": "2a55fc194e7dbda705922c516331305f0f616fbf8f5fd6b14e10dbdc9b4e4b11",
+      "quantum_autopilot/control_plane/polarisation_loop.py": "5f373259746a2c2fe3a05b35bb27855ed0092ffa8e5031c70709fcc9b308976e",
+      "quantum_autopilot/control_plane/polarisation_plant.py": "c3bf61bc7264e8f59d60f6266769e4ff7e78a37db597c849d3a7b8a0b6d913d2",
+      "quantum_autopilot/control_plane/polarisation_campaign.py": "2f561546d17ae89d06c940bb8b7203ab33e1ceb88183e1d4af7d7be5fa7efe37",
+      "quantum_autopilot/control_plane/polarisation_quantisation.py": "fa27263fd69a787609591d63addd31646c44f849bd2811480fdb8ba1758b172c",
+      "quantum_autopilot/control_plane/comparative_evaluation.py": "4a019cb5c527c67234a4ef896a53701e61ec16ab668277cbfa44eff271097cfd",
+      "quantum_autopilot/model_intake/compensation.py": "91ac7e614fa6941c57fd4f2015bb062cf9e945f3c7d5b9eb0ad9b9b33f0d0e05",
+      "quantum_autopilot/model_intake/artifacts.py": "173f7a4b43baa4987eae31214e854336a042327e3393ce5b29712e4c36fdfcab",
+      "qnet_network/physics/blocks.py": "6c821dd081584489b42eeccda6c5035a05e42dc7944d9dadfd06e6b0caa8433f",
+      "qnet_network/physics/link.py": "d20422aaeebff553decb5e27f8b6d18e5295c6836c7dc47e418ded3e93b03a28",
+      "qnet_network/compensation/closed_loop.py": "5e36d3cdfe6cb7bd0f42a09a88470f88394f06041c39cd8da4e58c95586cbd0c"
+    }
+  },
+  "contracts": [
+    {
+      "model_id": "qnet.compensation.calibrado.ridge",
+      "operating_point": "calibrado",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+      "checkpoint_sha256": {
+        "json": "ae91cddd2bb5b8984032d3e9d2e8e91e98f2d197d5b0596942f68e608b9d4cff",
+        "npz": "e2d754a25e7381639db9b1f43c91760a1be55e342fe1d9b96f40d02b50cb9437"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.calibrado.mlp",
+      "operating_point": "calibrado",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+      "checkpoint_sha256": {
+        "json": "ac85915641589811cc7bf8015247159879f2fdc4991205727823f5ef74f7d896",
+        "npz": "33d984c8363e10adf576c6fa06c56a649f69209df12c6fc342b2401b9f172249"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.ridge",
+      "operating_point": "desenvolvimento",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+      "checkpoint_sha256": {
+        "json": "17faaa165c0e1119e169270b350ced29fe7bdcc00f35d6b1c74b78b4f4195302",
+        "npz": "85caa076d7a8cedc5c6b4451d1177b2133aa178bbf4441f25d3cebc8e08bd073"
+      }
+    },
+    {
+      "model_id": "qnet.compensation.desenvolvimento.mlp",
+      "operating_point": "desenvolvimento",
+      "status": "ADMITTED",
+      "reasons": [],
+      "archive_sha256": "f0d19d1213e6e5c13065455dd3950171445ea098e54e47cdb8078586f9a1cbb3",
+      "checkpoint_sha256": {
+        "json": "b0fcfda9f86d4deb391b1b25cd5466be2d04bf155834b0437d8a7afae734ef3e",
+        "npz": "2bffd57e1d9338a2adae34b184bfce42073d7726b5e5590410bea08164a2a9e3"
+      }
+    }
+  ],
+  "reproduction": [
+    {
+      "gate": "adaptive_blocks.csv",
+      "rows": 432,
+      "unmatched_rows": 0,
+      "max_relative_error": 6.123043009772877e-16,
+      "passed": true,
+      "columns": {
+        "mean_qber": 0.0,
+        "key_rate_hz": 6.123043009772877e-16,
+        "blocks": 0.0,
+        "duty": 0.0,
+        "empty_fraction": 0.0,
+        "pieces_per_block": 0.0,
+        "mean_block_s": 0.0
+      }
+    },
+    {
+      "gate": "adaptive_blocks_summary.csv",
+      "rows": 36,
+      "unmatched_rows": 0,
+      "max_relative_error": 4.639012992406075e-16,
+      "passed": true,
+      "columns": {
+        "mean_qber": 0.0,
+        "key_rate_hz": 2.0792360156697797e-16,
+        "blocks": 0.0,
+        "duty": 0.0,
+        "empty_fraction": 0.0,
+        "pieces_per_block": 0.0,
+        "mean_block_s": 0.0,
+        "of_oracle": 4.639012992406075e-16
+      }
+    },
+    {
+      "gate": "blocking_stress.csv",
+      "rows": 24,
+      "unmatched_rows": 0,
+      "max_relative_error": 0.0,
+      "passed": true,
+      "columns": {
+        "mean_qber": 0.0,
+        "best_timer_s": 0.0,
+        "best_timer_hz": 0.0,
+        "timer_1s_hz": 0.0,
+        "adaptive_hz": 0.0,
+        "pooling_hz": 0.0,
+        "oracle_hz": 0.0,
+        "pooled_oracle_hz": 0.0,
+        "adaptive_duty": 0.0,
+        "pooling_duty": 0.0,
+        "pooling_pieces_per_block": 0.0
+      }
+    },
+    {
+      "gate": "blocking_stress_summary.csv",
+      "rows": 4,
+      "unmatched_rows": 0,
+      "max_relative_error": 0.0,
+      "passed": true,
+      "columns": {
+        "mean_qber": 0.0,
+        "median_best_timer_s": 0.0,
+        "best_timer_hz": 0.0,
+        "timer_1s_hz": 0.0,
+        "adaptive_hz": 0.0,
+        "pooling_hz": 0.0,
+        "oracle_hz": 0.0,
+        "pooled_oracle_hz": 0.0,
+        "adaptive_duty": 0.0,
+        "pooling_duty": 0.0,
+        "pieces_per_block": 0.0,
+        "over_best_timer": 0.0,
+        "pooling_gain": 0.0,
+        "of_oracle": 0.0
+      }
+    },
+    {
+      "gate": "closed_loop_mean_qber",
+      "point": "calibrado",
+      "absolute_errors": {
+        "baseline.persistence": 2.7755575615628914e-17,
+        "baseline.alpha_beta": 0.0,
+        "qnet.compensation.calibrado.ridge": 0.0,
+        "qnet.compensation.calibrado.mlp": 3.469446951953614e-18
+      },
+      "max_absolute_error": 2.7755575615628914e-17,
+      "passed": true
+    },
+    {
+      "gate": "closed_loop_mean_qber",
+      "point": "desenvolvimento",
+      "absolute_errors": {
+        "baseline.persistence": 0.0,
+        "baseline.alpha_beta": 0.0,
+        "qnet.compensation.desenvolvimento.ridge": 0.0,
+        "qnet.compensation.desenvolvimento.mlp": 0.0
+      },
+      "max_absolute_error": 0.0,
+      "passed": true
+    }
+  ],
+  "primary": {
+    "persistence": [
+      {
+        "point": "calibrado",
+        "controller_id": "baseline.persistence",
+        "hypothesis": "above_best_timer",
+        "best_timer": "fixo 0.1 s",
+        "best_timer_hz": 393.3551258924817,
+        "controller_hz": 4294.431982550776,
+        "ratio_to_best_timer": 10.91744253442016,
+        "ratio_ci95": [
+          9.682525379128673,
+          12.532497318597814
+        ],
+        "of_pooled_oracle": 0.9416027607590108,
+        "seeds_won": 20,
+        "seeds_lost": 0,
+        "margin_factor": 1.0,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 1.9073486328125e-06,
+        "significant": true
+      },
+      {
+        "point": "desenvolvimento",
+        "controller_id": "baseline.persistence",
+        "hypothesis": "above_best_timer",
+        "best_timer": "fixo 0.1 s",
+        "best_timer_hz": 598.7065375571343,
+        "controller_hz": 4713.914884963727,
+        "ratio_to_best_timer": 7.87349826544007,
+        "ratio_ci95": [
+          7.1330674142412605,
+          8.89525662666178
+        ],
+        "of_pooled_oracle": 0.9451656585333515,
+        "seeds_won": 20,
+        "seeds_lost": 0,
+        "margin_factor": 1.0,
+        "p_value": 9.5367431640625e-07,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 1.9073486328125e-06,
+        "significant": true
+      }
+    ],
+    "learned": [
+      {
+        "point": "calibrado",
+        "controller_id": "qnet.compensation.calibrado.ridge",
+        "hypothesis": "non_inferior_to_best_timer",
+        "best_timer": "fixo 20 s",
+        "best_timer_hz": 66067.18672084968,
+        "controller_hz": 65933.09270664433,
+        "ratio_to_best_timer": 0.9979703386679389,
+        "ratio_ci95": [
+          0.9962375665199527,
+          0.9994445233376169
+        ],
+        "of_pooled_oracle": 0.9972374257837482,
+        "seeds_won": 19,
+        "seeds_lost": 1,
+        "margin_factor": 0.99,
+        "p_value": 3.814697265625e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 1.1444091796875e-05,
+        "significant": true
+      },
+      {
+        "point": "calibrado",
+        "controller_id": "qnet.compensation.calibrado.mlp",
+        "hypothesis": "non_inferior_to_best_timer",
+        "best_timer": "fixo 20 s",
+        "best_timer_hz": 65667.71714551732,
+        "controller_hz": 65511.04254778983,
+        "ratio_to_best_timer": 0.9976141305874803,
+        "ratio_ci95": [
+          0.9949433574297605,
+          0.9995661801105131
+        ],
+        "of_pooled_oracle": 0.9968984604391037,
+        "seeds_won": 19,
+        "seeds_lost": 1,
+        "margin_factor": 0.99,
+        "p_value": 4.673004150390625e-05,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 4.673004150390625e-05,
+        "significant": true
+      },
+      {
+        "point": "desenvolvimento",
+        "controller_id": "qnet.compensation.desenvolvimento.ridge",
+        "hypothesis": "non_inferior_to_best_timer",
+        "best_timer": "fixo 20 s",
+        "best_timer_hz": 72742.34835035451,
+        "controller_hz": 72698.18129912057,
+        "ratio_to_best_timer": 0.9993928289059183,
+        "ratio_ci95": [
+          0.9969707262208112,
+          1.0016877040227445
+        ],
+        "of_pooled_oracle": 0.9968822142384739,
+        "seeds_won": 18,
+        "seeds_lost": 2,
+        "margin_factor": 0.99,
+        "p_value": 4.76837158203125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 1.1444091796875e-05,
+        "significant": true
+      },
+      {
+        "point": "desenvolvimento",
+        "controller_id": "qnet.compensation.desenvolvimento.mlp",
+        "hypothesis": "non_inferior_to_best_timer",
+        "best_timer": "fixo 20 s",
+        "best_timer_hz": 73248.5253478215,
+        "controller_hz": 73267.68724270246,
+        "ratio_to_best_timer": 1.0002616011010457,
+        "ratio_ci95": [
+          0.9981443549734149,
+          1.0022324989360407
+        ],
+        "of_pooled_oracle": 0.997916416540081,
+        "seeds_won": 19,
+        "seeds_lost": 1,
+        "margin_factor": 0.99,
+        "p_value": 1.9073486328125e-06,
+        "method": "exact paired sign-flip randomization test",
+        "holm_p_value": 7.62939453125e-06,
+        "significant": true
+      }
+    ]
+  },
+  "secondary": {
+    "alpha_beta": [
+      {
+        "point": "calibrado",
+        "controller_id": "baseline.alpha_beta",
+        "hypothesis": "above_best_timer",
+        "best_timer": "fixo 20 s",
+        "best_timer_hz": 35839.59903470102,
+        "controller_hz": 35113.28246532813,
+        "ratio_to_best_timer": 0.9797342439944808,
+        "ratio_ci95": [
+          0.9731272060375732,
+          0.9861005847662612
+        ],
+        "of_pooled_oracle": 0.9733426342586275,
+        "seeds_won": 1,
+        "seeds_lost": 19,
+        "margin_factor": 1.0,
+        "p_value": 0.9999980926513672,
+        "method": "exact paired sign-flip randomization test"
+      },
+      {
+        "point": "desenvolvimento",
+        "controller_id": "baseline.alpha_beta",
+        "hypothesis": "above_best_timer",
+        "best_timer": "fixo 20 s",
+        "best_timer_hz": 42455.525167232176,
+        "controller_hz": 41747.78724899627,
+        "ratio_to_best_timer": 0.9833298983948937,
+        "ratio_ci95": [
+          0.9756102475728353,
+          0.9908579871791345
+        ],
+        "of_pooled_oracle": 0.9754002304394261,
+        "seeds_won": 4,
+        "seeds_lost": 16,
+        "margin_factor": 1.0,
+        "p_value": 0.9996585845947266,
+        "method": "exact paired sign-flip randomization test"
+      }
+    ]
+  },
+  "strategies": [
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 393.3551258925,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.9205,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 95.3123638383,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.9725,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 0.0,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 1.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 0.0,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 1.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 0.0,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 1.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "adaptativo",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 976.3102589808,
+      "blocks": 12.85,
+      "duty": 0.1605,
+      "empty_fraction": 0.1349698831,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 4294.4319825508,
+      "blocks": 1.15,
+      "duty": 0.32325,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 30.125
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 1239.8564629762,
+      "blocks": 12.15,
+      "duty": 0.198,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.persistence",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.1216669079,
+      "key_rate_hz": 4560.7682576133,
+      "blocks": 1.0,
+      "duty": 0.33025,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 33.25
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 7795.6922355461,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.20975,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 23654.8711934036,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 31408.9797312622,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 33848.2312678099,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 35839.599034701,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "adaptativo",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 34985.9867633564,
+      "blocks": 4.85,
+      "duty": 0.986,
+      "empty_fraction": 0.0055555556,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 35113.2824653281,
+      "blocks": 4.65,
+      "duty": 0.96525,
+      "empty_fraction": 0.0055555556,
+      "pieces_per_block": 2.2943650794
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 35877.3790780682,
+      "blocks": 1.0,
+      "duty": 0.99825,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.0435542646,
+      "key_rate_hz": 36074.9454811184,
+      "blocks": 1.0,
+      "duty": 0.97975,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 3.95
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 24722.9515086703,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.003,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 48913.5160009416,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 59775.3853875058,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 63198.7584693269,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 66067.1867208497,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "adaptativo",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 65932.2962459353,
+      "blocks": 1.75,
+      "duty": 0.9995,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 65933.0927066443,
+      "blocks": 1.75,
+      "duty": 0.99925,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.05
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 66114.9458910446,
+      "blocks": 1.0,
+      "duty": 0.998,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.ridge",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.0130794335,
+      "key_rate_hz": 66115.7423517536,
+      "blocks": 1.0,
+      "duty": 0.99775,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.05
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 24462.6220436213,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.003,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 48577.6923263475,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 59399.6393790462,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 62808.7534938457,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 65667.7171455173,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "adaptativo",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 65511.0425477898,
+      "blocks": 1.85,
+      "duty": 0.9995,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 65511.0425477898,
+      "blocks": 1.85,
+      "duty": 0.9995,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 65714.8597851523,
+      "blocks": 1.0,
+      "duty": 0.998,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "calibrado",
+      "controller_id": "qnet.compensation.calibrado.mlp",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.0134228866,
+      "key_rate_hz": 65714.8597851523,
+      "blocks": 1.0,
+      "duty": 0.998,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 598.7065375571,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.90625,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 97.7100264969,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.97,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 0.2953611012,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 0.9875,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 0.0,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 1.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 0.0,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 1.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "adaptativo",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 1264.0712610076,
+      "blocks": 15.15,
+      "duty": 0.17925,
+      "empty_fraction": 0.1604901022,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 4713.9148849637,
+      "blocks": 1.35,
+      "duty": 0.3105,
+      "empty_fraction": 0.0166666667,
+      "pieces_per_block": 26.9166666667
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 1497.0192187813,
+      "blocks": 13.6,
+      "duty": 0.20425,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.persistence",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.1281371081,
+      "key_rate_hz": 4987.3954289436,
+      "blocks": 1.0,
+      "duty": 0.313,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 32.2
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 11645.0853863924,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.13925,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 29237.0140136192,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 37602.9813071793,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 40273.5136216317,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 42455.5251672322,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "adaptativo",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 41036.3967277652,
+      "blocks": 8.3,
+      "duty": 0.986,
+      "empty_fraction": 0.0097009637,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 41747.7872489963,
+      "blocks": 5.55,
+      "duty": 0.9695,
+      "empty_fraction": 0.0055555556,
+      "pieces_per_block": 2.0063762626
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 42511.5338875477,
+      "blocks": 1.0,
+      "duty": 0.99775,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "baseline.alpha_beta",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.0361335856,
+      "key_rate_hz": 42800.673965587,
+      "blocks": 1.0,
+      "duty": 0.9795,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 3.95
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 29237.571989414,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.00425,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 54549.112349245,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 66050.3771044854,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 69709.2573816184,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 72742.3483503545,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "adaptativo",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 71952.9516227059,
+      "blocks": 4.75,
+      "duty": 0.99925,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 72698.1812991206,
+      "blocks": 1.9,
+      "duty": 0.99725,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.2
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 72834.8555135997,
+      "blocks": 1.0,
+      "duty": 0.998,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.ridge",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.0076129207,
+      "key_rate_hz": 72925.54753287,
+      "blocks": 1.0,
+      "duty": 0.99675,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.2
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "fixo 0.1 s",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 29569.6141668744,
+      "blocks": 200.0,
+      "duty": 1.0,
+      "empty_fraction": 0.004,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "fixo 1 s",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 54974.5714527211,
+      "blocks": 20.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "fixo 5 s",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 66526.0891383745,
+      "blocks": 4.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "fixo 10 s",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 70202.2548798953,
+      "blocks": 2.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "fixo 20 s",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 73248.5253478215,
+      "blocks": 1.0,
+      "duty": 1.0,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "adaptativo",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 73159.4364479823,
+      "blocks": 1.6,
+      "duty": 0.9995,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "adaptativo agrupado",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 73267.6872427025,
+      "blocks": 1.6,
+      "duty": 0.997,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.225
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "or\u00e1culo",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 73342.9689371443,
+      "blocks": 1.0,
+      "duty": 0.998,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.0
+    },
+    {
+      "point": "desenvolvimento",
+      "controller_id": "qnet.compensation.desenvolvimento.mlp",
+      "strategy": "or\u00e1culo agrupado",
+      "mean_qber": 0.0072205177,
+      "key_rate_hz": 73420.6653265932,
+      "blocks": 1.0,
+      "duty": 0.99675,
+      "empty_fraction": 0.0,
+      "pieces_per_block": 1.2
+    }
+  ],
+  "supervisor_faults": 0,
+  "artifacts": [
+    {
+      "file": "blocking-runs.csv",
+      "sha256": "816a251a6307aad3a0d87dd70dd9b3914d33dd0dc266783c701c190834ca8c4c"
+    }
+  ],
+  "policy_activated": false,
+  "physical_action_performed": false,
+  "simulator_action_performed": true,
+  "limitations": [
+    "Key accounting with the author's finite-key bound; the signalling the two ends need to agree on a block is not modelled, and non-contiguous blocks have no security proof.",
+    "Ideal actuator; the author's plant at its two operating points."
+  ]
+}

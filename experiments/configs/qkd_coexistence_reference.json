@@ -1,0 +1,11 @@
+{
+  "dataset_doi": "10.5281/zenodo.21132088",
+  "dataset_license": "CC-BY-4.0",
+  "status": "exploratory",
+  "experimental_unit": "mean within fibre/VOA/signal-power cell",
+  "bootstrap_replicates": 50000,
+  "familywise_alpha": 0.05,
+  "ridge_alpha": 1.0,
+  "seed": 42,
+  "qber_scale": "publisher-reported; ambiguous ratio or percent; no conversion"
+}

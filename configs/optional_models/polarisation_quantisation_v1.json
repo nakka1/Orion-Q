@@ -1,0 +1,143 @@
+{
+  "schema": "orion.polarisation-quantisation-protocol.v1",
+  "target_id": "polarisation.compensation.v1",
+  "evidence": "simulated",
+  "mode": "simulation",
+  "fixed_point": "qnet_network.deploy (author): collect_calibration ranges, build_quantised, QuantisedCompensator (CORDIC datapath 32 bits, 20 fraction bits)",
+  "models": [
+    "ridge",
+    "mlp"
+  ],
+  "reproduction": {
+    "references": {
+      "width.csv": {
+        "path": "external/qnet_network/runs/quantisation/width.csv"
+      },
+      "cordic.csv": {
+        "path": "external/qnet_network/runs/quantisation/cordic.csv"
+      }
+    },
+    "reference_sha256": {
+      "width.csv": "0ee9be41ff3ff72aa81079a5872d5f59e226196b497f250906d158a3e5b21bc0",
+      "cordic.csv": "6ce288930e6d676644740263730dc3eb055b07dbc241ae91b504c03d50eb6b44"
+    },
+    "procedure": "scripts/evaluate_quantisation.py study(): task3 TEST_SEEDS[:6], rng 7000+i, calibration on TRAIN_SEEDS[:3]; widths 8-24 at CORDIC 16, and 16 bits at CORDIC 8",
+    "columns": [
+      "mean_qber",
+      "median_qber",
+      "p95_qber",
+      "uptime",
+      "mean_key_rate_hz",
+      "mean_residual_mrad",
+      "p95_residual_mrad",
+      "mean_prediction_error_mrad",
+      "qber_stderr",
+      "saturations"
+    ],
+    "tolerance": "relative 1e-12 (absolute below 1): |ours - author| <= 1e-12 * max(1, |author|)"
+  },
+  "operating_points": {
+    "calibrado": {
+      "alpha_beta": {
+        "alpha": 0.01,
+        "beta": 0.0
+      },
+      "float_mean_qber": {
+        "ridge": 0.013079433498572032,
+        "mlp": 0.013422886566343249
+      },
+      "source": "docs/results/orion_q_polarisation_closed_loop_20260929_summary.json"
+    },
+    "desenvolvimento": {
+      "alpha_beta": {
+        "alpha": 0.03,
+        "beta": 0.005
+      },
+      "float_mean_qber": {
+        "ridge": 0.007612920696349887,
+        "mlp": 0.007220517693620397
+      },
+      "source": "docs/results/orion_q_polarisation_closed_loop_dev_20260929_summary.json"
+    }
+  },
+  "configurations": [
+    {
+      "width": 16,
+      "cordic": 8
+    },
+    {
+      "width": 16,
+      "cordic": 16
+    },
+    {
+      "width": 14,
+      "cordic": 16
+    },
+    {
+      "width": 12,
+      "cordic": 16
+    }
+  ],
+  "calibration": {
+    "plant_seeds": [
+      100,
+      101,
+      102,
+      103
+    ],
+    "monitoring_seeds": [
+      7,
+      8,
+      9,
+      10
+    ],
+    "duration_s": 20.0
+  },
+  "duration_s": 20.0,
+  "evaluation_plant_seeds": [
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019
+  ],
+  "monitoring_seed_offset": 6000,
+  "supervisor": {
+    "max_command_step_rad": 1.5707963267948966,
+    "max_consecutive_faults": 8,
+    "rotation_tolerance": 1e-07
+  },
+  "fixed_point_output": "projected onto SO(3) (nearest rotation by SVD) before the supervisor, as an actuator driver would; the largest Frobenius distance moved is recorded",
+  "primary": {
+    "configuration": {
+      "width": 16,
+      "cordic": 8
+    },
+    "margin": 0.05,
+    "endpoint": "per-seed mean QBER, fixed point against the float model"
+  },
+  "test": "exact one-sided paired sign-flip test, H1: mean(q_fixed - (1 + margin) q_float) < 0",
+  "multiplicity": "Holm over the four model x point hypotheses",
+  "alpha": 0.05,
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20261022,
+    "confidence": 0.95
+  },
+  "interpretation": "simulated closed loop with an ideal actuator; the fixed-point model is the author's reference, whose RTL tools/verify_author_rtl.py checks bit for bit"
+}

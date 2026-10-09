@@ -1,0 +1,142 @@
+{
+  "schema": "orion.polarisation-blocking-protocol.v1",
+  "target_id": "polarisation.compensation.v1",
+  "evidence": "simulated",
+  "mode": "simulation",
+  "controller": "qnet_network.physics.blocks.adaptive_blocks(qber, sifted_rate_hz, dt_s, max_block_s=run, rng=seed + blocking_seed_offset, pooling=True): 10% of the bits published, 0.1 s segments, abort at 11%, no tuning constant",
+  "strategies": [
+    "fixo 0.1 s",
+    "fixo 1 s",
+    "fixo 5 s",
+    "fixo 10 s",
+    "fixo 20 s",
+    "adaptativo",
+    "adaptativo agrupado",
+    "oráculo",
+    "oráculo agrupado"
+  ],
+  "operating_points": [
+    "calibrado",
+    "desenvolvimento"
+  ],
+  "duration_s": 20.0,
+  "sifted_rate_hz": 100000.0,
+  "evaluation_plant_seeds": [
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019
+  ],
+  "monitoring_seed_offset": 6000,
+  "blocking_seed_offset": 8000,
+  "compensators": [
+    "baseline.persistence",
+    "baseline.alpha_beta",
+    "learned ridge",
+    "learned mlp"
+  ],
+  "alpha_beta": {
+    "calibrado": {
+      "alpha": 0.01,
+      "beta": 0.0
+    },
+    "desenvolvimento": {
+      "alpha": 0.03,
+      "beta": 0.005
+    },
+    "source": "selected on the tuning seeds by the closed-loop campaigns v1 (their summaries)"
+  },
+  "supervisor": {
+    "max_command_step_rad": 1.5707963267948966,
+    "max_consecutive_faults": 8,
+    "rotation_tolerance": 1e-07
+  },
+  "fallback": "baseline.alpha_beta",
+  "reproduction": {
+    "adaptive_blocks": {
+      "tables": [
+        "runs/realism/adaptive_blocks.csv",
+        "runs/realism/adaptive_blocks_summary.csv"
+      ],
+      "point": "desenvolvimento",
+      "plant_seeds": [
+        500,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507,
+        508,
+        509,
+        510,
+        511
+      ],
+      "monitoring_seeds": "7000 + index",
+      "blocking_seeds": "9000 + index",
+      "alpha_beta": {
+        "alpha": 0.05,
+        "beta": 0.005
+      },
+      "path": "ORION-Q loop (replay, supervisor) and the author's block functions"
+    },
+    "blocking_stress": {
+      "tables": [
+        "runs/realism/blocking_stress.csv",
+        "runs/realism/blocking_stress_summary.csv"
+      ],
+      "plant_seeds": [
+        500,
+        501,
+        502,
+        503,
+        504,
+        505
+      ],
+      "vibration_amplitude_rad": [
+        0.3,
+        0.6,
+        0.9,
+        1.2
+      ],
+      "path": "the author's run_closed_loop and MLP rebuilt from the exported arrays (evaluate_realism.study_blocking_stress, transcribed)"
+    },
+    "closed_loop": {
+      "source": "docs/results/orion_q_polarisation_closed_loop*_20260929_summary.json",
+      "tolerance": 1e-12
+    },
+    "relative_tolerance": 1e-09
+  },
+  "primary": {
+    "persistence": "pooled controller key rate above the best timer (duration chosen with hindsight on the evaluation seeds), per point, one-sided",
+    "learned": "pooled controller key rate at least 0.99 times the best timer, per point and model, one-sided (difference controller - 0.99 x timer)"
+  },
+  "non_inferiority_margin": 0.01,
+  "test": "exact paired sign-flip test over the 20 seeds",
+  "multiplicity": "Holm over the 2 persistence tests; Holm over the 4 learned tests",
+  "alpha": 0.05,
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20261022,
+    "confidence": 0.95,
+    "unit": "seed"
+  },
+  "interpretation": "key accounting on the simulated supervised loop; finite-key bound of the author, no signalling between the ends and no security proof for non-contiguous blocks"
+}

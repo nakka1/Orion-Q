@@ -1,0 +1,78 @@
+{
+  "status": "predeclared_simulated_task_policy_remediation",
+  "scientific_scope": "simulated WDM to simulated Bell fidelity only",
+  "control_task": "link_purification",
+  "evaluation_seeds": [809, 811, 821, 823, 827, 829, 839, 853, 857, 859],
+  "methodology_debug_seeds": [601, 607, 613, 617, 619, 701, 709, 719, 727, 733],
+  "prohibited_prior_test_seeds": [7, 19, 42, 73, 101, 123, 211, 307, 401, 509, 601, 607, 613, 617, 619, 701, 709, 719, 727, 733],
+  "fresh_seed_rule": "Every confirmatory evaluation seed is disjoint from v5.25 and from the v5.26 methodology-debug run that exposed the BBPSSW target mismatch; each frozen policy uses only that seed's fit and temporal calibration prefix before its held-out suffix is evaluated.",
+  "n_steps": 700,
+  "ood_n_steps": 350,
+  "window_size": 20,
+  "test_fraction": 0.25,
+  "calibration_fraction": 0.15,
+  "cycles_per_regime": 100,
+  "feature_set": "wdm_only",
+  "controllers": [
+    "persistence_target_history",
+    "reactive_current_fidelity",
+    "edge_lstm_point",
+    "edge_lstm_probabilistic",
+    "edge_lstm_dual_head",
+    "oracle_future_fidelity"
+  ],
+  "primary_candidates": [
+    "edge_lstm_point",
+    "edge_lstm_probabilistic",
+    "edge_lstm_dual_head"
+  ],
+  "primary_baseline": "persistence_target_history",
+  "primary_regime": "id_held_out",
+  "primary_metric": "net_utility_per_arrival",
+  "primary_alternative": "candidate greater than persistence",
+  "familywise_alpha": 0.05,
+  "multiplicity_correction": "Holm over three exact paired seed-level sign-flip tests",
+  "domain_shift_regimes": {
+    "higher_depolarization_5x": {
+      "DEPOLARIZATION_P_multiplier": 5.0
+    },
+    "double_link_distance": {
+      "DISTANCE_KM_multiplier": 2.0
+    }
+  },
+  "decision": {
+    "fidelity_threshold": 0.65,
+    "availability_gate": 0.5
+  },
+  "policy_calibration": {
+    "max_safety_abstention_rate_pct": 20.0,
+    "max_policy_wait_rate_pct": 35.0,
+    "probability_margin_grid": [0.0, 0.025, 0.05, 0.075, 0.10, 0.15, 0.20],
+    "normalized_utility": {
+      "useful_pair_reward": 1.0,
+      "false_purification_penalty": 0.25,
+      "missed_useful_pair_penalty": 0.50,
+      "wait_penalty": 0.01,
+      "purification_attempt_penalty": 0.01
+    },
+    "uncertainty_rule": "Use the calibration-only upper quantile implied by the safety abstention budget; OOD remains an independent fail-closed condition.",
+    "margin_rule": "Maximize normalized utility on calibration samples subject to the policy WAIT budget; deterministic ties prefer less WAIT then the smaller margin."
+  },
+  "model": {
+    "hidden_size": 16,
+    "max_epochs": 35,
+    "learning_rate": 0.01,
+    "batch_size": 64,
+    "early_stopping_patience": 8,
+    "lambda_false_positive": 0.9,
+    "lambda_false_negative": 4.0,
+    "discard_penalty_weight": 25.0,
+    "max_discard_rate": 0.6
+  },
+  "task_semantics": {
+    "link_purification": "HALT/WAIT/PURIFY; prediction means future fidelity of each raw same-link pair, the raw-input eligibility boundary is obtained by analytically inverting BBPSSW for the declared output target, and pair values are used only to establish resource count.",
+    "path_extension": "HALT/WAIT/SWAP; exactly two explicit stored link-pair fidelities determine predicted swap output and WDM candidate prediction is ignored.",
+    "legacy_policy": "Retained as a compatibility control and not modified or used as the remediated policy."
+  },
+  "claim_limit": "No measured WDM or measured quantum target is used. Utility weights are normalized research choices, not currency or hardware measurements. No winner or threshold is selected on held-out results, and no physical action is performed."
+}

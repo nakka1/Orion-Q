@@ -1,0 +1,13 @@
+{
+  "schema": "orion.sync-campaign-protocol.v1",
+  "evidence": "simulated",
+  "frames": 128,
+  "seeds": [100, 101, 102, 103, 104, 105, 106, 107, 108, 109],
+  "scenarios": ["smooth", "independent_noise", "drift_reversal", "step_shift", "fast_oscillation", "packet_loss"],
+  "model_id": "qkd.sync.ridge.1s.h2s",
+  "baselines": ["persistence", "past_window_mean"],
+  "min_relative_mae_reduction": 0.05,
+  "min_seed_wins": 8,
+  "min_target_coverage": 0.9,
+  "interpretation": "descriptive engineering checks, not significance, experimental validation or activation authority"
+}

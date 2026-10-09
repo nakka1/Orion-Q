@@ -1,0 +1,48 @@
+{
+  "campaign_id": "temporal-demo-32seeds-v1",
+  "source": "alice",
+  "repeater": "repeater-a",
+  "destination": "bob",
+  "expected_version": 0,
+  "target_fidelity": 0.8,
+  "attempt_interval_s": 0.000001,
+  "max_attempts": 40,
+  "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+  "regimes": [
+    {
+      "regime_id": "baseline",
+      "success_probability_left": 0.5,
+      "success_probability_right": 0.1,
+      "memory_t1_s": 0.00005,
+      "memory_t2_s": 0.00003,
+      "memory_ttl_steps": 20
+    },
+    {
+      "regime_id": "longer-memory",
+      "success_probability_left": 0.5,
+      "success_probability_right": 0.1,
+      "memory_t1_s": 0.005,
+      "memory_t2_s": 0.003,
+      "memory_ttl_steps": 20
+    },
+    {
+      "regime_id": "short-retention",
+      "success_probability_left": 0.5,
+      "success_probability_right": 0.1,
+      "memory_t1_s": 0.00005,
+      "memory_t2_s": 0.00003,
+      "memory_ttl_steps": 1
+    },
+    {
+      "regime_id": "balanced-acquisition",
+      "success_probability_left": 0.5,
+      "success_probability_right": 0.5,
+      "memory_t1_s": 0.00005,
+      "memory_t2_s": 0.00003,
+      "memory_ttl_steps": 20
+    }
+  ],
+  "baseline_id": "baseline",
+  "topology_id": "sandbox-line-3",
+  "protocol": "paired_temporal_path_v1"
+}
