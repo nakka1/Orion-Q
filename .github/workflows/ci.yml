@@ -21,9 +21,11 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install lint tools
-        run: pip install ruff
+        run: pip install ruff pytest
       - name: Ruff critical correctness checks (blocking)
         run: ruff check . --select E9,F63,F7,F82
+      - name: Test dependency-free security source scanner
+        run: python -m pytest -q tests/test_security_source_scan.py
       - name: Scan security source literals without exposing values
         run: python tools/check_security_sources.py --output outputs/security/source-scan.json
       - name: Ruff style report (advisory during migration)
