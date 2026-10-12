@@ -1,9 +1,10 @@
-﻿<# Build, validate and package the native Windows console. #>
+<# Build, validate and package the native Windows console. #>
 [CmdletBinding()]
 param(
     [string]$Python = "",
     [switch]$SkipInstaller,
-    [switch]$SkipDependencyInstall
+    [switch]$SkipDependencyInstall,
+    [string]$ReleaseBaseDirectory = ""
 )
 $ErrorActionPreference = "Stop"
 $repositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
@@ -27,7 +28,14 @@ if ($LASTEXITCODE -ne 0) { throw "Product identity and canonical version could n
 $productMetadata = $productJson | ConvertFrom-Json
 $version = $productMetadata.version
 if (-not $version -or $version -eq "development") { throw "A declared release version is required" }
-$releaseRoot = Join-Path $repositoryRoot ("release\windows\" + $version + "-native-" + (Get-Date -Format "yyyyMMdd-HHmmss"))
+# Source and runtime-test storage may be on different volumes. Keep the full
+# finite validation campaign on the selected build volume; no durability or
+# timeout gate changes are needed when the checkout is on a slower disk.
+$releaseBase = if ($ReleaseBaseDirectory) {
+    [System.IO.Path]::GetFullPath($ReleaseBaseDirectory)
+} else { Join-Path $repositoryRoot "release\windows" }
+New-Item -ItemType Directory -Path $releaseBase -Force | Out-Null
+$releaseRoot = Join-Path $releaseBase ($version + "-native-" + (Get-Date -Format "yyyyMMdd-HHmmss"))
 New-Item -ItemType Directory -Path $releaseRoot | Out-Null
 $previousPythonPath = $env:PYTHONPATH
 $previousQtPlatform = $env:QT_QPA_PLATFORM
@@ -64,7 +72,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Classical mission decode, KISS capture, authenticated ingress, durable gateway and release gate validation failed" }
     & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-startup") --junitxml (Join-Path $releaseRoot "pytest-startup-results.xml") tests/test_console_startup_stability.py tests/test_console_startup_acquisition_budget.py
     if ($LASTEXITCODE -ne 0) { throw "Startup stability regression validation failed" }
-    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-roadmap") --junitxml (Join-Path $releaseRoot "pytest-roadmap-results.xml") tests/test_controller_evidence.py tests/test_console_controller_comparison.py tests/test_console_polarisation_control.py tests/test_runtime_diagnostic.py tests/test_laboneq_emulation.py tests/test_platform_claims.py tests/test_roadmap_frozen_commands.py
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-roadmap") --junitxml (Join-Path $releaseRoot "pytest-roadmap-results.xml") tests/test_controller_evidence.py tests/test_console_controller_comparison.py tests/test_console_polarisation_control.py tests/test_runtime_diagnostic.py tests/test_runtime_diagnostic_manifest.py tests/test_laboneq_emulation.py tests/test_platform_claims.py tests/test_roadmap_frozen_commands.py
     if ($LASTEXITCODE -ne 0) { throw "Roadmap evidence and diagnostics validation failed" }
     & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-console") --junitxml (Join-Path $releaseRoot "pytest-console-results.xml") tests/test_console_input_sources.py tests/test_orion_console.py tests/test_console_integration.py tests/test_desktop_app.py tests/test_physical_control_gate.py
     if ($LASTEXITCODE -ne 0) { throw "Console integration validation failed" }
@@ -75,7 +83,7 @@ try {
     # Keep independent Qt corpora in separate processes. Theme changes and queued
     # events from closed test windows otherwise make the subsequent reader corpus
     # much slower than the same cases in isolation; no coverage is skipped.
-    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-display-audit") --junitxml (Join-Path $releaseRoot "pytest-display-audit-results.xml") tests/test_console_command_reconciliation.py tests/test_console_policy_decisions.py
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-display-audit") --junitxml (Join-Path $releaseRoot "pytest-display-audit-results.xml") tests/test_console_command_reconciliation.py tests/test_console_policy_decisions.py tests/test_console_policy_watchdog.py tests/test_console_policy_binding_authority.py tests/test_policy_panel_benchmark.py
     if ($LASTEXITCODE -ne 0) { throw "Command receipts and decision audit display validation failed" }
     & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-display-readers") --junitxml (Join-Path $releaseRoot "pytest-display-readers-results.xml") tests/test_console_text_scrolling.py
     if ($LASTEXITCODE -ne 0) { throw "Text reader scrolling validation failed" }
@@ -85,10 +93,20 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Frameless window controls validation failed" }
     & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-institutional") --junitxml (Join-Path $releaseRoot "pytest-institutional-results.xml") tests/test_institutional_demo.py tests/test_console_institutional_demo.py
     if ($LASTEXITCODE -ne 0) { throw "Institutional geography, physical limits and confirmed ML control validation failed" }
-    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest") --junitxml (Join-Path $releaseRoot "pytest-results.xml") tests/test_console_screens.py tests/test_console_service_provider.py tests/test_worker_runtime.py tests/test_console_temporal_campaign.py tests/test_temporal_campaign.py tests/test_temporal_history.py tests/test_windows_acceptance.py tests/test_temporal_history_search.py tests/test_campaign_attempts.py tests/test_attempt_export.py tests/test_attempt_file.py tests/test_attempt_filters.py tests/test_attempt_period.py tests/test_attempt_batch.py tests/test_attempt_archive.py tests/test_attempt_receipt.py tests/test_campaign_read_store.py tests/test_campaign_manifest_editor.py
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest") --junitxml (Join-Path $releaseRoot "pytest-results.xml") tests/test_console_screens.py tests/test_console_service_provider.py tests/test_console_provider_bootstrap.py tests/test_worker_runtime.py tests/test_console_temporal_campaign.py tests/test_temporal_campaign.py tests/test_temporal_history.py tests/test_windows_acceptance.py tests/test_temporal_history_search.py tests/test_campaign_attempts.py tests/test_attempt_export.py tests/test_attempt_file.py tests/test_attempt_filters.py tests/test_attempt_period.py tests/test_attempt_batch.py tests/test_attempt_archive.py tests/test_attempt_receipt.py tests/test_campaign_read_store.py tests/test_campaign_manifest_editor.py
     if ($LASTEXITCODE -ne 0) { throw "Console validation failed" }
     & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-live-network") --junitxml (Join-Path $releaseRoot "pytest-live-network-results.xml") tests/test_network_inventory.py tests/test_control_plane_topology.py tests/test_network_engine_sources.py tests/test_network_engine_models.py tests/test_network_engine_links.py tests/test_network_engine_routing.py tests/test_network_engine_calibration.py tests/test_network_engine_engine.py tests/test_network_engine_regressions.py tests/test_network_engine_service.py tests/test_network_baseline_worker.py tests/test_console_geodata.py tests/test_console_live_provider.py tests/test_console_shell.py tests/test_console_topology_live.py tests/test_console_node_window_layout.py tests/test_console_memory_lifecycle.py tests/test_console_screens_live.py tests/test_functional_topology.py tests/test_console_capabilities.py tests/test_console_polling.py tests/test_vendored_qnet.py tests/test_gmpy_shim_coexistence.py
     if ($LASTEXITCODE -ne 0) { throw "Live network (engine, GEO, demonstration) validation failed" }
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-controller-concurrency") --junitxml (Join-Path $releaseRoot "pytest-controller-concurrency-results.xml") tests/test_controller_concurrency_qualification.py tests/test_mixed_controller.py tests/test_mixed_controller_service.py
+    if ($LASTEXITCODE -ne 0) { throw "Atomic reservation, physical resource authority, audit recovery and mixed controller validation failed" }
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-defect-corrections") --junitxml (Join-Path $releaseRoot "pytest-defect-corrections-results.xml") tests/test_console_provider_stop.py tests/test_prepared_source.py tests/test_pair_atomicity.py tests/test_orbital_resource_atomicity.py tests/test_routing_work_budget.py tests/test_keyrate_commissioning_cache.py tests/test_console_processing_labels.py tests/test_console_asset_compliance.py tests/test_sequence_control_execution_contract.py
+    if ($LASTEXITCODE -ne 0) { throw "Current defect-correction gates failed" }
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-scientific-input") --junitxml (Join-Path $releaseRoot "pytest-scientific-input-results.xml") tests/test_scientific_runtime_validation.py
+    if ($LASTEXITCODE -ne 0) { throw "Scientific input validation must remain effective in optimized interpreters" }
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-tick-layout") --junitxml (Join-Path $releaseRoot "pytest-tick-layout-results.xml") tests/test_console_tick_layout_budget.py tests/test_console_inspector_performance.py tests/test_console_wrapping_fields.py tests/test_console_floating_tick.py tests/test_console_node_window_lifecycle.py tests/test_console_node_capability_notifications.py tests/test_console_node_incremental.py
+    if ($LASTEXITCODE -ne 0) { throw "Live detail layout, complete values and bounded tick presentation validation failed" }
+    & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-visual-readability") --junitxml (Join-Path $releaseRoot "pytest-visual-readability-results.xml") tests/test_console_visual_readability.py
+    if ($LASTEXITCODE -ne 0) { throw "Floating title visibility, satellite tab viewport and complete telemetry cell layout validation failed" }
     & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-channel-intake") --junitxml (Join-Path $releaseRoot "pytest-channel-intake-results.xml") tests/test_network_channel_io.py tests/test_console_channel_configuration.py
     if ($LASTEXITCODE -ne 0) { throw "Paired channel configuration, acquisition replay and common intake validation failed" }
     & $Python -m pytest -q -p no:cacheprovider --basetemp (Join-Path $releaseRoot "pytest-commands") --junitxml (Join-Path $releaseRoot "pytest-commands-results.xml") tests/test_policy_preparation.py tests/test_policy_approval.py tests/test_policy_activation.py tests/test_policy_recovery.py tests/test_console_policy_review.py tests/test_console_policy_approval.py tests/test_console_policy_activation.py tests/test_console_policy_recovery.py tests/test_policy_decisions.py tests/test_console_policy_decisions.py tests/test_policy_compatibility.py tests/test_console_policy_compatibility.py tests/test_policy_context.py tests/test_console_policy_context.py tests/test_console_commands.py tests/test_command_reconciliation.py tests/test_console_command_reconciliation.py tests/test_console_inventory.py tests/test_console_link_editor.py
@@ -139,6 +157,12 @@ $report = Join-Path $releaseRoot "self-test.json"
 $process = Start-Process -FilePath $exe -ArgumentList @("--self-test", ('"' + $report + '"'), "--state-root", ('"' + (Join-Path $releaseRoot "validation-state") + '"')) -WindowStyle Hidden -Wait -PassThru
 if ($process.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $report)) { throw "Frozen self-test failed" }
 if (-not (Get-Content -Raw -LiteralPath $report | ConvertFrom-Json).passed) { throw "Invalid frozen self-test" }
+$scientificReport = Join-Path $releaseRoot "scientific-input-validation.json"
+$scientificProcess = Start-Process -FilePath $exe -ArgumentList @("--scientific-input-test", ('"' + $scientificReport + '"')) -WindowStyle Hidden -PassThru
+if (-not $scientificProcess.WaitForExit(180000)) { Stop-Process -Id $scientificProcess.Id -ErrorAction SilentlyContinue; throw "Frozen scientific input validation timed out" }
+if ($scientificProcess.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $scientificReport)) { throw "Frozen scientific input validation failed" }
+$scientificEvidence = Get-Content -Raw -LiteralPath $scientificReport | ConvertFrom-Json
+if (-not $scientificEvidence.passed -or -not $scientificEvidence.frozen) { throw "Invalid frozen scientific input evidence" }
 $laboratoryRoot = Join-Path $releaseRoot "laboratory-validation"
 $laboratoryProcess = Start-Process -FilePath $exe -ArgumentList @("--lab-test", ('"' + $laboratoryRoot + '"')) -WindowStyle Hidden -PassThru
 if (-not $laboratoryProcess.WaitForExit(300000)) { $laboratoryProcess.Kill(); throw "Frozen laboratory validation timed out" }

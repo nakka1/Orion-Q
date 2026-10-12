@@ -1,0 +1,223 @@
+{
+  "schema": "orionq.trl5-software-protocol.v1",
+  "schema_version": 1,
+  "protocol_id": "SOFT-DT-TRL5-v1",
+  "protocol_revision": 1,
+  "created_on": "2026-10-09",
+  "target_scope": "SOFT-DT",
+  "qualification_target": 5,
+  "assessment_status": "not_demonstrated",
+  "automatic_trl_assignment": false,
+  "gate_status_values": ["pass", "fail", "not_demonstrated"],
+  "gate_aggregation": "Any demonstrated violation is fail; otherwise any missing required evidence is not_demonstrated; all seven passes permit human assessment, never automatic TRL assignment.",
+  "scope": {
+    "product": "OrionQ",
+    "baseline_version": "5.60.1",
+    "included": [
+      "Local Windows software for read-only intake, declared simulation and offline replay",
+      "Input validation, clocks, paired channels, causal protocol processing and resource accounting",
+      "Durable results, recovery, authorization boundaries, API and native console",
+      "Demonstrated topology, terrestrial and satellite models, exclusive Map/Globe presentation"
+    ],
+    "excluded_claims": [
+      "Qualified physical quantum network or institutional operational deployment",
+      "Qualified instrument, optical terminal, RF reception or spacecraft control",
+      "Certified QKD security, production secret keys or quantum Internet connectivity",
+      "Validated measured temporal WDM-to-Bell-fidelity prediction",
+      "Universal learned-controller benefit, universal reach or universal simulation accuracy"
+    ],
+    "requirePhysicalAction": false,
+    "allowPhysicalAction": false,
+    "optionalMlDefault": "off",
+    "allowOperationalEmulatedKeys": false,
+    "certified_secret_bits_expected": 0,
+    "scope_changes_require_new_revision": true
+  },
+  "sources": [
+    {
+      "id": "NASA-NPR-7123.1D-E",
+      "url": "https://nodis3.gsfc.nasa.gov/displayDir.cfm?Internal_ID=N_PR_7123_001D_&page_name=AppendixE",
+      "publication": "NPR 7123.1D, Appendix E, updated with Change 2",
+      "effective_date": "2023-07-05",
+      "consulted_on": "2026-10-09",
+      "use": "Software TRL 4/5 definitions; systems or simulations may represent the target environment."
+    },
+    {
+      "id": "ECSS-E-HB-11A",
+      "url": "https://ecss.nl/wp-content/uploads/2017/03/ECSS-E-HB-11A(1March2017).pdf",
+      "publication": "ECSS-E-HB-11A, 1 March 2017",
+      "consulted_on": "2026-10-09",
+      "sections": ["5.2.3", "5.3.5", "A.3"],
+      "use": "Critical functions, relevant environment, scaling and independent assessment; guidance, not an OrionQ certification."
+    }
+  ],
+  "freeze": {
+    "before_execution": true,
+    "required_manifest_fields": [
+      "protocol_id", "protocol_revision", "protocol_sha256", "source_revision_or_manifest_sha256",
+      "source_dirty_state", "source_file_hashes", "product_version", "dependency_versions",
+      "environment", "dataset_hashes", "oracle_hashes", "commands", "seed_sets",
+      "created_at_utc", "qualification_scope", "evidence_limits"
+    ],
+    "source_and_protocol_hashes_before_after": true,
+    "results_must_not_modify_this_protocol": true,
+    "threshold_change_invalidates_same_revision_acceptance": true,
+    "new_evidence_directories_only": true,
+    "hashes_are_integrity_evidence_not_author_signatures": true
+  },
+  "relevant_environment": {
+    "type": "Controlled local software environment with declared simulated or offline public-data origins",
+    "desktop_platform": "Windows 11 x64",
+    "reference_hardware": {"cpu": "AMD Ryzen 7 5700X", "logical_cpus": 16, "ram_gib": 32, "gpu": "NVIDIA RTX 3060 12 GiB when available"},
+    "reference_hardware_is_not_a_universal_minimum": true,
+    "other_hardware_requires_separate_recorded_profile": true,
+    "python_family": "3.12",
+    "qt_qpa_for_native_ui_qualification": "windows",
+    "ui_resolutions": [[1920, 1080], [3440, 1440]],
+    "dpr": 1,
+    "required_environment_metadata": ["os_build", "cpu", "ram", "gpu_and_driver_or_unavailable", "python", "qt", "dependency_versions", "dpr", "screen_and_client_size", "renderer_backend", "topology_counts", "satellite_count", "event_volume", "source_origin", "background_process_load"],
+    "concurrent_builds_or_benchmarks_allowed": false,
+    "production_profiling_allowed": false,
+    "operator_workspace_access_allowed": false,
+    "missing_required_dependency_status": "not_demonstrated"
+  },
+  "seeds": {
+    "nominal": [2026100900, 2026100901, 2026100902],
+    "degraded": [2026100910, 2026100911, 2026100912],
+    "unavailable": [2026100920, 2026100921, 2026100922],
+    "recovery": [2026100930, 2026100931, 2026100932],
+    "reuse_between_training_calibration_and_qualification_allowed": false,
+    "previously_used_seed_status": "not_demonstrated",
+    "seed_origin_disclosure_required": true
+  },
+  "reference_admission": {
+    "required_families": ["entanglement_swapping", "purification", "quantum_memory", "tf_qkd", "satellite_doppler"],
+    "per_reference_required_fields": ["id", "origin", "license", "version_or_commit", "sha256", "units", "time_basis", "domain", "assumptions", "uncertainty", "independence_from_implementation", "expected_metrics", "numeric_tolerances", "holdout_rule", "critical_functions_covered", "limitations"],
+    "admission_must_precede_scoring": true,
+    "golden_generated_by_implementation_is_independent_reference": false,
+    "different_seed_is_independent_physical_validation": false,
+    "nonsignificant_difference_is_equivalence": false,
+    "aggregation_across_incompatible_experiments_allowed": false,
+    "candidate_references": [
+      {"id": "sequence-routing-pinned", "kind": "independent_simulator", "commit": "3133c66d80a898c6c3cc9af9eec3fa94fdbe2233", "existing_evidence": "docs/results/orion_q_routing_sequence_20260930.md", "limits": "Four-node chain, one source/destination; analytic twin calibrated by the author. This does not qualify all topology or protocol families.", "qualification_admission_status": "not_demonstrated"},
+      {"id": "quantum-analytical-and-matrix", "kind": "analytical_or_independently_implemented_oracle", "existing_evidence": "tests/test_physics_validation.py", "limits": "Werner/reduced-state and ideal-operation assumptions; code-generated goldens alone do not establish independent physical agreement.", "qualification_admission_status": "not_demonstrated"},
+      {"id": "public-measured-coexistence", "kind": "public_experimental_observations", "existing_evidence": "docs/results/cross_platform_qkd_replication.md", "limits": "QBER/SKR coexistence effects only; platform-dependent magnitudes, no paired temporal WDM/Bell validation. Dataset permissions and publisher units must be respected.", "qualification_admission_status": "not_demonstrated"},
+      {"id": "orbital-and-finite-block-reference", "kind": "public_orbital_data_and_independent_model", "existing_evidence": "docs/results/orion_q_lab_hardening_20261007.md", "limits": "Orbit predictions are not spacecraft housekeeping or payload; finite-block comparisons remain conditional on declared source and detection assumptions.", "qualification_admission_status": "not_demonstrated"}
+    ]
+  },
+  "initial_baseline_protocol": {
+    "purpose": "Fresh diagnostic baseline; incomplete coverage cannot qualify the final performance gate.",
+    "is_final_qualification": false,
+    "native_ui": {"tool": "tools/benchmark_console_performance.py", "duration_seconds_per_phase": 15, "soak_minutes": 3, "size": [3440, 1440], "repetitions": 1, "profile": false},
+    "runtime": {"samples": 50, "warmup": 5, "budget_ms": 10.0, "background_compute": "idle"},
+    "execution_order": ["native_ui", "runtime"],
+    "concurrent_execution_allowed": false,
+    "does_not_demonstrate": ["Three full repetitions at both resolutions", "300-second presentation phases", "100 consecutive renderer swaps", "20-minute soak", "Qualified p99 tail", "All critical functions and reference domains", "Independent assessment"]
+  },
+  "performance_requirements": {
+    "units": {"latency": "ms", "duration": "s", "memory": "MiB", "memory_slope": "MiB/min"},
+    "runtime": {
+      "budget_ms": 10.0,
+      "budget_origin": "Existing runtime diagnostic budget; unchanged despite the 5.60.1 roadmap's 20/20 overruns.",
+      "full_samples_min": 1000,
+      "warmup_samples": 5,
+      "budget_exceeded_max": 0,
+      "qualified_p99_samples_min": 1000,
+      "record_all_samples_and_overruns": true,
+      "slow_scientific_steps_must_not_be_skipped": true
+    },
+    "native_ui": {
+      "repetitions_per_resolution": 3,
+      "phase_duration_seconds": 300,
+      "phases": ["map", "globe", "tabs", "map_globe_swaps"],
+      "consecutive_map_globe_swaps_min": 100,
+      "soak_minutes_min": 20,
+      "heartbeat_interval_ms": 10,
+      "heartbeat_gap_p95_max_ms": 100,
+      "heartbeat_gap_p99_max_ms": 250,
+      "heartbeat_gap_max_ms": 1000,
+      "qualified_p99_samples_min": 1000,
+      "interaction_to_first_correct_paint_p95_max_ms": 100,
+      "detail_complete_max_ms": 1000,
+      "active_animation_frame_interval_p95_max_ms": 50,
+      "content_errors_max": 0,
+      "deadline_timeouts_max": 0,
+      "unclassified_event_loss_max": 0,
+      "active_renderers_expected": 1,
+      "retired_renderers_expected": 0,
+      "stopped_owned_timers_after_retirement_required": true,
+      "memory_warmup_minutes": 5,
+      "memory_bin_seconds": 30,
+      "second_half_rss_slope_max_mib_per_min": 2.0,
+      "second_half_rss_range_max_fraction_of_median": 0.05,
+      "renderer_timer_listener_growth_expected": 0,
+      "observer_memory_must_not_be_subtracted_from_rss": true,
+      "cpu_gpu_memory_and_load_must_be_reported": true,
+      "gpu_metrics_may_be_unavailable_with_explicit_reason": true,
+      "event_loop_heartbeat_is_not_fps": true,
+      "full_current_topology_telemetry_simulation_required": true,
+      "source_and_frozen_release_runs_required": true,
+      "threshold_justification": "Prospective engineering requirements: 100 ms for immediate interaction, 1 s for full detail usability, 50 ms for at least a 20 Hz presentation envelope, explicit tail and bounded-retention checks. These are not values mandated or guaranteed by NASA, ECSS, Qt or monitor refresh."
+    }
+  },
+  "gates": [
+    {
+      "id": "G01", "name": "scope_frozen", "initial_status": "not_demonstrated",
+      "pass_criteria": ["Scope, critical functions, environment, seeds, limits and independent-reference admission plan frozen before scoring", "Protocol/source/dependency/dataset/oracle hashes recorded and unchanged", "Every excluded claim and dependency remains explicit"],
+      "fail_criteria": ["Scope or acceptance threshold changed after observing results without a new revision", "Missing or inconsistent recorded identity, or modified scored input"],
+      "not_demonstrated_criteria": ["Freeze manifest or relevant-environment rationale is incomplete"],
+      "evidence_limits": "A hash proves byte identity, not scientific accuracy, signatures or maturity."
+    },
+    {
+      "id": "G02", "name": "reference", "initial_status": "not_demonstrated",
+      "pass_criteria": ["Every included critical function maps to an admitted independent reference or oracle with explicit domain, units, uncertainty and numeric acceptance interval", "Current outputs meet the pre-frozen deterministic or equivalence tolerances across all required families", "Dataset limitations and uncovered domains are disclosed and disjoint holdouts respected"],
+      "fail_criteria": ["Declared tolerance is exceeded", "Training/calibration leakage, incompatible-unit pooling or unsupported claim is used to qualify a reference"],
+      "not_demonstrated_criteria": ["Only code-generated goldens, same-plant replay or bounded subset coverage is available", "Any required family lacks independently justified tolerances or admissible reference data"],
+      "evidence_limits": "Published measurements or independent simulations qualify only the covered observables and conditions; no QBER-to-Bell conversion."
+    },
+    {
+      "id": "G03", "name": "pipeline", "initial_status": "not_demonstrated",
+      "pass_criteria": ["Nominal/degraded/unavailable/recovery scenarios for every included family traverse the common input, validation, clock, protocol, resource, classical communication, durable receipt and backend presentation contracts", "Equivalent simulated and replay observations preserve causal order, metrics, resource lineage and observation hashes", "No-source, missing channel and incomplete observation produce explicit refusal rather than invented measurements", "Optional ML remains off and physical actions/certified secret bits remain zero"],
+      "fail_criteria": ["Injected final output bypasses observation processing", "Contradictory backend/UI state, causal violation, fabricated success or boundary violation"],
+      "not_demonstrated_criteria": ["A local fixture passes but not every required stage, family and source substitution is covered", "API/UI trace or persistence linkage is absent"],
+      "evidence_limits": "Passing local fixtures establishes only the exercised software flow, not physical devices or a live network."
+    },
+    {
+      "id": "G04", "name": "fault_recovery", "initial_status": "not_demonstrated",
+      "pass_criteria": ["Faults are injected before/after admission, resource reservation/consumption, durable commit, receipt publication and response delivery", "Restart/retry conserves committed event identity and explicit interrupted/uncertain states, with zero duplicated delivery or resource/key reuse", "Invalid, stale, reordered, replayed and unauthorized observations are rejected or quarantined", "Queue saturation accounts for rejected/dropped events, and unavailable physical conditions never become success"],
+      "fail_criteria": ["Duplicate confirmed event, resurrected consumed/uncertain key or silent loss", "Acquisition continues after uncertain configuration or revocation"],
+      "not_demonstrated_criteria": ["Crash matrix, process independence, replay/authorization cases or conservation accounting lacks complete evidence"],
+      "evidence_limits": "Local process/HTTP failures do not qualify power loss, damaged disks, hardware interlocks or institutional deployment."
+    },
+    {
+      "id": "G05", "name": "performance", "initial_status": "not_demonstrated",
+      "pass_criteria": ["All prospective runtime and native UI thresholds pass in every full run on the recorded relevant environment", "Full topology, all satellites/orbits, live telemetry/simulation and navigation are active", "Source and frozen versions agree functionally; event order/precision/persistence are conserved", "Required tail sample coverage, duration, swaps, soak and memory/resource checks are complete"],
+      "fail_criteria": ["Any declared threshold is exceeded", "Freeze, content error, missed accepted operation, scientific event pruning or resource accumulation is observed"],
+      "not_demonstrated_criteria": ["Only the short initial baseline or old reports are available", "Required frame/tail/retention/CPU/GPU metadata or production coverage is missing"],
+      "evidence_limits": "The earlier 20/20 10 ms runtime overruns remain unmet-budget evidence. A short baseline, heartbeat, preview or self-test cannot qualify FPS, tail latency or prolonged stability."
+    },
+    {
+      "id": "G06", "name": "reproduce", "initial_status": "not_demonstrated",
+      "pass_criteria": ["A second isolated environment reconstructs the admitted source/dependencies/data and full campaign from documented commands", "Seeds reproduce deterministic outputs or meet predeclared stochastic comparison intervals", "Fresh output receipts, hashes, failure cases and dependency refusal are independently verified", "Optional model archives and vendor SDKs are not silently substituted or required for the base product"],
+      "fail_criteria": ["Recorded environment fails declared compatible inputs or reproduces different qualified outcomes beyond tolerance", "Undocumented manual patch, credential or archive substitution is needed"],
+      "not_demonstrated_criteria": ["Only the developer checkout, inherited dependencies or historical build is exercised", "Second-environment dependencies/data/commands or required campaign coverage are absent"],
+      "evidence_limits": "A second venv may validate installation reproducibility but does not by itself prove independent-machine, mixed-DPI or institutional acceptance."
+    },
+    {
+      "id": "G07", "name": "independent_review", "initial_status": "not_demonstrated",
+      "pass_criteria": ["A named reviewer with relevant expertise outside the implementation team reviews the frozen scope, relevance, critical-function mapping, data/oracle independence and all results", "Review binds to source/protocol/report hashes, states conflicts and unresolved discrepancies, and includes an explicit signed or otherwise authenticated conclusion"],
+      "fail_criteria": ["Reviewer rejects scope relevance or evidence sufficiency", "Undisclosed conflicts, altered evidence or unresolved critical discrepancy invalidate the assessment"],
+      "not_demonstrated_criteria": ["No qualified independent reviewer or authenticated assessment is available", "Only an automated checker, internal developer or AI-agent review exists"],
+      "evidence_limits": "This is the project's chosen assessment requirement informed by ECSS guidance; passing software checks is not certification."
+    }
+  ],
+  "report_contract": {
+    "schema": "orionq.trl5-software-report.v1",
+    "required_fields": ["protocol_id", "protocol_sha256", "scope", "source_identity", "environment", "datasets_and_limits", "reference_admission", "gate_results", "local_trial_passed", "missing_evidence", "observed_failures", "limitations", "assessment_status"],
+    "local_trial_passed_is_qualification": false,
+    "gate_result_required_fields": ["id", "status", "evidence_paths", "evidence_sha256", "criteria_checked", "missing_criteria", "failures", "dataset_limits"],
+    "missing_evidence_is_pass": false,
+    "independent_review_may_not_be_fabricated": true,
+    "overall_trl5_demonstrated_requires_all_gates_and_human_assessment": true
+  }
+}

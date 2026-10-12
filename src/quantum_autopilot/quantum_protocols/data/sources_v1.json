@@ -1,6 +1,6 @@
 {
   "schema": "orion.technology-sources.v1",
-  "retrieved_at": "2026-10-06",
+  "retrieved_at": "2026-10-10",
   "sources": {
     "briegel1998": {
       "year": "1998",
@@ -16,6 +16,21 @@
       "year": "2018",
       "url": "https://arxiv.org/abs/1805.09222",
       "scope": "SNS architecture; current reduced model not a finite-key proof"
+    },
+    "sns_finite2019": {
+      "year": "2019",
+      "url": "https://arxiv.org/abs/1904.00192v3",
+      "scope": "finite SNS equations 15/16/26; opt-in symmetric numerical backend with actual postprocessing, conditional assumptions, no reviewed composable implementation or certified keys"
+    },
+    "wallnoefer2022": {
+      "year": "2022",
+      "url": "https://arxiv.org/abs/2110.15806v2",
+      "scope": "Gaussian aperture/jitter model and satellite-memory architectures; ORION GEO payload parameters are hypothetical, not measured performance"
+    },
+    "calsamiglia2001": {
+      "year": "2001",
+      "url": "https://arxiv.org/abs/quant-ph/0007058",
+      "scope": "unassisted linear-optical Bell measurement identifies two of four branches; detector and readout efficiencies impose additional failures"
     },
     "memory2024": {
       "year": "2024",

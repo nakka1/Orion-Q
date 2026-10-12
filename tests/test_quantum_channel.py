@@ -47,7 +47,7 @@ def test_higher_depolarization_reduces_fidelity():
 
 def test_t2_constraint_enforced():
     """T2 > 2*T1 is unphysical and must raise on construction."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="T2 must be <= 2\\*T1"):
         QuantumNoiseChannel(T1=10e-6, T2=30e-6, depol_prob=0.01)
 
 

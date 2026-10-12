@@ -293,8 +293,9 @@ def test_topology_verbs_delegate_to_the_store(tmp_path):
     assert set(VERBS) == {"set_node_isolation", "set_link_active", "set_node_location", "add_network_node",
                           "recalibrate_node", "define_pair", "remove_pair", "request_pair", "purify_pair",
                           "consume_pair", "inject_input_event", "set_model_archive", "configure_network_input", "set_ml_control",
-                          "configure_technology", "configure_technology_source", "export_technology_events",
-                          "save_communicator", "configure_communicator_connection"}
+                              "configure_technology", "configure_technology_source", "export_technology_events",
+                              "save_communicator", "configure_communicator_connection", "provision_satellite_session",
+                              "register_fpga_device", "configure_fpga_device", "set_fpga_connection", "inject_fpga_fault"}
 
 
 # ---------------------------------------------------------------- pairs

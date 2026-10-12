@@ -98,12 +98,12 @@ class CampaignRunner(AdaptiveDialog):
         self.tabs.addTab(history, "SAVED CAMPAIGNS")
         self.history_refresh.clicked.connect(self.search_history)
         self.history_filter.returnPressed.connect(self.search_history)
-        self.history_filter.textChanged.connect(self.refresh)
+        self.history_filter.textChanged.connect(self.render_presented)
         self.history_newer.clicked.connect(lambda: self._action(lambda: self.job.browse_history("newer")))
         self.history_older.clicked.connect(lambda: self._action(lambda: self.job.browse_history("older")))
         self.history_open.clicked.connect(lambda: self._action(lambda: self.job.open_history(self.history_table.currentIndex().row())))
         self.history_table.doubleClicked.connect(lambda index: self._action(lambda: self.job.open_history(index.row())) if self.history_open.isEnabled() else None)
-        self.history_table.selectionModel().selectionChanged.connect(self.refresh)
+        self.history_table.selectionModel().selectionChanged.connect(self.render_presented)
         attempts = QWidget()
         layout = vbox(attempts, (8, 8, 8, 8), 8)
         layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
@@ -178,16 +178,16 @@ class CampaignRunner(AdaptiveDialog):
         self.tabs.addTab(self.attempts_scroll, "ATTEMPTS")
         self.attempt_refresh.clicked.connect(self.search_attempts)
         self.attempt_filter.returnPressed.connect(self.search_attempts)
-        self.attempt_filter.textChanged.connect(self.refresh)
-        self.attempt_status.currentIndexChanged.connect(self.refresh)
+        self.attempt_filter.textChanged.connect(self.render_presented)
+        self.attempt_status.currentIndexChanged.connect(self.render_presented)
         for field in (self.attempt_from, self.attempt_before_date):
             field.returnPressed.connect(self.search_attempts)
-            field.textChanged.connect(self.refresh)
+            field.textChanged.connect(self.render_presented)
         self.attempt_newer.clicked.connect(lambda: self._action(lambda: self.job.browse_attempts("newer")))
         self.attempt_older.clicked.connect(lambda: self._action(lambda: self.job.browse_attempts("older")))
         self.attempt_export.clicked.connect(self.choose_attempt_export)
         self.attempt_table.selectionModel().selectionChanged.connect(self.show_attempt)
-        self.attempt_table.selectionModel().selectionChanged.connect(self.refresh)
+        self.attempt_table.selectionModel().selectionChanged.connect(self.render_presented)
         verification = QWidget()
         layout = vbox(verification, (8, 8, 8, 8), 8)
         layout.addWidget(Prose("External operational JSON / page ZIP · integrity only. No import, authentication or scientific validation.", 11))
@@ -224,14 +224,14 @@ class CampaignRunner(AdaptiveDialog):
         self.run_button.clicked.connect(self.submit)
         self.cancel_button.clicked.connect(lambda: self.job.cancel())
         self.export_button.clicked.connect(self.choose_export)
-        self.reviewed.toggled.connect(self.refresh)
-        self.refresh()
+        self.reviewed.toggled.connect(self.render_presented)
+        self.render_presented()
 
     def attach(self, job):
         self.job = job
-        job.changed.connect(self.refresh)
+        job.changed.connect(self.render_presented)
         job.refresh_source()
-        self.refresh()
+        self.render_presented()
 
     def _action(self, callback):
         try:
@@ -349,7 +349,17 @@ class CampaignRunner(AdaptiveDialog):
         if path:
             self._action(lambda: self.job.export(path))
 
-    def refresh(self, *_):
+    def refresh(self):
+        """Explicitly renew declarations; painting callbacks use render_presented."""
+        if self.job is not None:
+            try:
+                self.job.refresh_source()
+            except PermissionError:
+                self.job.invalidate_presentation_capabilities()
+                raise
+        self.render_presented()
+
+    def render_presented(self, *_):
         job = self.job
         # Rendering only consumes the source's committed presentation frame.
         # Every action still calls the job's live, guarded authority checks.

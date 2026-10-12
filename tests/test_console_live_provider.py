@@ -62,6 +62,13 @@ def stepping_threads():
     return [thread for thread in threading.enumerate() if thread.name == STEP_THREAD and thread.is_alive()]
 
 
+def stop_provider(app, provider):
+    """Keep Qt alive while accepted work and exclusive resources are drained."""
+    provider.stop()
+    pump(app, lambda: not provider.stopping)
+    assert provider._shutdown_error is None
+
+
 class Harness:
     """A started provider plus what it emitted."""
 
@@ -100,19 +107,23 @@ class Harness:
 @pytest.fixture()
 def demo(app, tmp_path):
     provider = ServiceProvider(demo_service(ROOT, tmp_path), state_root=tmp_path, poll_ms=100, step_period_s=0.1)
-    harness = Harness(app, provider)
-    yield harness
-    provider.stop()
-    assert not provider.stepping
+    try:
+        harness = Harness(app, provider)
+        yield harness
+    finally:
+        stop_provider(app, provider)
+        assert not provider.stepping
 
 
 @pytest.fixture()
 def idle(app, tmp_path):
     service = AssuranceDashboardService(ROOT, control_journal_path=tmp_path / "operator.sqlite")
     provider = ServiceProvider(service, state_root=tmp_path, poll_ms=100, step_period_s=0.1)
-    harness = Harness(app, provider)
-    yield harness
-    provider.stop()
+    try:
+        harness = Harness(app, provider)
+        yield harness
+    finally:
+        stop_provider(app, provider)
 
 
 # ----------------------------------------------------------------- snapshot
@@ -213,20 +224,29 @@ def test_wave_grows_with_the_ticks_and_only_the_stepping_thread_advances_time(de
 
 def test_stepping_thread_starts_and_stops_cleanly(app, tmp_path):
     provider = ServiceProvider(demo_service(ROOT, tmp_path), poll_ms=100, step_period_s=0.05)
-    assert not provider.stepping and not stepping_threads()
-    assert provider.build().live.tick == 0                    # an unstarted provider reads, never steps
-    provider.start()
-    assert provider.stepping and len(stepping_threads()) == 1 and stepping_threads()[0].daemon
-    pump(app, lambda: provider.steps_taken >= 3)
-    provider.stop()
-    assert not provider.stepping and not stepping_threads() and provider._executor is None
-    tick = provider.service.network_live_state()["tick"]
-    time.sleep(.4)
-    assert provider.service.network_live_state()["tick"] == tick       # no stepping after stop()
-    provider.start()                                                   # and it can be started again
-    pump(app, lambda: provider.service.network_live_state()["tick"] > tick)
-    provider.stop()
-    assert not stepping_threads()
+    received = []
+    provider.snapshot_changed.connect(received.append)
+    try:
+        assert not provider.stepping and not stepping_threads()
+        assert provider.build().live.tick == 0                    # an unstarted provider reads, never steps
+        provider.start()
+        # Startup admits the complete first read before enabling the engine.
+        pump(app, lambda: bool(received) and provider.stepping)
+        assert provider.stepping and len(stepping_threads()) == 1 and stepping_threads()[0].daemon
+        pump(app, lambda: provider.steps_taken >= 3)
+        stop_provider(app, provider)
+        assert not provider.stepping and not stepping_threads() and provider._executor is None
+        tick = provider.service.network_live_state()["tick"]
+        time.sleep(.4)
+        assert provider.service.network_live_state()["tick"] == tick       # no stepping after stop()
+        first_run_frames = len(received)
+        provider.start()                                                   # and it can be started again
+        pump(app, lambda: len(received) > first_run_frames and provider.stepping)
+        pump(app, lambda: provider.service.network_live_state()["tick"] > tick)
+        stop_provider(app, provider)
+        assert not stepping_threads()
+    finally:
+        stop_provider(app, provider)
 
 
 def test_source_switch_does_not_leak_a_stepping_thread(app, tmp_path):
@@ -234,23 +254,32 @@ def test_source_switch_does_not_leak_a_stepping_thread(app, tmp_path):
     plug = SwitchableProvider(first)
     received = []
     plug.snapshot_changed.connect(received.append)
-    plug.start()
-    pump(app, lambda: bool(received) and received[-1].live is not None and received[-1].live.tick >= 2)
-    assert plug.is_demo and plug.source_label.startswith("DEMONSTRATION") and len(stepping_threads()) == 1
-    plug.switch(lambda: MockProvider())
-    assert not first.stepping and not stepping_threads() and not plug.is_demo
-    tick = first.service.network_live_state()["tick"]
-    count = len(received)
-    time.sleep(.3)
-    app.processEvents()
-    assert first.service.network_live_state()["tick"] == tick
-    assert all(snapshot.live is None for snapshot in received[count:])   # the old source is silent
-    second = ServiceProvider(demo_service(ROOT, tmp_path / "b"), poll_ms=100, step_period_s=0.05)
-    plug.switch(lambda: second)
-    pump(app, lambda: plug.snapshot().live is not None and plug.snapshot().input_kind == "demo")
-    assert second.stepping and len(stepping_threads()) == 1
-    plug.stop()
-    assert not stepping_threads()
+    second = None
+    try:
+        plug.start()
+        pump(app, lambda: bool(received) and received[-1].live is not None and received[-1].live.tick >= 2)
+        assert plug.is_demo and plug.source_label.startswith("DEMONSTRATION") and len(stepping_threads()) == 1
+        plug.switch(lambda: MockProvider())
+        pump(app, lambda: not first.stopping)
+        assert not first.stepping and not stepping_threads() and not plug.is_demo
+        tick = first.service.network_live_state()["tick"]
+        count = len(received)
+        time.sleep(.3)
+        app.processEvents()
+        assert first.service.network_live_state()["tick"] == tick
+        assert all(snapshot.live is None for snapshot in received[count:])   # the old source is silent
+        second = ServiceProvider(demo_service(ROOT, tmp_path / "b"), poll_ms=100, step_period_s=0.05)
+        plug.switch(lambda: second)
+        pump(app, lambda: plug.snapshot().live is not None and plug.snapshot().input_kind == "demo")
+        assert second.stepping and len(stepping_threads()) == 1
+        plug.stop()
+        pump(app, lambda: not second.stopping)
+        assert not stepping_threads()
+    finally:
+        plug.stop()
+        stop_provider(app, first)
+        if second is not None:
+            stop_provider(app, second)
 
 
 # ----------------------------------------------------------------- commands
@@ -517,7 +546,7 @@ def test_raw_acquisition_file_flows_through_the_provider_and_is_identified_as_re
         _input_source(ui, "none")
         assert provider.snapshot().live.source_kind == "none" and "NO INPUT" in provider.source_label
     finally:
-        provider.stop()
+        stop_provider(app, provider)
 
 
 # ------------------------------------------------------------ normal operation
@@ -579,7 +608,7 @@ def test_sources_without_an_engine_carry_no_live_view(app, tmp_path):
     assert [link.qber for link in snap.topology.links] == ["not in this lane"] * 2
     provider.start()
     assert not provider.stepping and not stepping_threads()
-    provider.stop()
+    stop_provider(app, provider)
 
 
 # ------------------------------------------------------- terminal and palette
@@ -598,6 +627,7 @@ def window(app, tmp_path):
     win.errors = errors
     yield win
     win.close()
+    pump(app, lambda: not provider.stopping)
     win.deleteLater()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     app.processEvents()
@@ -709,6 +739,7 @@ def test_inject_is_refused_outside_the_demonstration(app, tmp_path):
         pump(app, lambda: not win.provider.busy and win.snapshot.live.link(link.id).status == "disabled")
     finally:
         win.close()
+        pump(app, lambda: not provider.stopping)
         win.deleteLater()
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         app.processEvents()

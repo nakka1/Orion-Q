@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QLineEdit, QTabWidget, QWidget, QFileDialog
 
 from quantum_autopilot.control_plane.policy_preparation import POLICY_ID, MAX_PROPOSAL_AGE_S
 from ..model_archive_check import LocalModelJob
+from ..capabilities import SourceCapabilities
 from ..policy_review_binding import PolicyReviewBinding
 from ..theme import C, mono
 from .adaptive_dialog import AdaptiveDialog
@@ -23,6 +24,8 @@ class PolicyReview(AdaptiveDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.provider = self.binding = self._source = None
+        self._presented_capabilities = SourceCapabilities()
+        self._presented_source = None
         self._export_capability = False
         self.confirmation = None
         self.activation = self.active_observation = self.recovery_review = None
@@ -127,9 +130,18 @@ class PolicyReview(AdaptiveDialog):
         if self.provider is not None:
             raise ValueError('policy review already attached')
         self.provider = provider
-        provider.source_changed.connect(self._tick)
+        provider.source_changed.connect(self._source_changed)
         provider.snapshot_changed.connect(self._snapshot)
-        self._sync_source()
+        snapshot = getattr(provider, '_snap', None)
+        if snapshot is not None:
+            self._snapshot(snapshot)
+        else:
+            self._sync_source()
+
+    def _source_changed(self, *_):
+        self._presented_capabilities = SourceCapabilities()
+        self._presented_source = None
+        self._tick()
 
     def _scope(self, capabilities=None):
         if self.provider is None:
@@ -137,7 +149,11 @@ class PolicyReview(AdaptiveDialog):
             return None
         service = getattr(self.provider.active, 'service', None)
         if capabilities is None:
-            capabilities = self.provider.capabilities
+            capabilities = self._presented_capabilities
+        if (not self.provider.running or self._presented_source !=
+                (id(self.provider.active), self.provider._generation)):
+            self._presented_capabilities = SourceCapabilities()
+            capabilities = SourceCapabilities()
         self._export_capability = capabilities.allows('export_record')
         return (id(self.provider.active), self.provider._generation,
                 capabilities.allows('review_policy_preparation'),
@@ -206,6 +222,8 @@ class PolicyReview(AdaptiveDialog):
         self._render()
 
     def _snapshot(self, snap):
+        self._presented_capabilities = snap.capabilities
+        self._presented_source = (id(self.provider.active), self.provider._generation)
         self._sync_source(snap.capabilities)
         if self.context is not None:
             context = self.context['record']['context']
@@ -390,9 +408,9 @@ class PolicyReview(AdaptiveDialog):
         self._reset('Reading baseline…')
         try:
             service = self.provider.active.policy_review_source()
-            self.binding = PolicyReviewBinding(service)
-            self.job.submit(self.binding.run, 'inspect')
-        except (ValueError, AttributeError) as exc:
+            self.binding = PolicyReviewBinding(service, source=self.provider.active)
+            self.job.submit(self.binding.dispatch('inspect'))
+        except (ValueError, AttributeError, PermissionError) as exc:
             self._reset('REFUSED · ' + str(exc))
 
     def prepare(self):
@@ -407,7 +425,7 @@ class PolicyReview(AdaptiveDialog):
         request = dict(mode='simulation', policy_id=POLICY_ID, threshold=self._value(), optional_model_id=None,
                        expected_context_sha256=self.context['record']['context_sha256'])
         self._prepare_started = time.monotonic()
-        self.job.submit(self.binding.run, 'prepare', request)
+        self.job.submit(self.binding.dispatch('prepare', request))
 
     def review_proposal(self):
         self._tick()
@@ -417,7 +435,7 @@ class PolicyReview(AdaptiveDialog):
         self._dismiss_confirmation()
         self.review = self.approval = None
         self.export_job.clear()
-        self.job.submit(self.binding.run, 'review', self.proposal['record']['proposal_id'], self.proposal['record_sha256'])
+        self.job.submit(self.binding.dispatch('review', self.proposal['record']['proposal_id'], self.proposal['record_sha256']))
 
     def confirm_approval(self):
         self._tick()
@@ -437,7 +455,7 @@ class PolicyReview(AdaptiveDialog):
                 return
             self._epoch += 1
             self.export_job.clear()
-            self.job.submit(self.binding.run, 'approve', payload)
+            self.job.submit(self.binding.dispatch('approve', payload))
 
         def finished(*_):
             if self.confirmation is dialog:
@@ -473,7 +491,7 @@ class PolicyReview(AdaptiveDialog):
             self.export_job.clear()
             self.active_observation = None
             self.message = 'Activation submitted. Once commit begins, read active state to confirm the outcome.'
-            self.job.submit(self.binding.run, 'activate', payload)
+            self.job.submit(self.binding.dispatch('activate', payload))
 
         def finished(*_):
             if self.confirmation is dialog:
@@ -502,9 +520,9 @@ class PolicyReview(AdaptiveDialog):
         self.export_job.clear()
         try:
             if self.binding is None:
-                self.binding = PolicyReviewBinding(self.provider.active.policy_review_source())
-            self.job.submit(self.binding.run, 'read_active')
-        except (ValueError, AttributeError) as exc:
+                self.binding = PolicyReviewBinding(self.provider.active.policy_review_source(), source=self.provider.active)
+            self.job.submit(self.binding.dispatch('read_active'))
+        except (ValueError, AttributeError, PermissionError) as exc:
             self._reset('READBACK REFUSED · ' + str(exc))
 
     def prepare_rollback(self):
@@ -514,10 +532,10 @@ class PolicyReview(AdaptiveDialog):
         current = self.active_observation['record']['activation']
         self._reset('Preparing the recorded previous policy…')
         try:
-            self.binding = PolicyReviewBinding(self.provider.active.policy_review_source())
+            self.binding = PolicyReviewBinding(self.provider.active.policy_review_source(), source=self.provider.active)
             self._prepare_started = time.monotonic()
-            self.job.submit(self.binding.run, 'prepare_rollback', current['record']['activation_id'], current['record_sha256'])
-        except (ValueError, AttributeError) as exc:
+            self.job.submit(self.binding.dispatch('prepare_rollback', current['record']['activation_id'], current['record_sha256']))
+        except (ValueError, AttributeError, PermissionError) as exc:
             self._reset('ROLLBACK REFUSED · ' + str(exc))
 
     def inspect_recovery(self):
@@ -526,10 +544,10 @@ class PolicyReview(AdaptiveDialog):
             return
         self._reset('Inspecting recovery; cycles remain blocked…')
         try:
-            self.binding = PolicyReviewBinding(self.provider.active.policy_review_source())
+            self.binding = PolicyReviewBinding(self.provider.active.policy_review_source(), source=self.provider.active)
             self._prepare_started = time.monotonic()
-            self.job.submit(self.binding.run, 'inspect_recovery')
-        except (ValueError, AttributeError) as exc:
+            self.job.submit(self.binding.dispatch('inspect_recovery'))
+        except (ValueError, AttributeError, PermissionError) as exc:
             self._reset('RECOVERY INSPECTION REFUSED · ' + str(exc))
 
     def confirm_recovery(self):
@@ -550,7 +568,7 @@ class PolicyReview(AdaptiveDialog):
                 return
             self._epoch += 1
             self.export_job.clear()
-            self.job.submit(self.binding.run, 'recover', payload)
+            self.job.submit(self.binding.dispatch('recover', payload))
 
         def finished(*_):
             if self.confirmation is dialog:

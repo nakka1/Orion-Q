@@ -1,0 +1,845 @@
+{
+  "revision": "actual-qt-actions-v3",
+  "phases": {
+    "map": [
+      {
+        "index": 0,
+        "due_s": 0.9375,
+        "action": "map-node-hover-click",
+        "target": "CIMATEC",
+        "expected_mode": "map"
+      },
+      {
+        "index": 1,
+        "due_s": 2.8125,
+        "action": "map-node-hover-click",
+        "target": "CBPF",
+        "expected_mode": "map"
+      },
+      {
+        "index": 2,
+        "due_s": 4.6875,
+        "action": "map-scroll",
+        "angle": -120,
+        "expected_mode": "map"
+      },
+      {
+        "index": 3,
+        "due_s": 6.5625,
+        "action": "map-node-hover-click",
+        "target": "IME-USP",
+        "expected_mode": "map"
+      },
+      {
+        "index": 4,
+        "due_s": 8.4375,
+        "action": "map-node-hover-click",
+        "target": "USP",
+        "expected_mode": "map"
+      },
+      {
+        "index": 5,
+        "due_s": 10.3125,
+        "action": "map-scroll",
+        "angle": 120,
+        "expected_mode": "map"
+      },
+      {
+        "index": 6,
+        "due_s": 12.1875,
+        "action": "map-node-hover-click",
+        "target": "UNICAMP",
+        "expected_mode": "map"
+      },
+      {
+        "index": 7,
+        "due_s": 14.0625,
+        "action": "map-node-hover-click",
+        "target": "CIQUANTA",
+        "expected_mode": "map"
+      }
+    ],
+    "globe": [
+      {
+        "index": 0,
+        "due_s": 0.9375,
+        "action": "satellite-hover-click",
+        "target": "GEO-AMERICAS-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 1,
+        "due_s": 2.8125,
+        "action": "satellite-hover-click",
+        "target": "GEO-ASIA-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 2,
+        "due_s": 4.6875,
+        "action": "satellite-hover-click",
+        "target": "GEO-ATLANTIC-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 3,
+        "due_s": 6.5625,
+        "action": "globe-scroll",
+        "angle": -120,
+        "expected_mode": "globe"
+      },
+      {
+        "index": 4,
+        "due_s": 8.4375,
+        "action": "satellite-hover-click",
+        "target": "GEO-EUROPE-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 5,
+        "due_s": 10.3125,
+        "action": "satellite-hover-click",
+        "target": "SAT-ATLANTIC-MEO",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 6,
+        "due_s": 12.1875,
+        "action": "satellite-hover-click",
+        "target": "SAT-ATLANTIC-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 7,
+        "due_s": 14.0625,
+        "action": "globe-scroll",
+        "angle": -120,
+        "expected_mode": "globe"
+      }
+    ],
+    "tabs": [
+      {
+        "index": 0,
+        "due_s": 0.9375,
+        "action": "page-topology",
+        "page": "topology"
+      },
+      {
+        "index": 1,
+        "due_s": 2.8125,
+        "action": "page-telemetry",
+        "page": "telemetry"
+      },
+      {
+        "index": 2,
+        "due_s": 4.6875,
+        "action": "page-keys",
+        "page": "keys"
+      },
+      {
+        "index": 3,
+        "due_s": 6.5625,
+        "action": "page-node",
+        "page": "node"
+      },
+      {
+        "index": 4,
+        "due_s": 8.4375,
+        "action": "page-communicators",
+        "page": "communicators"
+      },
+      {
+        "index": 5,
+        "due_s": 10.3125,
+        "action": "page-fpga",
+        "page": "fpga"
+      },
+      {
+        "index": 6,
+        "due_s": 12.1875,
+        "action": "page-audit",
+        "page": "audit"
+      },
+      {
+        "index": 7,
+        "due_s": 14.0625,
+        "action": "page-topology",
+        "page": "topology"
+      }
+    ],
+    "swaps": [
+      {
+        "index": 0,
+        "due_s": 0.9375,
+        "action": "button-mode-transition"
+      },
+      {
+        "index": 1,
+        "due_s": 2.8125,
+        "action": "scroll-mode-transition"
+      },
+      {
+        "index": 2,
+        "due_s": 4.6875,
+        "action": "button-mode-transition"
+      },
+      {
+        "index": 3,
+        "due_s": 6.5625,
+        "action": "scroll-mode-transition"
+      },
+      {
+        "index": 4,
+        "due_s": 8.4375,
+        "action": "button-mode-transition"
+      },
+      {
+        "index": 5,
+        "due_s": 10.3125,
+        "action": "scroll-mode-transition"
+      },
+      {
+        "index": 6,
+        "due_s": 12.1875,
+        "action": "button-mode-transition"
+      },
+      {
+        "index": 7,
+        "due_s": 14.0625,
+        "action": "scroll-mode-transition"
+      }
+    ],
+    "soak": [
+      {
+        "index": 0,
+        "due_s": 1.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-EUROPE-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 1,
+        "due_s": 3.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 2,
+        "due_s": 5.0,
+        "action": "map-node-hover-click",
+        "target": "BSC",
+        "expected_mode": "map"
+      },
+      {
+        "index": 3,
+        "due_s": 7.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 4,
+        "due_s": 9.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-RIO-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 5,
+        "due_s": 11.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 6,
+        "due_s": 13.0,
+        "action": "map-node-hover-click",
+        "target": "CN-BEIJING",
+        "expected_mode": "map"
+      },
+      {
+        "index": 7,
+        "due_s": 15.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 8,
+        "due_s": 17.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-US-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 9,
+        "due_s": 19.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 10,
+        "due_s": 21.0,
+        "action": "map-node-hover-click",
+        "target": "CN-HEFEI",
+        "expected_mode": "map"
+      },
+      {
+        "index": 11,
+        "due_s": 23.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 12,
+        "due_s": 25.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-AMERICAS-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 13,
+        "due_s": 27.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 14,
+        "due_s": 29.0,
+        "action": "map-node-hover-click",
+        "target": "CN-JINAN",
+        "expected_mode": "map"
+      },
+      {
+        "index": 15,
+        "due_s": 31.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 16,
+        "due_s": 33.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-ASIA-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 17,
+        "due_s": 35.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 18,
+        "due_s": 37.0,
+        "action": "map-node-hover-click",
+        "target": "CN-SHANGHAI",
+        "expected_mode": "map"
+      },
+      {
+        "index": 19,
+        "due_s": 39.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 20,
+        "due_s": 41.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-ATLANTIC-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 21,
+        "due_s": 43.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 22,
+        "due_s": 45.0,
+        "action": "map-node-hover-click",
+        "target": "GOOGLE-QAI",
+        "expected_mode": "map"
+      },
+      {
+        "index": 23,
+        "due_s": 47.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 24,
+        "due_s": 49.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-EUROPE-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 25,
+        "due_s": 51.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 26,
+        "due_s": 53.0,
+        "action": "map-node-hover-click",
+        "target": "IBM-WATSON",
+        "expected_mode": "map"
+      },
+      {
+        "index": 27,
+        "due_s": 55.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 28,
+        "due_s": 57.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-ATLANTIC-MEO",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 29,
+        "due_s": 59.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 30,
+        "due_s": 61.0,
+        "action": "map-node-hover-click",
+        "target": "IME-RIO",
+        "expected_mode": "map"
+      },
+      {
+        "index": 31,
+        "due_s": 63.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 32,
+        "due_s": 65.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-ATLANTIC-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 33,
+        "due_s": 67.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 34,
+        "due_s": 69.0,
+        "action": "map-node-hover-click",
+        "target": "IQC",
+        "expected_mode": "map"
+      },
+      {
+        "index": 35,
+        "due_s": 71.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 36,
+        "due_s": 73.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-EUROPE-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 37,
+        "due_s": 75.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 38,
+        "due_s": 77.0,
+        "action": "map-node-hover-click",
+        "target": "IQMP",
+        "expected_mode": "map"
+      },
+      {
+        "index": 39,
+        "due_s": 79.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 40,
+        "due_s": 81.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-RIO-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 41,
+        "due_s": 83.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 42,
+        "due_s": 85.0,
+        "action": "map-node-hover-click",
+        "target": "MS-QUANTUM",
+        "expected_mode": "map"
+      },
+      {
+        "index": 43,
+        "due_s": 87.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 44,
+        "due_s": 89.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-US-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 45,
+        "due_s": 91.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 46,
+        "due_s": 93.0,
+        "action": "map-node-hover-click",
+        "target": "PUC-RIO",
+        "expected_mode": "map"
+      },
+      {
+        "index": 47,
+        "due_s": 95.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 48,
+        "due_s": 97.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-AMERICAS-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 49,
+        "due_s": 99.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 50,
+        "due_s": 101.0,
+        "action": "map-node-hover-click",
+        "target": "UFRJ",
+        "expected_mode": "map"
+      },
+      {
+        "index": 51,
+        "due_s": 103.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 52,
+        "due_s": 105.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-ASIA-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 53,
+        "due_s": 107.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 54,
+        "due_s": 109.0,
+        "action": "map-node-hover-click",
+        "target": "XANADU",
+        "expected_mode": "map"
+      },
+      {
+        "index": 55,
+        "due_s": 111.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 56,
+        "due_s": 113.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-ATLANTIC-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 57,
+        "due_s": 115.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 58,
+        "due_s": 117.0,
+        "action": "map-node-hover-click",
+        "target": "CIMATEC",
+        "expected_mode": "map"
+      },
+      {
+        "index": 59,
+        "due_s": 119.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 60,
+        "due_s": 121.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-EUROPE-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 61,
+        "due_s": 123.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 62,
+        "due_s": 125.0,
+        "action": "map-node-hover-click",
+        "target": "CBPF",
+        "expected_mode": "map"
+      },
+      {
+        "index": 63,
+        "due_s": 127.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 64,
+        "due_s": 129.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-ATLANTIC-MEO",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 65,
+        "due_s": 131.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 66,
+        "due_s": 133.0,
+        "action": "map-node-hover-click",
+        "target": "IME-USP",
+        "expected_mode": "map"
+      },
+      {
+        "index": 67,
+        "due_s": 135.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 68,
+        "due_s": 137.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-ATLANTIC-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 69,
+        "due_s": 139.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 70,
+        "due_s": 141.0,
+        "action": "map-node-hover-click",
+        "target": "USP",
+        "expected_mode": "map"
+      },
+      {
+        "index": 71,
+        "due_s": 143.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 72,
+        "due_s": 145.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-EUROPE-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 73,
+        "due_s": 147.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 74,
+        "due_s": 149.0,
+        "action": "map-node-hover-click",
+        "target": "UNICAMP",
+        "expected_mode": "map"
+      },
+      {
+        "index": 75,
+        "due_s": 151.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 76,
+        "due_s": 153.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-RIO-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 77,
+        "due_s": 155.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 78,
+        "due_s": 157.0,
+        "action": "map-node-hover-click",
+        "target": "CIQUANTA",
+        "expected_mode": "map"
+      },
+      {
+        "index": 79,
+        "due_s": 159.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 80,
+        "due_s": 161.0,
+        "action": "satellite-hover-click",
+        "target": "SAT-US-SATELLITE",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 81,
+        "due_s": 163.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 82,
+        "due_s": 165.0,
+        "action": "map-node-hover-click",
+        "target": "BSC",
+        "expected_mode": "map"
+      },
+      {
+        "index": 83,
+        "due_s": 167.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 84,
+        "due_s": 169.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-AMERICAS-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 85,
+        "due_s": 171.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      },
+      {
+        "index": 86,
+        "due_s": 173.0,
+        "action": "map-node-hover-click",
+        "target": "CN-BEIJING",
+        "expected_mode": "map"
+      },
+      {
+        "index": 87,
+        "due_s": 175.0,
+        "action": "button-mode-transition",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 88,
+        "due_s": 177.0,
+        "action": "satellite-hover-click",
+        "target": "GEO-ASIA-SIM",
+        "expected_mode": "globe"
+      },
+      {
+        "index": 89,
+        "due_s": 179.0,
+        "action": "button-mode-transition",
+        "expected_mode": "map"
+      }
+    ]
+  },
+  "ground_ids": [
+    "CIMATEC",
+    "CBPF",
+    "IME-USP",
+    "USP",
+    "UNICAMP",
+    "CIQUANTA",
+    "BSC",
+    "CN-BEIJING",
+    "CN-HEFEI",
+    "CN-JINAN",
+    "CN-SHANGHAI",
+    "GOOGLE-QAI",
+    "IBM-WATSON",
+    "IME-RIO",
+    "IQC",
+    "IQMP",
+    "MS-QUANTUM",
+    "PUC-RIO",
+    "UFRJ",
+    "XANADU"
+  ],
+  "satellite_ids": [
+    "GEO-AMERICAS-SIM",
+    "GEO-ASIA-SIM",
+    "GEO-ATLANTIC-SIM",
+    "GEO-EUROPE-SIM",
+    "SAT-ATLANTIC-MEO",
+    "SAT-ATLANTIC-SATELLITE",
+    "SAT-EUROPE-SATELLITE",
+    "SAT-RIO-SATELLITE",
+    "SAT-US-SATELLITE"
+  ],
+  "pages": [
+    "topology",
+    "telemetry",
+    "keys",
+    "node",
+    "communicators",
+    "fpga",
+    "audit"
+  ],
+  "minimum_phase_duration_s": 15.0,
+  "soak_minutes": 3.0,
+  "production_zoom_thresholds_modified": false
+}

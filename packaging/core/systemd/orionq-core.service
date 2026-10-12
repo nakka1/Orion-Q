@@ -1,0 +1,52 @@
+# Install only after offline provisioning and deployment review.
+# Target: Linux/systemd 255 (Ubuntu 24.04), installed headless core wheel.
+# Runtime configuration must reference /run/credentials/orionq-core.service/.
+[Unit]
+Description=OrionQ authenticated headless core
+Documentation=https://github.com/systemd/systemd/blob/v255/man/systemd.service.xml
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=exec
+User=orionq
+Group=orionq
+WorkingDirectory=/opt/orionq
+ExecStartPre=/opt/orionq/venv/bin/python -I -m quantum_autopilot.service.cli --config /etc/orionq/core.json check
+ExecStart=/opt/orionq/venv/bin/python -I -m quantum_autopilot.service.cli --config /etc/orionq/core.json serve
+LoadCredential=orion-service:/etc/orionq/secrets/orion-service
+LoadCredential=orion-vault:/etc/orionq/secrets/orion-vault
+StateDirectory=orionq
+StateDirectoryMode=0700
+UMask=0077
+Restart=on-failure
+RestartSec=10s
+RestartPreventExitStatus=2
+TimeoutStartSec=90s
+TimeoutStopSec=90s
+KillSignal=SIGTERM
+KillMode=control-group
+SendSIGKILL=yes
+LimitCORE=0
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orionq-core
+
+[Install]
+WantedBy=multi-user.target

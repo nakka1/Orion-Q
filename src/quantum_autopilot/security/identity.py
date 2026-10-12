@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import base64
-import ctypes
-from ctypes import wintypes
 from dataclasses import dataclass, field
 import getpass
 import json
@@ -41,6 +39,11 @@ def operating_system_identity() -> tuple[str, str]:
         import pwd
         uid = os.getuid()
         return f"os:uid:{uid}", pwd.getpwuid(uid).pw_name
+    # Desktop authentication is a composition choice. Import Windows bindings
+    # only when that provider is actually used; the headless core imports on
+    # Linux/containers without a Windows ABI or an interactive session.
+    import ctypes
+    from ctypes import wintypes
     advapi = ctypes.WinDLL("advapi32", use_last_error=True)
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel.GetCurrentProcess.restype = wintypes.HANDLE

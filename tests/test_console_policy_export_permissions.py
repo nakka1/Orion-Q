@@ -54,6 +54,10 @@ def test_policy_export_requires_separate_capability_and_rechecks_after_chooser(
 
     def revoke_export():
         monkeypatch.setattr(type(wrapper), 'capabilities', property(lambda _: denied))
+        # The GUI presents committed frames, not fresh guarded watchdog reads.
+        committed = wrapper.active._snap
+        assert committed is not None
+        wrapper.snapshot_changed.emit(replace(committed, capabilities=denied))
 
     def choose(*_):
         choices.append(True)
@@ -65,6 +69,8 @@ def test_policy_export_requires_separate_capability_and_rechecks_after_chooser(
         revoke_export()
     getattr(view, method)()
     assert bool(choices) is (when == 'inside_chooser')
+    if when == 'inside_chooser':
+        review.wait(app, lambda: not view.export_job.active, timeout=8)
     assert not button.isEnabled() and not view.export_job.active
     assert not target.exists()
     # Reading remains authorized; denying export alone does not discard the

@@ -76,6 +76,20 @@ paths e rasters específicos são liberados. Somente uma imagem temporária de
 transição permanece por 350 ms. O catálogo geográfico compartilhado conserva
 dados vetoriais imutáveis, sem executar o modo descarregado.
 
+## Créditos cartográficos
+
+O Mapa conserva o crédito `© OpenStreetMap contributors`, em texto de pelo
+menos 12 pixels lógicos, com contraste próprio e fundo sólido. Em áreas estreitas,
+somente a descrição secundária das fontes é reduzida: a identificação OSM
+permanece completa, junto de `ODbL`. Quando necessário, o crédito fica acima da
+escala para evitar sobreposição. O tooltip apresenta a origem completa e o clique
+abre a [licença e atribuição oficial](https://www.openstreetmap.org/copyright),
+sem selecionar um componente ou iniciar pan.
+
+A visão mundial usa Natural Earth para os polígonos; os detalhes de campus
+provenientes de OSM mantêm sua atribuição. A manutenção não altera coordenadas,
+limites, polígonos ou rotas. Veja as [evidências de apresentação e pacote](../results/orionq_asset_licensing_20261012.md).
+
 ## Validação
 
 ```powershell

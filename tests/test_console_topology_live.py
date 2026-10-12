@@ -453,6 +453,18 @@ def test_demo_opens_on_geo_after_login(demo):
     window = demo.window
     window.splash.finished.emit()
     assert window.current_screen == "boot"                      # the login screen
+    assert window._skip_auth is False and not window._login_verified
+    assert window.open_workspace() is False                    # anonymous entry stays blocked
+    controller = window._login_controller
+    assert controller is not None
+    verified = []
+    controller.succeeded.connect(verified.append)
+    assert window.boot.os_session_button.isEnabled()
+    window.boot.os_session_button.click()
+    pump(demo.app, lambda: bool(verified) and window._login_verified
+         and window.current_screen == "topology" and not controller.active, 120)
+    assert verified[-1].source == "os"
+    assert verified[-1].subject == demo.provider._identity.subject
     assert window.open_workspace()
     assert window.current_screen == "topology" and window.current_widget() is demo.topo
     topo = demo.topo
@@ -819,6 +831,9 @@ def test_recalibration_shows_calibrating_then_the_report(demo):
     assert node.calibration_count == count + 1 and node.calibration.status == "complete"
     assert window.field_texts()["calibration_count"] == str(count + 1)
     assert not window.calibration_progress.isVisible()
+    # Command confirmation is a backend readback. Wait for the real queued Qt
+    # presentation before inspecting its rows; never force materialization.
+    demo.settle()
     report = window.calibration_kv.texts()
     assert report["Calibration"] == node.calibration.calibration_id and report["Result"].startswith("complete")
     assert report["Report"].startswith(node.calibration.report_sha256[:16])

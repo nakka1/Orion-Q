@@ -572,7 +572,7 @@ class GlobalOperationManager:
                 success = kind == 'end_to_end_delivered'
                 session = self._runtime.sessions.get(session_id)
                 if kind == 'metrics_computed' and session and demand['operation'] in ('qkd_estimate', 'optical_pair_measurement') and record['command_id'] in demand.get('classical_command_receipts', {}):
-                    metrics = session.metrics
+                    metrics = record['detail'].get('metrics',session.metrics)
                     # A tick can contain several processed blocks. Only bind the
                     # snapshot result to its own latest metric receipt, never
                     # reuse a later block's success at an earlier event time.
@@ -583,7 +583,7 @@ class GlobalOperationManager:
                 if record['receipt_sha256'] in self._claimed_quantum_receipts:
                     continue
                 self._claimed_quantum_receipts.add(record['receipt_sha256'])
-                metrics = dict(session.metrics) if session else {}
+                metrics = dict(record['detail'].get('metrics',session.metrics)) if session else {}
                 demand.update(active=False, successful_attempts=demand['successful_attempts'] + 1,
                     last_activity_s=record['at_s'], next_attempt_s=record['at_s'] + demand['repeat_s'],
                     last_result={'kind': 'entanglement_pair_delivered' if kind == 'end_to_end_delivered' else 'observed_protocol_block',
@@ -591,6 +591,8 @@ class GlobalOperationManager:
                         'pair_id': record['detail'].get('pair_id'), 'fidelity_estimate': record['detail'].get('fidelity_estimate', metrics.get('fidelity')),
                         'coincidences': metrics.get('coincidences'), 'sifted_bits': metrics.get('sifted_bits'),
                         'qber': metrics.get('qber'), 'conditional_key_estimate_bits': metrics.get('conditional_key_estimate_bits', 0),
+                        'physical_endpoints': list(session.config.endpoints) if session else [demand['a'], demand['b']],
+                        'served_institutions': list(session.config.parameters.get('served_institution_endpoints', ())) if session else [],
                         'certified_secret_bits': 0, 'application_payload_forwarded': False})
                 self._set(demand, 'available_no_traffic', 'fresh protocol receipt satisfies this local service; no application payload or certified key', at_s=record['at_s'])
                 self._event(demand, 'protocol_demand_result', demand['last_result'], record['at_s'])
@@ -704,7 +706,8 @@ class GlobalOperationManager:
             'successful_classical_probes': sum(demand['successful_attempts'] for demand in demands if demand['operation'] == 'classical_control_probe'),
             'successful_protocol_services': sum(demand['successful_attempts'] for demand in demands if demand['operation'] in ('entanglement_pair', 'qkd_estimate', 'optical_pair_measurement')),
             'certified_secret_bits': 0, 'application_quantum_forwarding_implemented': False,
-            'limitations': ['Independent satellite/ISL TDC measurements are destructive; no orbital memory/BSM relay driver.',
+            'limitations': ['Independent satellite/ISL TDC measurements are destructive; only explicit orbital_relay memory sessions preserve quantum resources.',
+                'Orbital relay uses dedicated hypothetical memory/capture equipment and a Werner/logical-frame model; no physical adapter validated.',
                 'Classical probes are diagnostic control payloads, not application data or delivered secret keys.',
                 'Physical classical forwarding adapter requires integration and validation; no synthetic physical receipts.'],
             'physical_actuation': False}

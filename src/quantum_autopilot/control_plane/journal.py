@@ -5,13 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import weakref
 from contextlib import closing
 from pathlib import Path
 from threading import RLock
 from typing import Any, Mapping
 
 from quantum_autopilot.control_plane.contracts import ControlCycleRecord
-from quantum_autopilot.control_plane.sqlite_transaction import connect
+from quantum_autopilot.control_plane.sqlite_transaction import connect, open_wal_keeper
 
 
 def _canonical_json(payload: Mapping[str, Any]) -> str:
@@ -28,6 +29,11 @@ class ControlJournal:
         self.path = Path(path).resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = RLock()
+        self._wal_keeper = None
+        self._wal_finalizer = None
+        self._storage_checked = False
+        self._storage_profile = {}
+        self._ensure_io()
         with closing(self._connect()) as connection, connection:
             # DDL otherwise commits each table separately on a new database.
             if not connection.in_transaction:
@@ -64,6 +70,43 @@ class ControlJournal:
     def _connect(self) -> sqlite3.Connection:
         return connect(self.path)
 
+    def _ensure_io(self) -> None:
+        """Keep the local WAL pager open, without borrowing a writer or snapshot.
+
+        Shared scenarios retain their owner/commit boundary. After an explicit
+        release, only the next write rearms the lease; reads stay lightweight.
+        """
+        if self._storage_checked:
+            return
+        keeper, profile = open_wal_keeper(self.path)
+        self._storage_profile = profile
+        self._storage_checked = not profile.get("deferred_to_scenario", False)
+        if keeper is not None:
+            self._wal_keeper = keeper
+            # The callback retains only the connection, never this journal.
+            self._wal_finalizer = weakref.finalize(self, sqlite3.Connection.close, keeper)
+
+    def _write_connect(self) -> sqlite3.Connection:
+        self._ensure_io()
+        return self._connect()
+
+    def storage_profile(self) -> dict[str, Any]:
+        with self._lock:
+            return dict(self._storage_profile, keeper_active=self._wal_keeper is not None)
+
+    def release_io_resources(self) -> None:
+        """Release the idle pager; records/policy remain usable and unchanged.
+
+        SQLite owns checkpoint and sidecar cleanup. Other clients may keep the
+        same WAL open; raw file copies are not a substitute for SQLite backup.
+        """
+        with self._lock:
+            if self._wal_finalizer is not None:
+                self._wal_finalizer()
+            self._wal_finalizer = None
+            self._wal_keeper = None
+            self._storage_checked = False
+
     # ------------------------------------------------------------ cycles
     def get_by_request_id(self, request_id: str) -> dict[str, Any] | None:
         with self._lock, closing(self._connect()) as connection:
@@ -86,7 +129,7 @@ class ControlJournal:
         payload = record.to_dict()
         serialized = _canonical_json(payload)
         record_hash = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-        with self._lock, closing(self._connect()) as connection, connection:
+        with self._lock, closing(self._write_connect()) as connection, connection:
             connection.execute(
                 """
                 INSERT INTO control_cycles (
@@ -143,7 +186,7 @@ class ControlJournal:
         payload = {"kind": kind, "actor": actor, "at_utc": at_utc, "detail": dict(detail)}
         serialized = _canonical_json(payload)
         event_hash = hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-        with self._lock, closing(self._connect()) as connection, connection:
+        with self._lock, closing(self._write_connect()) as connection, connection:
             connection.execute(
                 """
                 INSERT INTO safety_events (event_sha256, kind, actor, at_utc, detail_json)

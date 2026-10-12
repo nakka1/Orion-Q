@@ -43,7 +43,8 @@ class CommandHistory(AdaptiveDialog):
         self.setMinimumSize(600, 440)
         self.setStyleSheet(f'QDialog{{background:{C.raised};}} QPlainTextEdit{{background:{C.void};color:{C.ink};border:1px solid {C.line};}}')
         layout = vbox(self, (18, 16, 18, 16), 8)
-        layout.addWidget(Section('COMMAND CENTER · LOCAL INVENTORY ONLY', C.amber))
+        self.heading = Section('COMMAND CENTER · LOCAL INVENTORY ONLY', C.amber)
+        layout.addWidget(self.heading)
         self.note = Prose('No source loaded.', 11)
         self.note.setTextFormat(Qt.TextFormat.PlainText)
         layout.addWidget(self.note)
@@ -83,6 +84,9 @@ class CommandHistory(AdaptiveDialog):
         if self.provider is not None:
             raise ValueError('command center already attached')
         self.provider = provider
+        if getattr(provider.active, 'is_remote', False):
+            self.setWindowTitle('OrionQ · Remote command center')
+            self.heading.setText('COMMAND CENTER · REMOTE CORE RECEIPTS')
         provider.source_changed.connect(self._source_changed)
         provider.snapshot_changed.connect(self._snapshot)
         self._sync_source()
@@ -170,7 +174,12 @@ class CommandHistory(AdaptiveDialog):
         record = self._selected_record()
         allowed = self._source is not None and self._source[2] and self._source[4] and self.isVisible()
         busy = self.job.active or self.export_job.active
-        self.check_button.setEnabled(bool(allowed and record and record.state in {'REQUESTED', 'RUNNING', 'UNKNOWN'} and not busy))
+        reconciliation = getattr(self.provider.active, 'command_reconciliation_store_path', None) if self.provider else None
+        self.check_button.setEnabled(bool(allowed and callable(reconciliation) and record
+                                          and record.state in {'REQUESTED', 'RUNNING', 'UNKNOWN'} and not busy))
+        self.check_button.setToolTip('Observe current native workspace state without retrying the command.'
+                                    if callable(reconciliation) else
+                                    'Current-state reconciliation is unavailable for this source; inspect the received original receipts.')
         if self.job.result is not None:
             self.evidence_json = json.dumps(self.job.result, indent=2, ensure_ascii=False, allow_nan=False) + '\n'
             self.output.set_evidence(self.evidence_json)

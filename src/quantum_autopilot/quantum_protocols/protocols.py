@@ -155,12 +155,23 @@ class TwinFieldAdapter:
         p = config.parameters
         mu, nu = p.get('signal_mu', .4), p.get('decoy_mu', .1)
         number(mu, 'signal_mu', .001, 2.); number(nu, 'decoy_mu', .001, 1.)
-        if nu >= mu:
+        mode = p.get('tf_estimation_mode', 'reduced_asymptotic')
+        if mode == 'reduced_asymptotic' and nu >= mu:
             raise ProtocolError('invalid_parameter', 'decoy_mu < signal_mu required')
         number(p.get('send_probability', .08), 'send_probability', .001, .5)
         number(p.get('phase_sigma_rad', .05), 'phase_sigma_rad', 0., 10.)
+        if mode not in ('reduced_asymptotic', 'finite_sns_v2'):
+            raise ProtocolError('invalid_parameter', 'unsupported TF estimation mode')
+        if mode == 'finite_sns_v2':
+            from .tf_processing import parameters
+            parameters(p)
 
     def process(self, raw, context):
+        if raw.get('tf_schema'):
+            from .tf_processing import process_observation
+            return process_observation(raw, context)
+        if context['parameters'].get('tf_estimation_mode') == 'finite_sns_v2':
+            raise ProtocolError('invalid_tf_observation', 'finite SNS mode cannot accept reduced aggregate observations')
         optional_number(raw, 'phase_reference_residual_rad', -1e9, 1e9)
         optional_pair(raw, 'arm_transmissions', 0., 1.)
         optional_pair(raw, 'effective_arm_lengths_km', 0., 1e6)

@@ -156,8 +156,12 @@ class WrappingLabel(QLabel):
 
     geometry_updated = Signal()
 
-    def __init__(self, value):
-        super().__init__()
+    def __init__(self, value, parent=None, *, font=None):
+        super().__init__(parent)
+        # The first layout uses the final owner/font instead of recalculating
+        # it during construction, font assignment and late parenting.
+        if font is not None:
+            self.setFont(font)
         self._text_layouts = {}
         self._layout_font = self.font()
         self._font_height = self.fontMetrics().height()
@@ -556,9 +560,9 @@ class KVRow(QWidget):
         lay = hbox(self, (0, 6, 0, 6), 12)
         self._wrap = wrap
         if wrap:
-            self.key_label, self.value_label = WrappingLabel(key), WrappingLabel(value)
-            self.key_label.setFont(text_font(size))
-            self.value_label.setFont(mono(size-.5) if mono_value else text_font(size))
+            self.key_label = WrappingLabel(key, self, font=text_font(size))
+            self.value_label = WrappingLabel(value, self,
+                                            font=mono(size-.5) if mono_value else text_font(size))
             set_color(self.key_label, C.ink2);set_color(self.value_label, text_tone(tone_name))
             self.value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         else:

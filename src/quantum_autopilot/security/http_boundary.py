@@ -14,7 +14,6 @@ import io
 import json
 import math
 import re
-from pathlib import Path
 import ssl
 import threading
 import time
@@ -39,10 +38,13 @@ class HTTPPolicy:
     def __post_init__(self):
         if not self.allowed_hosts or not all(isinstance(h, str) and h and "/" not in h for h in self.allowed_hosts):
             raise ValueError("explicit HTTP host allowlist required")
-        if not 1 <= self.requests_per_minute <= 10000 or not 1 <= self.max_concurrency <= 64:
+        if (type(self.requests_per_minute) is not int or type(self.max_concurrency) is not int
+                or not 1 <= self.requests_per_minute <= 10000 or not 1 <= self.max_concurrency <= 64):
             raise ValueError("invalid HTTP quota/concurrency")
-        if not 0 < self.body_timeout_seconds <= 30 or not 0 < self.operation_timeout_seconds <= 300:
-            raise ValueError("invalid HTTP deadline")
+        for deadline, maximum in ((self.body_timeout_seconds, 30), (self.operation_timeout_seconds, 300)):
+            if (isinstance(deadline, bool) or not isinstance(deadline, (int, float))
+                    or not math.isfinite(deadline) or not 0 < deadline <= maximum):
+                raise ValueError("invalid HTTP deadline")
 
 
 class Quotas:
@@ -99,6 +101,9 @@ class BoundedHTTPServer(ThreadingHTTPServer):
     def __init__(self, address, handler, *, policy):
         self._slots = threading.BoundedSemaphore(policy.max_concurrency)
         self._transport_policy = policy
+        self._drain_condition = threading.Condition()
+        self._active_requests = 0
+        self._draining = False
         self.ssl_context = None
         super().__init__(address, handler)
 
@@ -108,7 +113,13 @@ class BoundedHTTPServer(ThreadingHTTPServer):
         return request, address
 
     def process_request(self, request, client_address):
-        if not self._slots.acquire(blocking=False):
+        with self._drain_condition:
+            admitted = not self._draining and self._slots.acquire(blocking=False)
+            if admitted:
+                # Register before creating the handler thread; shutdown must
+                # not observe zero while a registered thread has not started.
+                self._active_requests += 1
+        if not admitted:
             try:
                 if self.ssl_context is None:
                     request.sendall(b"HTTP/1.0 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
@@ -118,8 +129,32 @@ class BoundedHTTPServer(ThreadingHTTPServer):
         try:
             super().process_request(request, client_address)
         except BaseException:
-            self._slots.release()
+            self._finish_request()
             raise
+
+    def _finish_request(self):
+        self._slots.release()
+        with self._drain_condition:
+            self._active_requests -= 1
+            self._drain_condition.notify_all()
+
+    def begin_draining(self):
+        with self._drain_condition:
+            self._draining = True
+            self._drain_condition.notify_all()
+
+    def drain_requests(self, *, timeout_s=10.0):
+        if (isinstance(timeout_s, bool) or not isinstance(timeout_s, (int, float))
+                or not math.isfinite(timeout_s) or not .001 <= timeout_s <= 60):
+            raise ValueError("invalid HTTP drain timeout")
+        deadline = time.monotonic() + timeout_s
+        self.begin_draining()
+        with self._drain_condition:
+            while self._active_requests:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("HTTP processing still owns service resources")
+                self._drain_condition.wait(remaining)
 
     def process_request_thread(self, request, client_address):
         try:
@@ -132,7 +167,7 @@ class BoundedHTTPServer(ThreadingHTTPServer):
                     return
             super().process_request_thread(request, client_address)
         finally:
-            self._slots.release()
+            self._finish_request()
 
 
 def secure_handler(base, service, *, policy=None, peer_authorizer=None, max_request_bytes=262144):

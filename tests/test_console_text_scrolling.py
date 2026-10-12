@@ -140,3 +140,68 @@ def test_scroll_support_keeps_both_native_constructor_overloads_and_json_undo(ap
     finally:
         parent.deleteLater()
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_frozen_context_validation_commits_authenticated_frame_without_clock(app, tmp_path, monkeypatch):
+    from pathlib import Path
+    from quantum_autopilot.console import text_scroll_validation as validation
+    from quantum_autopilot.console.service_provider import ServiceProvider
+    from quantum_autopilot.console.widgets.policy_context import PolicyContextInspection
+
+    refreshed, admitted, stopped = [], [], []
+    refresh, load, stop = ServiceProvider.refresh, PolicyContextInspection.load, ServiceProvider.stop
+
+    def refresh_checked(self):
+        assert self.security.has_identity_scope()
+        assert self.security.current_identity().subject == self._identity.subject
+        assert self._stepper is None and self.steps_taken == 0
+        refresh(self)
+        refreshed.append(self._snap)
+
+    def load_checked(self):
+        assert self.provider._snap is not None
+        assert self._presented_source == (id(self.provider.active), self.provider._generation)
+        assert self.load_button.isEnabled()
+        admitted.append(self.provider._snap.capabilities.allows('observe_policy_context'))
+        load(self)
+
+    def stop_checked(self):
+        assert self._stepper is None and self.steps_taken == 0
+        stop(self)
+        stopped.append(not self.stepping and self._executor is None)
+
+    def forbidden_start(self):
+        pytest.fail('The read-only context fixture must not start the simulation clock')
+
+    monkeypatch.setattr(ServiceProvider, 'refresh', refresh_checked)
+    monkeypatch.setattr(ServiceProvider, 'start', forbidden_start)
+    monkeypatch.setattr(ServiceProvider, 'stop', stop_checked)
+    monkeypatch.setattr(PolicyContextInspection, 'load', load_checked)
+    report = validation.validate_context_receipt(Path(__file__).resolve().parents[1], tmp_path / 'native-context')
+    assert report['passed'] and all(report['checks'].values())
+    assert len(refreshed) == 1 and admitted == [True] and stopped == [True]
+    assert report['checks']['private_inspection_keeps_journal']
+    assert report['checks']['captured_export_equals_observation']
+
+
+def test_frozen_context_validation_releases_provider_when_authenticated_refresh_fails(app, tmp_path, monkeypatch):
+    from pathlib import Path
+    from quantum_autopilot.console import text_scroll_validation as validation
+    from quantum_autopilot.console.service_provider import ServiceProvider
+
+    stopped = []
+    stop = ServiceProvider.stop
+
+    def refused(self):
+        assert self.security.has_identity_scope()
+        raise PermissionError('fresh authenticated read refused')
+
+    def stop_checked(self):
+        stop(self)
+        stopped.append(not self.stepping and self._executor is None)
+
+    monkeypatch.setattr(ServiceProvider, 'refresh', refused)
+    monkeypatch.setattr(ServiceProvider, 'stop', stop_checked)
+    with pytest.raises(PermissionError, match='fresh authenticated read refused'):
+        validation.validate_context_receipt(Path(__file__).resolve().parents[1], tmp_path / 'refused-context')
+    assert stopped == [True]

@@ -1,0 +1,735 @@
+{
+  "schema": "orionq.trl4-software-protocol.v1",
+  "protocol_id": "SOFT-ALPHA-TRL4-v1",
+  "revision": 2,
+  "revision_reason": "Correções após run2 preservado: autoridade explícita de exportação, navegação durante preparação de fonte, configuração modal invalidada por contexto/revisão/permissão e disponibilidade conservadora. Mesmos requisitos, domínio, cenários, semente, plano nativo e tolerâncias; novas regressões coletadas antes da rodada integral.",
+  "target_scope": "SOFT-ALPHA",
+  "seed": 2026100900,
+  "domain": "Protótipo integrado em fontes Python/Qt Windows, entrada simulada/arquivo identificada; atuação física bloqueada e material emulado não operacional.",
+  "decision": "Resultados automatizados preparam revisão humana externa; nenhum TRL é atribuído automaticamente.",
+  "scientific_reference_basis": [
+    "NASA NPR 7123.1D, Appendix E, effective 2023-07-05, consulted 2026-10-09",
+    "ECSS-E-HB-11A, 2017-03-01, A.4/Table A-1, consulted 2026-10-09",
+    "tests/fixtures/trl5_refs/references.json"
+  ],
+  "known_trl5_failure": "outputs/trl5_continuation_20261009/run1/assessment.json",
+  "test_groups": {
+    "core": [
+      "tests/test_network_channel_io.py",
+      "tests/test_modular_quantum_protocols.py",
+      "tests/test_global_simulation_resource_banks.py",
+      "tests/test_communicators_geo.py",
+      "tests/test_communicator_mission_registration.py",
+      "tests/test_global_network_operations.py",
+      "tests/test_network_engine_routing.py",
+      "tests/test_satellite_isl_geo.py",
+      "tests/test_public_satellite_ephemeris.py",
+      "tests/test_satellite_gateway_cli.py",
+      "tests/test_satellite_mission_ingress.py",
+      "tests/test_satellite_pipeline_v2.py",
+      "tests/test_lab_configuration.py",
+      "tests/test_lab_swabian_hardening.py",
+      "tests/test_lab_observations_capture.py",
+      "tests/test_lab_swabian_import_registry.py",
+      "tests/test_lab_release_gate.py",
+      "tests/test_lab_observed_qkd.py",
+      "tests/test_fpga_devices.py",
+      "tests/test_physics_validation.py",
+      "tests/test_purification.py",
+      "tests/test_cross_platform_qkd_replication.py",
+      "tests/test_trl5_reference_campaign.py",
+      "tests/test_optional_compensation.py"
+    ],
+    "integration": [
+      "tests/test_lab_key_ledger.py",
+      "tests/test_security_pki_keys.py",
+      "tests/test_security_application.py",
+      "tests/test_security_core.py",
+      "tests/test_security_protocol_equipment.py",
+      "tests/test_security_vault_dpapi.py",
+      "tests/test_control_journal_crash_recovery.py",
+      "tests/test_journal_io_lifecycle.py",
+      "tests/test_lab_service_recovery.py",
+      "tests/test_scenario_transaction.py",
+      "tests/test_durable_journal_storage.py",
+      "tests/test_policy_activation.py",
+      "tests/test_policy_recovery.py",
+      "tests/test_physical_control_gate.py",
+      "tests/test_optional_models_acceptance.py",
+      "tests/test_controller_evidence.py",
+      "tests/test_attempt_export.py",
+      "tests/test_trl4_assessment.py"
+    ],
+    "qt": [
+      "tests/test_console_input_sources.py",
+      "tests/test_console_communicator_forms.py",
+      "tests/test_console_channel_configuration.py",
+      "tests/test_performance_provider_delivery.py",
+      "tests/test_security_console.py",
+      "tests/test_console_model_catalog.py",
+      "tests/test_console_fpga_devices.py",
+      "tests/test_console_node_window_lifecycle.py",
+      "tests/test_console_text_scrolling.py",
+      "tests/test_console_screens_live.py",
+      "tests/test_console_node_incremental.py",
+      "tests/test_console_satellite_incremental.py",
+      "tests/test_console_floating_tick.py",
+      "tests/test_console_publication_order.py",
+      "tests/test_console_live_cadence.py",
+      "tests/test_console_terminal_workspace.py",
+      "tests/test_console_resize_regression.py",
+      "tests/test_console_theme_transition.py",
+      "tests/test_console_geo_modes.py",
+      "tests/test_console_memory_lifecycle.py",
+      "tests/test_console_global_globe.py",
+      "tests/test_console_geo_update_cadence.py",
+      "tests/test_console_explicit_exports.py",
+      "tests/test_console_policy_export_permissions.py",
+      "tests/test_desktop_instance.py",
+      "tests/test_console_startup_stability.py",
+      "tests/test_console_startup_login.py",
+      "tests/test_console_login_flow.py",
+      "tests/test_console_loading_progress.py",
+      "tests/test_trl4_console_campaign.py"
+    ]
+  },
+  "requirements": [
+    {
+      "id": "F01",
+      "label": "Entrada, canais e proveniência",
+      "acceptance": "Rejeitar entrada ausente, repetida, fora de ordem ou vinculada incorretamente; exigir canais clássico e quântico associados e preservar a origem de replay/simulação.",
+      "production_files": [
+        "src/quantum_autopilot/network_engine/channel_io.py"
+      ],
+      "test_files": [
+        "tests/test_network_channel_io.py",
+        "tests/test_console_input_sources.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_paired_channels.md"
+      ],
+      "campaigns": [
+        "pipeline"
+      ],
+      "limitations": [
+        "Replay de arquivo não comprova transmissão óptica física."
+      ]
+    },
+    {
+      "id": "F02",
+      "label": "Protocolos quânticos e recursos",
+      "acceptance": "Processar cinco famílias por observações brutas, com recursos, falhas e comunicação clássica causal; impedir resultados certificados inventados.",
+      "production_files": [
+        "src/quantum_autopilot/quantum_protocols/runtime.py"
+      ],
+      "test_files": [
+        "tests/test_modular_quantum_protocols.py",
+        "tests/test_global_simulation_resource_banks.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_modular_quantum_protocols.md"
+      ],
+      "campaigns": [
+        "reference",
+        "pipeline"
+      ],
+      "limitations": [
+        "Modelos reduzidos; estimador TF-QKD condicional não é prova completa de segurança."
+      ]
+    },
+    {
+      "id": "F03",
+      "label": "Cadastro e topologia",
+      "acceptance": "Validar tipo físico, papéis e capacidades antes de persistir; rejeitar incompatibilidades e revisões obsoletas; cadastrar e editar terrestres/satélites por controles reais.",
+      "production_files": [
+        "src/quantum_autopilot/control_plane/communicators.py"
+      ],
+      "test_files": [
+        "tests/test_communicators_geo.py",
+        "tests/test_communicator_mission_registration.py",
+        "tests/test_console_communicator_forms.py",
+        "tests/test_console_channel_configuration.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_communicators_geo.md"
+      ],
+      "campaigns": [
+        "console"
+      ],
+      "limitations": [
+        "Cadastro físico descreve integração externa ainda não validada."
+      ]
+    },
+    {
+      "id": "F04",
+      "label": "Demandas e rotas",
+      "acceptance": "Compor rotas compatíveis, contabilizar recursos e distinguir encaminhamento clássico de repetição quântica; recusar operações inviáveis.",
+      "production_files": [
+        "src/quantum_autopilot/network_engine/global_operations.py"
+      ],
+      "test_files": [
+        "tests/test_global_network_operations.py",
+        "tests/test_network_engine_routing.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_global_network.md"
+      ],
+      "campaigns": [
+        "pipeline"
+      ],
+      "limitations": [
+        "Não oferece relay orbital quântico coerente sem memórias e BSM adequados."
+      ]
+    },
+    {
+      "id": "F05",
+      "label": "Órbitas e disponibilidade",
+      "acceptance": "Verificar posição, visibilidade, obstrução terrestre e requisitos de apontamento/sincronização; indisponibilidade física deve alterar o enlace.",
+      "production_files": [
+        "src/quantum_autopilot/quantum_protocols/orbits.py"
+      ],
+      "test_files": [
+        "tests/test_satellite_isl_geo.py",
+        "tests/test_public_satellite_ephemeris.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_inter_satellite_contract.md"
+      ],
+      "campaigns": [
+        "reference",
+        "pipeline"
+      ],
+      "limitations": [
+        "Efemérides públicas não são recepção local de RF nem validação da carga útil quântica."
+      ]
+    },
+    {
+      "id": "F06",
+      "label": "Recepção e decodificação satelital",
+      "acceptance": "Separar housekeeping e observações ópticas, validar contratos de missão/gateway e persistir proveniência e recibos sem apresentar Internet/replay como RF local.",
+      "production_files": [
+        "src/quantum_autopilot/quantum_protocols/satellite_gateway.py"
+      ],
+      "test_files": [
+        "tests/test_satellite_gateway_cli.py",
+        "tests/test_satellite_mission_ingress.py",
+        "tests/test_satellite_pipeline_v2.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_satellite_reception.md",
+        "docs/product/orion_q_satellite_ogs_v2.md"
+      ],
+      "campaigns": [],
+      "limitations": [
+        "Demodulação RF, OGS e detectores reais dependem de integração e qualificação externas."
+      ]
+    },
+    {
+      "id": "F07",
+      "label": "Adaptadores e aquisição laboratorial",
+      "acceptance": "Pré-validar configuração completa; bloquear aquisição após aplicação incerta até readback; contabilizar buffers, cancelamento e substituição compatível de adaptadores.",
+      "production_files": [
+        "src/quantum_autopilot/lab/adapters.py"
+      ],
+      "test_files": [
+        "tests/test_lab_configuration.py",
+        "tests/test_lab_swabian_hardening.py",
+        "tests/test_lab_observations_capture.py",
+        "tests/test_lab_swabian_import_registry.py",
+        "tests/test_lab_release_gate.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_laboratory.md",
+        "docs/product/orion_q_security_acquisition.md"
+      ],
+      "campaigns": [],
+      "limitations": [
+        "Diálogos emulados não qualificam SDK/licença, jitter, impedância ou calibração física."
+      ]
+    },
+    {
+      "id": "F08",
+      "label": "Observações e BB84",
+      "acceptance": "Exigir preparação, bases, bits e relógio; processar observações identificadas com estimação, reconciliação, verificação, autenticação e orçamento de privacidade reproduzíveis.",
+      "production_files": [
+        "src/quantum_autopilot/lab/observed_qkd.py"
+      ],
+      "test_files": [
+        "tests/test_lab_observed_qkd.py",
+        "tests/test_lab_observations_capture.py"
+      ],
+      "documents": [
+        "docs/product/orion_lab_acquisition_contracts.md",
+        "docs/product/orion_q_laboratory.md"
+      ],
+      "campaigns": [],
+      "limitations": [
+        "Fixtures não produzem material operacional certificado; timestamps isolados são insuficientes."
+      ]
+    },
+    {
+      "id": "F09",
+      "label": "Ciclo de vida de chaves",
+      "acceptance": "Persistir reserva, consumo e entrega incerta conservadora; duas pontas com estado próprio devem contabilizar correspondência sem reutilização após recuperação.",
+      "production_files": [
+        "src/quantum_autopilot/lab/persistent_keys.py"
+      ],
+      "test_files": [
+        "tests/test_lab_key_ledger.py",
+        "tests/test_security_pki_keys.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_lab_key_delivery.md",
+        "docs/product/orion_q_security_pki_keys.md"
+      ],
+      "campaigns": [],
+      "limitations": [
+        "Criptografia e ledger em software não comprovam segurança experimental da fonte QKD."
+      ]
+    },
+    {
+      "id": "F10",
+      "label": "Identidade e autorização",
+      "acceptance": "Bloquear chamadas anônimas ou fora do escopo antes da fila/mutação; preservar identidade e revogação no serviço e autenticar entrada nativa pela sessão Windows.",
+      "production_files": [
+        "src/quantum_autopilot/security/service_boundary.py"
+      ],
+      "test_files": [
+        "tests/test_security_application.py",
+        "tests/test_performance_provider_delivery.py",
+        "tests/test_security_console.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_security.md"
+      ],
+      "campaigns": [
+        "native-ui",
+        "console"
+      ],
+      "limitations": [
+        "OIDC institucional efetivo exige provedor e qualificação; loopback não substitui identidade."
+      ]
+    },
+    {
+      "id": "F11",
+      "label": "PKI, cofre, auditoria e autoridade",
+      "acceptance": "Rejeitar certificados revogados, adulteração e replay; proteger credenciais, auditoria e autoridade exclusiva por instrumento; verificar recuperação conservadora e ausência de segredos.",
+      "production_files": [
+        "src/quantum_autopilot/security/runtime.py"
+      ],
+      "test_files": [
+        "tests/test_security_core.py",
+        "tests/test_security_pki_keys.py",
+        "tests/test_security_protocol_equipment.py",
+        "tests/test_security_vault_dpapi.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_security.md",
+        "docs/product/orion_q_security_pki_keys.md",
+        "docs/product/orion_q_security_acquisition.md"
+      ],
+      "campaigns": [],
+      "limitations": [
+        "PKI operacional, interlocks físicos e âncoras externas anti-rollback não ficam certificados por ensaios locais."
+      ]
+    },
+    {
+      "id": "F12",
+      "label": "Persistência e recuperação de processos",
+      "acceptance": "Verificar commit atômico por banco, mortes antes/depois de gravação, replay e fechamento de WAL/FULL sem duplicação ou operações silenciosamente abandonadas.",
+      "production_files": [
+        "src/quantum_autopilot/control_plane/journal.py"
+      ],
+      "test_files": [
+        "tests/test_control_journal_crash_recovery.py",
+        "tests/test_journal_io_lifecycle.py",
+        "tests/test_lab_service_recovery.py",
+        "tests/test_scenario_transaction.py",
+        "tests/test_durable_journal_storage.py"
+      ],
+      "documents": [
+        "docs/product/quantum_network_control_plane_sandbox.md"
+      ],
+      "campaigns": [],
+      "limitations": [
+        "Não equivale a ensaio de queda elétrica nem restauração operacional integral de todos os bancos."
+      ]
+    },
+    {
+      "id": "F13",
+      "label": "Modos, política e reversão",
+      "acceptance": "Distinguir simulado, shadow e físico, exigir aprovação vigente e bloquear estado incerto; recuperar histórico e reversão conservadoramente.",
+      "production_files": [
+        "src/quantum_autopilot/control_plane/policy_activation.py"
+      ],
+      "test_files": [
+        "tests/test_policy_activation.py",
+        "tests/test_policy_recovery.py",
+        "tests/test_physical_control_gate.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_policy_activation_q05.md",
+        "docs/product/quantum_network_control_plane_sandbox.md"
+      ],
+      "campaigns": [],
+      "limitations": [
+        "Atuação física permanece bloqueada e não qualificada."
+      ]
+    },
+    {
+      "id": "F14",
+      "label": "Modelos opcionais",
+      "acceptance": "Iniciar sem pacotes ML obrigatórios; exigir admissão e compatibilidade; respeitar decisão explícita de habilitar/desabilitar controle e manter desligado ao término do ensaio.",
+      "production_files": [
+        "src/quantum_autopilot/model_intake/verification.py"
+      ],
+      "test_files": [
+        "tests/test_optional_models_acceptance.py",
+        "tests/test_optional_compensation.py",
+        "tests/test_console_model_catalog.py"
+      ],
+      "documents": [
+        "docs/product/input_sources.md",
+        "docs/product/orion_q_optional_models.md"
+      ],
+      "campaigns": [
+        "console"
+      ],
+      "limitations": [
+        "Admissão técnica não demonstra benefício, generalização ou previsão WDM→Bell experimental. Controle automático off não significa todo detector ML inativo."
+      ]
+    },
+    {
+      "id": "F15",
+      "label": "FPGA emulado",
+      "acceptance": "Configurar, desconectar e reconectar FPGA emulado pelo serviço comum; exigir recibos, telemetria identificada e ausência de métricas físicas fabricadas.",
+      "production_files": [
+        "src/quantum_autopilot/control_plane/fpga_devices.py"
+      ],
+      "test_files": [
+        "tests/test_fpga_devices.py",
+        "tests/test_console_fpga_devices.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_protocol_graphs_fpga.md"
+      ],
+      "campaigns": [
+        "console"
+      ],
+      "limitations": [
+        "Sem qualificação de FPGA físico ou implementação HDL experimental."
+      ]
+    },
+    {
+      "id": "F16",
+      "label": "Interface, dados e atualizações",
+      "acceptance": "Preservar snapshots e seleção, evitar callbacks obsoletos, permitir leitura/scroll e atualizações incrementais; coalescer apresentação sem perder eventos científicos.",
+      "production_files": [
+        "src/quantum_autopilot/console/service_provider.py"
+      ],
+      "test_files": [
+        "tests/test_console_node_window_lifecycle.py",
+        "tests/test_console_text_scrolling.py",
+        "tests/test_console_screens_live.py",
+        "tests/test_console_node_incremental.py",
+        "tests/test_console_satellite_incremental.py",
+        "tests/test_console_floating_tick.py",
+        "tests/test_console_publication_order.py",
+        "tests/test_console_live_cadence.py",
+        "tests/test_console_terminal_workspace.py",
+        "tests/test_console_resize_regression.py",
+        "tests/test_console_theme_transition.py"
+      ],
+      "documents": [
+        "docs/product/native_console.md",
+        "docs/product/orion_q_performance.md"
+      ],
+      "campaigns": [
+        "native-ui",
+        "console"
+      ],
+      "limitations": [
+        "Critério funcional não aprova latência, FPS ou estabilidade prolongada exigidos no protocolo TRL5."
+      ]
+    },
+    {
+      "id": "F17",
+      "label": "GEO e ciclo de vida dos renderizadores",
+      "acceptance": "Manter todos os satélites acessíveis, preservar câmera/seleção/dados nas trocas Mapa/Globo, no máximo um renderizador ativo e liberar timers/recursos do anterior.",
+      "production_files": [
+        "src/quantum_autopilot/console/widgets/geo_view.py"
+      ],
+      "test_files": [
+        "tests/test_console_geo_modes.py",
+        "tests/test_console_memory_lifecycle.py",
+        "tests/test_console_global_globe.py",
+        "tests/test_console_geo_update_cadence.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_geo_modes.md"
+      ],
+      "campaigns": [
+        "native-ui",
+        "console"
+      ],
+      "limitations": [
+        "Visualização não comprova comunicação; soak curto não prova ausência universal de vazamentos."
+      ]
+    },
+    {
+      "id": "F18",
+      "label": "Exportação e integridade de evidências",
+      "acceptance": "Exportar por controles reais para destino novo, preservar identidade/revisões/recibos e bloquear sobrescrita indevida; rejeitar evidências incompletas, alteradas e parametrizações omitidas.",
+      "production_files": [
+        "src/quantum_autopilot/evidence_export.py"
+      ],
+      "test_files": [
+        "tests/test_console_explicit_exports.py",
+        "tests/test_controller_evidence.py",
+        "tests/test_attempt_export.py",
+        "tests/test_console_policy_export_permissions.py",
+        "tests/test_trl4_assessment.py"
+      ],
+      "documents": [
+        "docs/product/orionq_trl4_qualification.md"
+      ],
+      "campaigns": [
+        "console"
+      ],
+      "limitations": [
+        "Hashes verificam bytes; não autenticam autoria humana nem conferem validade científica por si só."
+      ]
+    },
+    {
+      "id": "F19",
+      "label": "Inicialização autenticada em Windows",
+      "acceptance": "Abrir fontes alpha e recursos corretamente, aplicar instância exclusiva no uso normal e autenticação de sessão Windows; identificar falhas e verificar limpeza dos objetos pertencentes ao ensaio.",
+      "production_files": [
+        "src/quantum_autopilot/desktop.py"
+      ],
+      "test_files": [
+        "tests/test_desktop_instance.py",
+        "tests/test_console_startup_stability.py",
+        "tests/test_console_startup_login.py",
+        "tests/test_console_login_flow.py",
+        "tests/test_console_loading_progress.py",
+        "tests/test_trl4_console_campaign.py"
+      ],
+      "documents": [
+        "docs/product/orionq_trl4_operator_manual.md",
+        "docs/product/native_console.md"
+      ],
+      "campaigns": [
+        "native-ui",
+        "console"
+      ],
+      "limitations": [
+        "Executável 5.60.1 anterior não comprova execução destas fontes; ensaio nativo Qt não é automação completa por entrada do SO."
+      ]
+    },
+    {
+      "id": "F20",
+      "label": "Referências analíticas e rigor científico",
+      "acceptance": "Congelar unidades, domínio, hipóteses e tolerâncias; comparar física reduzida com oráculos independentes e verificar invariantes, separando goldens/fixtures de validação experimental.",
+      "production_files": [
+        "src/quantum_autopilot/quantum_protocols/physics.py"
+      ],
+      "test_files": [
+        "tests/test_physics_validation.py",
+        "tests/test_purification.py",
+        "tests/test_cross_platform_qkd_replication.py",
+        "tests/test_trl5_reference_campaign.py"
+      ],
+      "documents": [
+        "docs/product/orion_q_modular_quantum_protocols.md",
+        "docs/product/orionq_trl4_design.md"
+      ],
+      "campaigns": [
+        "reference",
+        "pipeline"
+      ],
+      "limitations": [
+        "35 verificações analíticas não são 35 fontes independentes; não qualificam estimador TF completo ou calibração atmosférica experimental."
+      ]
+    }
+  ],
+  "reports": {
+    "group-core": "group-core.xml",
+    "group-integration": "group-integration.xml",
+    "group-qt": "group-qt.xml",
+    "reference-1": "reference-1/report.json",
+    "reference-2": "reference-2/report.json",
+    "pipeline-1": "pipeline-1/report.json",
+    "pipeline-2": "pipeline-2/report.json",
+    "native-ui": "native-ui/report.json",
+    "console": "console/report.json"
+  },
+  "console_cases": [
+    "native_entry",
+    "seven_screens",
+    "topology_views",
+    "ground_details",
+    "satellite_details",
+    "geo_lifecycle",
+    "communicator_dynamic",
+    "communicator_terrestrial",
+    "communicator_satellite",
+    "communicator_refusal",
+    "fpga_emulated",
+    "key_audit_readback",
+    "evidence_export",
+    "ml_cancel_confirm_restore",
+    "physical_boundary",
+    "cleanup"
+  ],
+  "console_case_criteria": {
+    "native_entry": [
+      "backend_verified",
+      "current_windows_session",
+      "three_received_tick_advances",
+      "simulated_real_pipeline"
+    ],
+    "seven_screens": [
+      "all_routes",
+      "received_snapshot",
+      "received_content"
+    ],
+    "topology_views": [
+      "same_nodes",
+      "same_links",
+      "selection_preserved"
+    ],
+    "ground_details": [
+      "clicked_identity",
+      "all_received_fields",
+      "no_pending_sections"
+    ],
+    "satellite_details": [
+      "clicked_identity",
+      "all_received_fields",
+      "no_pending_sections"
+    ],
+    "geo_lifecycle": [
+      "exclusive_renderer",
+      "selection_preserved",
+      "camera_preserved",
+      "retired_timer_stopped"
+    ],
+    "communicator_dynamic": [
+      "satellite_orbit_visible",
+      "terrestrial_orbit_absent",
+      "manual_protocol_preserved"
+    ],
+    "communicator_terrestrial": [
+      "created_exact_readback",
+      "edited_exact_readback",
+      "persisted_record",
+      "version_advanced"
+    ],
+    "communicator_satellite": [
+      "created_exact_readback",
+      "edited_exact_readback",
+      "persisted_record",
+      "version_advanced"
+    ],
+    "communicator_refusal": [
+      "partial_coordinates_refused",
+      "duplicate_refused",
+      "no_persisted_change"
+    ],
+    "fpga_emulated": [
+      "configuration_readback",
+      "connection_readback",
+      "processed_receipt",
+      "hardware_metrics_absent"
+    ],
+    "key_audit_readback": [
+      "keys_match_publication",
+      "audit_match_publication",
+      "unsigned_scope_visible"
+    ],
+    "evidence_export": [
+      "real_qt_picker",
+      "chosen_new_destination",
+      "source_completed",
+      "unsigned_scope",
+      "no_overwrite"
+    ],
+    "ml_cancel_confirm_restore": [
+      "cancel_no_command",
+      "confirmed_on",
+      "confirmed_off",
+      "off_restored",
+      "detector_independent"
+    ],
+    "physical_boundary": [
+      "actuation_locked",
+      "no_physical_executor",
+      "no_physical_action"
+    ],
+    "cleanup": [
+      "window_closed",
+      "provider_stopped",
+      "renderers_retired",
+      "timers_stopped",
+      "login_worker_closed"
+    ]
+  },
+  "collection_manifest": "configs/qualification/trl4_collection_v1.json",
+  "source_documents": [
+    "docs/product/orionq_trl4_design.md",
+    "docs/product/orionq_trl4_operator_manual.md",
+    "docs/product/orionq_trl4_qualification.md"
+  ],
+  "fixtures": [
+    "tests/fixtures/trl5_refs",
+    "data/reference",
+    "configs/qualification/trl4_native_action_plan_v1.json"
+  ],
+  "run_profile": {
+    "platform": "Windows",
+    "python": ".audit-winvenv/Scripts/python.exe",
+    "pytest_platform": "offscreen",
+    "native_platform": "windows",
+    "window_px": [
+      3440,
+      1440
+    ],
+    "performance_duration_seconds": 15,
+    "performance_soak_minutes": 3,
+    "pipeline_simulated_seconds": 35,
+    "pipeline_timeout_seconds": 180,
+    "repetitions": 2,
+    "seed_purpose": "Known reproduction seed, not holdout",
+    "isolation": "fresh directories and test-owned state; no operator credentials, receipts or database modified",
+    "console_window_px": [
+      1440,
+      900
+    ],
+    "console_timeout_seconds": 600
+  },
+  "acceptance_policy": {
+    "pytest": "Exact collected cases, zero failure/error/skip; no module/parameter silently omitted.",
+    "reference": "All 35 frozen analytic expectations within declared tolerances, not report booleans alone.",
+    "pipeline": "49 checks per repetition, raw-stage/resources/SQLite/JSONL agreement, same-seed normalized fingerprint; unavailable cannot produce success.",
+    "native_ui": "Completed real Windows-session authentication, all planned actions/readbacks, exclusive renderer/resources; no TRL5 latency thresholds changed.",
+    "console": "All frozen case IDs and per-case boolean criteria; real production service state/export readback.",
+    "report_status": "pass/fail/not_demonstrated, complete_for_review separate, pending_external_review without automatic TRL assignment."
+  },
+  "native_expectations": {
+    "planned_actions": {
+      "map": 8,
+      "globe": 8,
+      "tabs": 8,
+      "swaps": 8,
+      "soak": 90
+    },
+    "selections": 57,
+    "complete_content_readbacks": 57,
+    "page_navigations": 8,
+    "planned_mode_changes": 53,
+    "mode_transitions": 57,
+    "derivation": "Fixed action plan of frozen benchmark implementation with duration=15 seconds and soak=3 minutes; retained pre-run evidence profile, not fitted to new results."
+  },
+  "native_action_plan": "configs/qualification/trl4_native_action_plan_v1.json"
+}

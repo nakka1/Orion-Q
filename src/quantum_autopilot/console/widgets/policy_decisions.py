@@ -6,6 +6,8 @@ from PySide6.QtWidgets import QComboBox, QFileDialog, QTabWidget, QWidget
 
 from quantum_autopilot.control_plane.policy_decisions import decision_history, explain_decision
 from ..model_archive_check import LocalModelJob
+from ..capabilities import SourceCapabilities
+from ..policy_binding_authority import PolicyBindingAuthority
 from ..theme import C, mono
 from .command_history import _export_captured
 from .adaptive_dialog import AdaptiveDialog
@@ -17,6 +19,8 @@ class PolicyDecisionAudit(AdaptiveDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.provider = self._source = None
+        self._presented_capabilities = SourceCapabilities()
+        self._presented_source = None
         self._export_capability = False
         self.history = self.explanation = None
         self._epoch = 0
@@ -69,7 +73,24 @@ class PolicyDecisionAudit(AdaptiveDialog):
         if self.provider is not None:
             raise ValueError('decision audit already attached')
         self.provider = provider
-        provider.source_changed.connect(self._tick)
+        provider.source_changed.connect(self._source_changed)
+        provider.snapshot_changed.connect(self._snapshot)
+        # A previously committed frame may initialize affordances. Calling
+        # provider.snapshot()/capabilities here would perform guarded IO on Qt.
+        snapshot = getattr(provider, '_snap', None)
+        if snapshot is not None:
+            self._snapshot(snapshot)
+        else:
+            self._tick()
+
+    def _source_changed(self, *_):
+        self._presented_capabilities = SourceCapabilities()
+        self._presented_source = None
+        self._tick()
+
+    def _snapshot(self, snapshot):
+        self._presented_capabilities = snapshot.capabilities
+        self._presented_source = (id(self.provider.active), self.provider._generation)
         self._tick()
 
     def _scope(self):
@@ -77,7 +98,10 @@ class PolicyDecisionAudit(AdaptiveDialog):
             self._export_capability = False
             return None
         service = getattr(self.provider.active,'service',None)
-        capabilities = self.provider.capabilities
+        if (not self.provider.running or self._presented_source !=
+                (id(self.provider.active), self.provider._generation)):
+            self._presented_capabilities = SourceCapabilities()
+        capabilities = self._presented_capabilities
         self._export_capability = capabilities.allows('export_record')
         return (id(self.provider.active),self.provider._generation,
                 capabilities.allows('read_policy_decisions'),id(service),
@@ -89,8 +113,11 @@ class PolicyDecisionAudit(AdaptiveDialog):
         with QSignalBlocker(self.selection):
             self.selection.clear()
         self.message = message
-        self.job.clear()
-        self.export_job.clear()
+        # This reset owns its source transition. Do not reenter _changed while
+        # clearing jobs and repopulate a withdrawn or different source.
+        with QSignalBlocker(self.job), QSignalBlocker(self.export_job):
+            self.job.clear()
+            self.export_job.clear()
 
     def _tick(self,*_):
         scope = self._scope()
@@ -174,8 +201,9 @@ class PolicyDecisionAudit(AdaptiveDialog):
         self._clear('Reading recorded simulation cycles…')
         try:
             path = self.provider.active.policy_decision_store_path()
-            self.job.submit(decision_history,path)
-        except (ValueError,AttributeError) as exc:
+            self.job.submit(PolicyBindingAuthority(self.provider.active.service, source=self.provider.active).prepare(
+                "policy_decision_history", decision_history, path))
+        except (ValueError,AttributeError,PermissionError) as exc:
             self.message = 'READ REFUSED · '+str(exc)
             self._render()
 
@@ -189,8 +217,9 @@ class PolicyDecisionAudit(AdaptiveDialog):
         self.export_job.clear()
         try:
             path = self.provider.active.policy_decision_store_path()
-            self.job.submit(explain_decision,path,item['request_id'],item['record_sha256'])
-        except (ValueError,AttributeError) as exc:
+            self.job.submit(PolicyBindingAuthority(self.provider.active.service, source=self.provider.active).prepare(
+                "explain_policy_decision", explain_decision, path, item['request_id'], item['record_sha256']))
+        except (ValueError,AttributeError,PermissionError) as exc:
             self.message = 'READ REFUSED · '+str(exc)
             self._render()
 

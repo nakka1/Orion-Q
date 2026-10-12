@@ -108,7 +108,18 @@ def provider(tmp_path, app):
     from quantum_autopilot.console.service_provider import ServiceProvider
     service = AssuranceDashboardService(repository_root=Path(__file__).resolve().parents[1],
                                         control_journal_path=tmp_path / "journal.sqlite")
-    return ServiceProvider(service, state_root=tmp_path, replay_limit=3)
+    provider = ServiceProvider(service, state_root=tmp_path, replay_limit=3)
+    yield provider
+    provider.stop()
+    # Shutdown drains acquisition and audit workers without blocking the Qt thread.
+    import time
+    deadline = time.monotonic() + 8
+    while provider.stopping and time.monotonic() < deadline:
+        app.processEvents()
+        time.sleep(.005)
+    assert not provider.stopping
+    assert provider.shutdown_error is None
+
 
 
 def filled_view(provider):

@@ -1,51 +1,46 @@
-# Ambiente local após a mudança para E:\Codex
+# Ambiente local OrionQ no disco E:
 
-Registro verificado em 24/09/2026. Raiz atual deste checkout:
+Atualização de localização em 12/10/2026. Versão ativa: **5.66.1**.
 
-```text
-E:\Codex\2026-08-27\e\work\NISQ-Predictive-Twin
-```
+| Recurso | Localização |
+| --- | --- |
+| Código, Git completo, resultados e releases | `E:\OrionQ\project` |
+| Estado persistido Windows e cofre protegido | `E:\OrionQ\state\windows` |
+| Python exclusivo Windows | `E:\OrionQ\dependencies\python312` |
+| Ambiente principal recriado | `E:\OrionQ\project\.venv` |
+| Clone SeQUeNCe fixado | `E:\OrionQ\dependencies\SeQUeNCe` |
+| Modelos originais preservados | `E:\OrionQ\inputs\models` |
+| Dados de referência externos | Diretórios `E:\OrionQ\bristol-*`, `optical-failure-dataset`, `qkd-coexistence-zenodo-21132088` |
+| Temporários e caches exclusivos Windows | `E:\OrionQ\temp` e `E:\OrionQ\cache` |
+| Histórico externo e versões preservadas | `E:\OrionQ\archives\external` |
+| Disco Linux WSL Ubuntu-24.04 | `E:\OrionQ\platforms\wsl\Ubuntu-24.04\ext4.vhdx` |
+| Inventários e recibos privados da migração | `E:\OrionQ\migration\20261011` |
 
-O ambiente virtual registra como caminho histórico de criação
-`C:\Users\alexa\Documents\Codex\2026-08-27\e\work\NISQ-Predictive-Twin`.
-Esse registro não é a localização atual. Usar caminhos relativos à raiz para
-código, configurações e resultados; o caminho absoluto acima identifica somente
-esta instalação, sem impor diretório a outras máquinas.
-
-```powershell
-Set-Location -LiteralPath 'E:\Codex\2026-08-27\e\work\NISQ-Predictive-Twin'
-.\.audit-winvenv\Scripts\python.exe --version
-```
-
-O executável acima iniciou e executou a auditoria documental em 24/09, reportando
-Python 3.12.14. `pyvenv.cfg` ainda guarda a versão/caminho históricos de criação.
-Esse teste não valida todos os launchers do ambiente movido; preferir invocação
-explícita de `python.exe` e `python.exe -m ...` em vez de wrappers antigos.
-O ambiente não foi recriado nem seus metadados históricos reescritos.
-
-O Git local apontou diferença de proprietário após a mudança. A inspeção deste
-checkout utilizou uma exceção limitada a cada comando:
+Abra `E:\OrionQ\OrionQ.cmd` para usar a distribuição Windows com os caminhos explícitos do projeto e do estado. Os iniciadores em `E:\OrionQ\bin\windows` também oferecem desenvolvimento, serviço independente e cliente autenticado. Configuração, certificados e permissões existentes continuam obrigatórios; nenhum iniciador concede autoridade ou habilita atuação física.
 
 ```powershell
-git -c safe.directory=E:/Codex/2026-08-27/e/work/NISQ-Predictive-Twin status --short
+Set-Location -LiteralPath 'E:\OrionQ\project'
+& 'E:\OrionQ\project\.venv\Scripts\python.exe' -m pytest tests/test_cross_simulator_campaign.py tests/test_sequence_network_campaign.py
+$env:SEQUENCE_SRC = 'E:\OrionQ\dependencies\SeQUeNCe'
 ```
 
-Nenhuma configuração global de confiança foi alterada. A mudança de localização
-não autoriza descartar alterações rastreadas ou arquivos novos. O estado existente
-foi preservado durante a consolidação; código científico e artefatos originais
-não foram modificados.
+No Linux, o projeto fica em `/mnt/e/OrionQ/project`. Os iniciadores em `/mnt/e/OrionQ/bin/linux` usam o ambiente de qualificação preservado em ext4 e a conta `orionq-validation`. Credenciais, estado e caches Linux permanecem em ext4, fisicamente no disco E:, conservando permissões POSIX. Isso não constitui nova instalação produtiva em PetaLinux.
 
-## Continuidade da campanha SO(3)
+O caminho antigo `E:\Codex\2026-08-27\e\work\NISQ-Predictive-Twin` conserva aliases de compatibilidade para a tarefa já aberta no Codex; a carga útil ativa foi transferida ao destino. Relatórios científicos históricos mantêm suas datas, caminhos e hashes originais. Não se substituem caminhos dentro de recibos autenticados.
+
+As alterações rastreadas e não versionadas existentes, os ambientes antigos, resultados ignorados e branches foram preservados. O ambiente principal é recriado, porque copiar um ambiente virtual não torna portáveis seus caminhos absolutos. Ferramentas compartilhadas do Windows/Codex permanecem no C:.
+
+A migração não muda resultados científicos, maturidade TRL, modelos opcionais ou interlocks. Consulte os recibos privados para o andamento e o relatório final de transferência, validação e limpeza.
+
+## Campanha SO(3) preservada
 
 - Resumo: `outputs/compensation_campaign_20260923/author-v1-run1/summary.json`.
-- Protocolo congelado e 240 relatórios: mesmo diretório do resumo.
-- Regressão: `outputs/compensation_campaign_20260923/regression-final.xml`, no pai
-  de `author-v1-run1`, não no pai do repositório.
-- [Relatório consolidado](../results/orion_q_compensation_campaign_20260923.md):
-  grade completa, cobertura, limites e hashes.
-- [Roadmap](roadmap.md): campanha concluída; Q16 parcial e Q05 pendente.
+- Protocolo congelado e 240 relatórios no mesmo diretório.
+- Regressão: `outputs/compensation_campaign_20260923/regression-final.xml`.
+- Consolidação: [relatório de compensação](../results/orion_q_compensation_campaign_20260923.md).
 
-`outputs/`, ambientes virtuais e releases são locais e ignorados pelo Git.
-Preservar esses diretórios ao mover ou fazer backup do trabalho. Os ZIPs do autor
-continuam externos, sem cópia para o produto. Os modelos permanecem opcionais,
-OFF por padrão, somente offline/shadow e sem atuação física.
+Modelos permanecem opcionais e OFF por padrão. Os arquivos originais QKD/Author não estavam nos caminhos Downloads indicados no inventário inicial; não foram recriados nem substituídos por pacotes com hash diferente.
+
+## Fechamento da migração
+
+[Relatório final](../results/orionq_migration_20261012.md): Windows, Linux/TUI/Wayland e perfis oficial/LabOne Q validados; 89,33 GB lógicos de origens exclusivas removidos do C:. O ZIP qnet original agora está em `E:/OrionQ/inputs/models/qnet_network.zip`. Os perfis opcionais são selecionados explicitamente; LabOne Q compartilha o runtime core E e mantém suas próprias versões SDK. Originais compartilhados ou de uso incerto e aliases mínimos de compatibilidade foram preservados. Gates frios Linux e limites WSL permanecem registrados.

@@ -1,0 +1,28 @@
+{
+  "schema": "orion.core-service.v1",
+  "repository_root": "/usr/share/orionq/resources",
+  "state_root": "/var/lib/orionq",
+  "identity": {
+    "subject": "orion-core",
+    "credential_file": "/run/credentials/orionq-core.service/orion-service"
+  },
+  "vault": {
+    "key_id": "institutional-core-v1",
+    "key_file": "/run/credentials/orionq-core.service/orion-vault"
+  },
+  "http": {
+    "host": "127.0.0.1",
+    "port": 8765,
+    "allowed_hosts": ["127.0.0.1", "localhost"],
+    "allowed_origins": [],
+    "requests_per_minute": 120,
+    "max_concurrency": 8,
+    "body_timeout_seconds": 5,
+    "operation_timeout_seconds": 20
+  },
+  "tls": {
+    "root": "/var/lib/orionq/security/pki",
+    "server_leaf": "/var/lib/orionq/security/pki/core-server-leaf.json"
+  },
+  "clock": {"enabled": true, "period_s": 1.0, "stop_timeout_s": 10.0}
+}

@@ -7,7 +7,7 @@ pytest.importorskip("PySide6.QtWidgets")
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtWidgets import QApplication  # noqa: E402
-from tests.test_console_topology_live import Demo, flush  # noqa: E402
+from tests.test_console_topology_live import Demo, flush, pump  # noqa: E402
 
 pytestmark = pytest.mark.unit
 
@@ -16,8 +16,21 @@ def test_pair_reset_and_fresh_request_are_reflected_in_the_interface(tmp_path):
     app = QApplication.instance() or QApplication([])
     harness = Demo(app, tmp_path / "memory-lifecycle")
     try:
-        harness.window.splash.finished.emit()
-        assert harness.window.open_workspace()
+        window = harness.window
+        pump(app, lambda: window.current_screen == "boot", 120)
+        assert window._skip_auth is False and not window._login_verified
+        assert window.open_workspace() is False
+        controller = window._login_controller
+        assert controller is not None
+        verified = []
+        controller.succeeded.connect(verified.append)
+        assert window.boot.os_session_button.isEnabled()
+        window.boot.os_session_button.click()
+        pump(app, lambda: bool(verified) and window._login_verified
+             and window.current_screen == "topology" and not controller.active, 120)
+        assert verified[-1].source == "os"
+        assert verified[-1].subject == harness.provider._identity.subject
+        assert window.open_workspace()
         topo = harness.topo
 
         def request():

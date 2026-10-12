@@ -80,8 +80,6 @@ for relative in (
     "console/fonts/Inter.ttf",
     "console/fonts/JetBrainsMono.ttf",
     "console/fonts/Oswald.ttf",
-    "console/fonts/Quantum.otf",
-    "console/fonts/quantum-NOTICE.txt",
     "console/fonts/manifest.json",
     "model_intake/derived/qkd_detector_boosting_v1.json",
     "model_intake/derived/qkd_detector_boosting_v1.npz",
@@ -92,6 +90,10 @@ for relative in (
     entry = (str(source), str(Path("quantum_autopilot") / Path(relative).parent))
     if entry not in datas:
         datas.append(entry)
+# Reject stale installed resources rather than silently redistributing a removed font.
+for source, destination in datas:
+    if Path(source).name.casefold() in {"quantum.otf", "quantum-notice.txt"}:
+        raise ValueError(f"Excluded legacy font in collected runtime resources: {source}")
 datas += collect_data_files("qiskit")
 datas += collect_data_files("qiskit_aer")
 # Transpilation discovers its built-in stage plugins through distribution

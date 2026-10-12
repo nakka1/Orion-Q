@@ -1,0 +1,64 @@
+{
+  "schema": "orionq.hybrid-qualification.v1",
+  "declared_date": "2026-10-10",
+  "seeds": [101, 202, 303],
+  "worker_timeout_s": 900,
+  "families": ["sns", "space", "protocol", "ingress"],
+  "scope": "Independent numerical components and unchanged conditional protocol pipeline; no physical or composable security qualification",
+  "source_paths": [
+    "tools/run_hybrid_quantum_campaign.py",
+    "tools/sns_validation_reference.py",
+    "tools/sns_validation_campaign.py",
+    "tools/space_validation_reference.py",
+    "tools/space_validation_campaign.py",
+    "tools/space_validation_prepare.py",
+    "tools/hybrid_protocol_reference.py",
+    "tools/hybrid_protocol_campaign.py",
+    "tools/hybrid_ingress_campaign.py",
+    "tests/test_hybrid_quantum_campaign.py",
+    "tests/test_sns_validation_reference.py",
+    "tests/test_space_validation_reference.py",
+    "tests/test_space_validation_campaign.py",
+    "tests/test_hybrid_protocol_reference.py",
+    "tests/test_modular_quantum_protocols.py",
+    "tests/test_satellite_pipeline_v2.py",
+    "tests/test_satellite_isl_geo.py",
+    "tests/test_satellite_mission_ingress.py",
+    "tests/test_quantum_acquisition_persistence.py",
+    "configs/qualification/hybrid_quantum_v1.json",
+    "configs/qualification/sns_validation_v1.json",
+    "docs/product/orionq_hybrid_qualification.md",
+    "outputs/space_validation_preparation_20261010/zenodo-6384558-v1.1.0.zip",
+    "outputs/space_validation_preparation_20261010/author-archive-manifest.json",
+    "outputs/sequence_network_20261010/run1/report.json",
+    "outputs/sequence_network_20261010/run1/coverage-matrix-identified.json",
+    "outputs/sequence_network_20261010/run1/coverage-identification-manifest.json",
+    "outputs/cross_simulators_20261010/run2/report.json",
+    "outputs/hybrid_preparation_20261010/environment.json",
+    "outputs/hybrid_preparation_20261010/sns_validation_methods.md"
+  ],
+  "reference_asset_directories": [
+    "outputs/space_validation_preparation_20261010/author-v1.1.0/jwallnoefer-multisat_qrepeater_sim_archive-e2e3044"
+  ],
+  "previous_freezes": [
+    "outputs/cross_simulators_20261010/run2/freeze.json",
+    "outputs/sequence_network_20261010/run1/freeze.json"
+  ],
+  "forbidden_claims": [
+    "physical_hardware_validated",
+    "security_certified",
+    "physical_actuation",
+    "coherent_orbital_relay_validated",
+    "trl_assigned",
+    "finite_sns_backend_validated",
+    "whole_hybrid_qualified"
+  ],
+  "acceptance": {
+    "prospective_source_freeze": true,
+    "previous_campaign_sources_unchanged": true,
+    "reference_modules_must_not_import_production": true,
+    "no_failure_or_gap_suppression": true,
+    "family_checks_must_all_pass": true,
+    "full_hybrid_qualification_requires_separate_physical_and_security_evidence": true
+  }
+}

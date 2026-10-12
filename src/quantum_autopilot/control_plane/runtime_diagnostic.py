@@ -130,6 +130,8 @@ def run_diagnostic(output, *, samples=1000, warmup=20, budget_ms=10.0,
     if worker is not None:
         worker.start()
     attempts = []
+    storage = None
+    release_ms = None
     try:
         for index in range(warmup + samples):
             current[0] = CycleTrace()
@@ -160,6 +162,14 @@ def run_diagnostic(output, *, samples=1000, warmup=20, budget_ms=10.0,
         stop.set()
         if worker is not None:
             worker.join(timeout=2)
+        storage_reader = getattr(runtime.journal, "storage_profile", None)
+        if callable(storage_reader):
+            storage = storage_reader()
+        release = getattr(runtime.journal, "release_io_resources", None)
+        if callable(release):
+            release_start = perf_counter_ns()
+            release()
+            release_ms = (perf_counter_ns() - release_start) / 1e6
     report = {"schema": "orion.runtime-diagnostic.v1", "evidence": "software_performance",
               "started_at_utc": started_at, "finished_at_utc": datetime.now(timezone.utc).isoformat(),
               "scope": "isolated_simulated_repeater_cycle", "physical_action_performed": False,
@@ -174,6 +184,8 @@ def run_diagnostic(output, *, samples=1000, warmup=20, budget_ms=10.0,
                                                  if stage in a["stages_ms"]])
                             for stage in ("ingestion", "policy", "supervision", "execution", "persistence")},
               "environment": host,
+              "sqlite_storage": storage,
+              "io_resource_release_ms": release_ms,
               "limitations": ["Instrumentation overhead is included and has not been isolated.",
                               "Stage totals omit lock waits, hashing and other runtime overhead included in total_ms.",
                               "One artificial repeater state; not polarisation inference or a complete network benchmark.",

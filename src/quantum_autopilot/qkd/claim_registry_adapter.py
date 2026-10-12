@@ -19,7 +19,7 @@ from quantum_autopilot.core import (
     make_audited_decision,
 )
 from quantum_autopilot.qkd.operating_point import (
-    CONDITION_SCOPES,
+    CONDITION_SCOPES as CONDITION_SCOPES,
     GRID_CONFIG_RELATIVE_PATH,
     IrelandQCIGridClassifier,
     QKDOperatingPoint,

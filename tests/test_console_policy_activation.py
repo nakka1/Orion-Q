@@ -155,6 +155,7 @@ def test_activation_confirmation_dismissed_on_invalidation(panel, app, monkeypat
                 )
             ),
         )
+        wrapper.active.refresh()  # Commit the changed presentation capabilities.
     view._tick()
     assert view.confirmation is None and not dialog.isVisible()
     dialog.accept()
@@ -276,7 +277,12 @@ def test_readback_observes_actual_state_without_baseline_preparation(panel, app,
     if stage == "mismatch":
         service.controller_runtime.policy = RepeaterSandboxPolicy(0.8)
     elif stage == "restart":
-        other = AssuranceDashboardService(control_journal_path=service.controller_runtime.journal.path)
+        # Restart the controller in this authenticated process. A separate
+        # security runtime would require a fresh provider-bound identity.
+        other = AssuranceDashboardService(
+            control_journal_path=service.controller_runtime.journal.path,
+            security=service.security,
+        )
         other.controller_runtime
         wrapper.active.service = other
         view._tick()
@@ -367,20 +373,28 @@ def test_delayed_readback_discarded_after_close(panel, app, monkeypatch):
 
 @pytest.mark.parametrize("change", ["close", "stop"])
 def test_invalidation_while_waiting_for_cycle_lock_prevents_activation(panel, app, monkeypatch, change):
-    from quantum_autopilot.console import policy_review_binding as binding
-
     view, _, service = panel
     approvals.approve(panel, app)
     dialog = confirm(view)
     runtime = service.controller_runtime
     entered = Event()
-    original = binding.activate
-
-    def entered_activate(*args, **kwargs):
-        entered.set()
-        return original(*args, **kwargs)
-
-    monkeypatch.setattr(binding, "activate", entered_activate)
+    original = runtime._cycle_lock
+    gui_thread = get_ident()
+    class TracedCycleLock:
+        # The real contended lock is retained. Admission now happens before
+        # core.activate, so instrument the wait itself instead of core entry.
+        def acquire(self, *args, **kwargs):
+            if get_ident() != gui_thread:
+                entered.set()
+            return original.acquire(*args, **kwargs)
+        def release(self):
+            return original.release()
+        def __enter__(self):
+            self.acquire()
+            return self
+        def __exit__(self, *_):
+            self.release()
+    monkeypatch.setattr(runtime, '_cycle_lock', TracedCycleLock())
     runtime._cycle_lock.acquire()
     try:
         click(dialog.activate_button)

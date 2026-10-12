@@ -85,6 +85,7 @@ from qiskit_aer.noise import NoiseModel, depolarizing_error, thermal_relaxation_
 from qiskit.quantum_info import DensityMatrix, state_fidelity
 
 from quantum_twin.core.config import PhysicsConfig
+from quantum_twin.core.validation import finite_real, probability, relaxation_times
 
 
 def pure_dephasing_probability(elapsed_time: float, T1: float, T2: float) -> float:
@@ -96,10 +97,8 @@ def pure_dephasing_probability(elapsed_time: float, T1: float, T2: float) -> flo
     off-diagonal elements by ``sqrt(1-lambda)``, hence the factor of two in
     ``lambda = 1 - exp(-2*t/Tphi)``.
     """
-    if T1 <= 0 or T2 <= 0:
-        raise ValueError("T1 and T2 must be positive")
-    if T2 > 2.0 * T1 + 1e-15:
-        raise ValueError("physical constraint violated: T2 must be <= 2*T1")
+    relaxation_times(T1, T2)
+    finite_real("elapsed_time (s)", elapsed_time, minimum=0.0)
     rate = max((1.0 / T2) - (1.0 / (2.0 * T1)), 0.0)
     return float(1.0 - np.exp(-2.0 * elapsed_time * rate))
 
@@ -112,6 +111,7 @@ class QuantumChannel:
     """
 
     def __init__(self, config: PhysicsConfig, rng: np.random.Generator = None):
+        config.validate()
         self.config = config
         self.rng = rng if rng is not None else np.random.default_rng(config.SEED)
 
@@ -143,6 +143,8 @@ class QuantumChannel:
 
     def loss_db(self, distance_km: float) -> float:
         """Loss_dB = alpha * Distance_km -- ALWAYS derived, never sampled independently."""
+        finite_real("distance_km", distance_km, minimum=0.0)
+        finite_real("ALPHA_DB_PER_KM", self.config.ALPHA_DB_PER_KM, minimum=0.0)
         return self.config.ALPHA_DB_PER_KM * distance_km
 
     def transmission_efficiency(self, distance_km: float) -> float:
@@ -152,6 +154,8 @@ class QuantumChannel:
     def photon_rate(self, distance_km: float, source_stability_noise: float = 0.0) -> float:
         """Photon_Rate = base_rate * efficiency * (1 + small source jitter)
         -- ALWAYS derived from efficiency (hence from loss, hence from distance)."""
+        finite_real("PHOTON_RATE_BASE (Hz)", self.config.PHOTON_RATE_BASE, minimum=0.0)
+        finite_real("source_stability_noise", source_stability_noise)
         eta = self.transmission_efficiency(distance_km)
         return max(self.config.PHOTON_RATE_BASE * eta * (1.0 + source_stability_noise), 0.0)
 
@@ -164,6 +168,7 @@ class QuantumChannel:
         contributes the remainder (an undetected/lost photon reads as an
         error at the classical layer).
         """
+        probability("depol_prob", depol_prob)
         eta = self.transmission_efficiency(distance_km)
         return float(np.clip(0.5 * depol_prob + 0.5 * (1.0 - eta), 0.0, 1.0))
 
@@ -176,9 +181,12 @@ class QuantumChannel:
         Composed into a single QuantumError and attached to the 'id' gate,
         which is where each qubit "sits" while exposed to the channel.
         """
+        relaxation_times(self.config.T1, self.config.T2)
+        probability("depol_prob", depol_prob)
+        finite_real("exposure_time (s)", exposure_time, minimum=0.0)
         depol = depolarizing_error(depol_prob, 1)
         thermal = thermal_relaxation_error(
-            self.config.T1, self.config.T2, max(float(exposure_time), 0.0)
+            self.config.T1, self.config.T2, float(exposure_time)
         )
         combined = depol.compose(thermal)
 
@@ -244,6 +252,12 @@ class QuantumChannel:
         Returns a dict with every derived quantity, causally consistent by
         construction.
         """
+        # Validate before the stochastic loss branch: invalid inputs must not be
+        # accepted merely because that particular photon happened to be erased.
+        relaxation_times(self.config.T1, self.config.T2)
+        probability("depol_prob", depol_prob)
+        finite_real("transmission_exposure_time (s)", transmission_exposure_time, minimum=0.0)
+        finite_real("storage_time (s)", storage_time, minimum=0.0)
         loss_db = self.loss_db(distance_km)
         eta = self.transmission_efficiency(distance_km)
         photon_rate = self.photon_rate(distance_km)
@@ -317,7 +331,8 @@ class QuantumNoiseChannel:
     """
 
     def __init__(self, T1: float = 50e-6, T2: float = 30e-6, depol_prob: float = 0.01):
-        assert T2 <= 2 * T1, "Restrição física: T2 deve ser <= 2*T1"
+        relaxation_times(T1, T2)
+        probability("depol_prob", depol_prob)
         self.T1 = T1
         self.T2 = T2
         self.depol_prob = depol_prob
@@ -330,6 +345,9 @@ class QuantumNoiseChannel:
     def _local_kraus_operators(self, elapsed_time: float, depol_prob_override: float = None):
         """Constrói os operadores de Kraus locais (1 qubit) combinando os três canais."""
         p = depol_prob_override if depol_prob_override is not None else self.depol_prob
+        probability("depol_prob", p)
+        relaxation_times(self.T1, self.T2)
+        finite_real("elapsed_time (s)", elapsed_time, minimum=0.0)
         gamma = 1.0 - np.exp(-elapsed_time / self.T1) if self.T1 > 0 else 0.0
         lam = pure_dephasing_probability(elapsed_time, self.T1, self.T2)
 

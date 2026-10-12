@@ -1,11 +1,13 @@
-"""Loopback-only JSON API for the local WDM/QKD assurance dashboard."""
+"""Authenticated assurance/control API; remote service requires operational mTLS."""
 
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import mimetypes
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -37,16 +39,16 @@ from quantum_autopilot.qkd.claim_registry_adapter import (
     build_assurance_workload,
 )
 from quantum_autopilot.qkd.operating_point import QKDOperatingPoint
+from quantum_autopilot.qkd.api_contract import API_VERSION, DEFAULT_HOST, DEFAULT_PORT, MAX_REQUEST_BYTES
+from quantum_autopilot.security.service_boundary import (CONSOLE_SERVICE_METHODS, secure_service,
+                                                        DurableResultAuditPending, admit_service_call)
+from quantum_autopilot.security.equipment import EquipmentDenied
 from quantum_twin.evaluation.thesis_claims import (
     load_claim_registry,
     validate_claim_registry,
 )
 
 
-API_VERSION = "1.3.0"
-DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 8765
-MAX_REQUEST_BYTES = 256 * 1024
 EXAMPLE_POINT_PATH = Path(
     "configs/qkd_assurance/irelandqci_example_operating_point.json"
 )
@@ -60,9 +62,6 @@ def _json_object(value: Any, *, name: str) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(f"{name} must be a JSON object")
     return {str(key): item for key, item in value.items()}
-
-
-from quantum_autopilot.security.service_boundary import secure_service
 
 
 @secure_service
@@ -106,6 +105,9 @@ class AssuranceDashboardService:
         # Live network engine (design §2.5): created on first use, bound to this journal.
         self._network_engine = None
         self._network_lock = RLock()
+        self._mixed_controller = None
+        self._mixed_resource_authority = None
+        self._mixed_controller_lock = RLock()
         self.network_seed = network_seed
         self.is_demo = False
         self._laboratory = None
@@ -140,6 +142,113 @@ class AssuranceDashboardService:
 
     def security_status(self):
         return self.security.snapshot()
+
+    def console_snapshot(self, *, include_static: bool = True):
+        """Transport records for a remote UI, without importing any GUI package.
+
+        Reads never step the engine or run a replay. Presentation selection and
+        formatting belong to the client; all protocol state remains here.
+        A version handshake prevents mixing a new topology into an old frame.
+        """
+        if type(include_static) is not bool:
+            raise ValueError("include_static must be a boolean")
+        identity = self.security.current_identity()
+        from quantum_autopilot.control_plane.console_commands import read_commands
+        with self.security.audit.batch():
+            for _attempt in range(3):
+                live = self.network_live_state()
+                topology = self.control_plane_topology()
+                metadata = self.network_live_state(metadata_only=True)
+                version = (topology.get("topology") or {}).get("topology_version")
+                if (live.get("publication_revision") == metadata.get("publication_revision")
+                        and live.get("engine_session_id") == metadata.get("engine_session_id")
+                        and live.get("topology_version") == version):
+                    break
+            else:
+                raise ValueError("network state changed during observation; request a fresh snapshot")
+            result = {"schema": "orion.console.remote.v1", "health": self.health(),
+                      "topology": topology, "events": self.control_plane_events(limit=100)["events"],
+                      "live": live, "laboratory": self.laboratory_state(),
+                      "workspace_path": self.workspace_path_result(),
+                      "safety_events": self.controller_runtime.journal.list_recent_safety_events(limit=50),
+                      "commands": read_commands(self.control_journal_path),
+                      "replay": {"available": False, "reason": "explicit replay required"},
+                      "security": {"subject": identity.subject, "display_name": identity.display_name,
+                                   "roles": sorted(identity.roles), "scopes": list(identity.scopes),
+                                   "source": identity.source, "expires_at": identity.expires_at,
+                                   "profile": self.security.profile, "identity_profile": self.security.identity_profile,
+                                   "vault_mode": self.security.vault.mode, "physical_qualification": False}}
+            if include_static:
+                result["model"] = self.wdm_model_status()
+                result["evidence_lanes"] = self.evidence_lanes()
+                try:
+                    result["summary"] = self.summary()
+                except ValueError:
+                    result["summary"] = {"available": False, "reason": "published evidence failed validation"}
+        return result
+
+    def console_command(self, verb: str, payload: dict):
+        """Explicit service operations, protected again at the target boundary."""
+        if not isinstance(verb, str) or not isinstance(payload, dict) or verb not in CONSOLE_SERVICE_METHODS:
+            raise ValueError("unsupported remote console command")
+        tracked = {"add_network_node", "set_node_location", "set_node_isolation", "set_link_active", "recalibrate_node"}
+        if verb in tracked:
+            from quantum_autopilot.control_plane.console_commands import ConsoleCommandJournal, validated_request
+            from quantum_autopilot.control_plane.topology import _sha256
+            from quantum_autopilot.security.service_boundary import METHOD_ACTIONS, service_resource
+            request = validated_request(verb, payload)
+            journal = ConsoleCommandJournal(self.controller_runtime.journal.path)
+            command_id = journal.begin(verb, request)
+            try:
+                self.security.authorize(METHOD_ACTIONS[verb], service_resource(self, (request,), operation=verb))
+            except PermissionError:
+                journal.transition(command_id, "REJECTED", {"reason": "capability_revoked_before_dispatch"})
+                raise
+            journal.transition(command_id, "RUNNING")
+            try:
+                result = getattr(self, CONSOLE_SERVICE_METHODS[verb])(request)
+                persisted = self.topology_store.get(request["topology_id"])
+                if (result.get("status") != "persisted" or result.get("physical_action_performed") is not False
+                        or persisted is None or persisted.topology_version != request["expected_version"] + 1
+                        or persisted.to_dict() != result.get("topology")):
+                    raise ValueError("inventory readback did not confirm this response")
+            except Exception as error:
+                journal.transition(command_id, "UNKNOWN", {"reason": "execution_or_readback_failed",
+                                                          "error_type": type(error).__name__})
+                raise RuntimeError("inventory outcome uncertain; inspect durable command receipts") from None
+            record = journal.transition(command_id, "CONFIRMED", {"topology_version": persisted.topology_version,
+                                        "topology_sha256": _sha256(persisted.to_dict())})
+            return {**result, "command": {"record": record, "record_sha256": _sha256(record)}}
+        return getattr(self, CONSOLE_SERVICE_METHODS[verb])(payload)
+
+    def console_evidence(self, scope: str):
+        """Audited download; a remote client cannot choose server file paths."""
+        if not isinstance(scope, str) or not scope.strip() or len(scope) > 128:
+            raise ValueError("bounded evidence scope required")
+        evidence = self.console_snapshot()
+        encoded = json.dumps(evidence, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+        return {"schema": "orion.console.remote-evidence.v1", "scope": scope,
+                "evidence": evidence, "record_sha256": hashlib.sha256(encoded).hexdigest(),
+                "physical_action_performed": False}
+
+    def _release_controller_io_resources(self):
+        """Release initialized idle journal pagers without creating a runtime.
+
+        This is resource cleanup, including after identity revocation. It does
+        not reset policy, network state, authorizations or stored records.
+        """
+        with self._controller_lock:
+            runtimes = [self._controller_runtime]
+            if self._wdm_model_controller is not None:
+                runtimes.append(self._wdm_model_controller.runtime)
+            journals = {id(runtime.journal): runtime.journal
+                        for runtime in runtimes if runtime is not None}
+            for journal in journals.values():
+                journal.release_io_resources()
+        with self._mixed_controller_lock:
+            if self._mixed_controller is not None:
+                self._mixed_controller.close()
+                self._mixed_controller = None
 
     @property
     def controller_runtime(self) -> ControllerRuntime:
@@ -189,7 +298,9 @@ class AssuranceDashboardService:
     def activate_policy_change(self, payload):
         from quantum_autopilot.control_plane.policy_activation import activate
         with self._controller_lock:
-            return activate(self._policy_preparation_session(), payload)
+            admit_service_call(self, 'activate_policy_change')
+            return activate(self._policy_preparation_session(), payload,
+                            validate_source=lambda: admit_service_call(self, 'activate_policy_change'))
 
     def policy_activation_status(self):
         from quantum_autopilot.control_plane.policy_activation import activation_status
@@ -254,13 +365,23 @@ class AssuranceDashboardService:
     def recover_policy_change(self, payload):
         from quantum_autopilot.control_plane.policy_recovery import recover
         with self._controller_lock:
+            admit_service_call(self, 'recover_policy_change')
             if self._controller_runtime is None:
                 raise ValueError('existing runtime required for recovery')
-            result = recover(self._controller_runtime, payload)
-            self.invalidate_policy_preparation()
+            result = recover(self._controller_runtime, payload,
+                             validate_source=lambda: admit_service_call(self, 'recover_policy_change'))
+            self._invalidate_policy_preparation()
             return result
 
     def invalidate_policy_preparation(self):
+        self._invalidate_policy_preparation()
+
+    def _invalidate_policy_preparation(self):
+        """Retire sessions internally, including after an admitted durable commit.
+
+        Public callers still enter the protected method above. Post-commit
+        housekeeping must not depend on the operator remaining logged in.
+        """
         with self._controller_lock:
             self._policy_preparation_generation += 1
             if self._policy_compatibility is not None:
@@ -329,6 +450,7 @@ class AssuranceDashboardService:
     def health(self) -> dict[str, Any]:
         """Return a minimal, non-mutating liveness and safety statement."""
 
+        clock = getattr(self, "_headless_clock", None)
         return {
             "status": "ok",
             "api_version": API_VERSION,
@@ -346,6 +468,8 @@ class AssuranceDashboardService:
             "workspace_temporal_campaign_available": True,
             "laboratory_emulation_available": self.laboratory.capabilities()["available"],
             "wdm_model_bundle_configured": self.wdm_model_bundle_path is not None,
+            "processing_clock": clock.status() if clock is not None else {
+                "state": "manual", "active": False, "owner": "service-api"},
             "generated_at": _utc_now(),
         }
 
@@ -370,6 +494,62 @@ class AssuranceDashboardService:
 
     def run_lab_experiment(self, request):
         return self.laboratory.run(request)
+
+    def _mixed(self):
+        from quantum_autopilot.control_plane.mixed_controller import MixedController
+        with self._mixed_controller_lock:
+            if self._mixed_controller is None:
+                self._mixed_controller = MixedController(self.control_journal_path.parent / "mixed-controller.sqlite",
+                    resource_authority=getattr(self, "_mixed_resource_authority", None))
+            return self._mixed_controller
+
+    def mixed_controller_status(self):
+        from quantum_autopilot.security.service_boundary import admit_service_call
+        return self._mixed().status(admit=lambda: admit_service_call(self, "mixed_controller_status"))
+
+    def configure_mixed_controller(self, request):
+        from quantum_autopilot.security.service_boundary import admit_service_call
+        return self._mixed().configure(request, admit=lambda: admit_service_call(self, "configure_mixed_controller", (request,)))
+
+    def ingest_mixed_observations(self, request):
+        # A registered source only gains ingestion authority, never routing or
+        # equipment-control privileges. Every reported node is checked separately.
+        from quantum_autopilot.control_plane.mixed_contracts import exact, validate_record
+        from quantum_autopilot.security.service_boundary import service_resource
+        exact(request, {"records"})
+        if not isinstance(request["records"], list) or not 1 <= len(request["records"]) <= 256:
+            raise ValueError("invalid mixed observation batch")
+        observations = [validate_record(record)[0] for record in request["records"]]
+        workspace = service_resource(self)
+        def admit():
+            from quantum_autopilot.security.service_boundary import admit_service_call
+            admit_service_call(self, "ingest_mixed_observations", (request,))
+            for node_id in {observation.node_id for observation in observations}:
+                self.security.authorize("ingestion.write", workspace + "/nodes/" + node_id)
+        return self._mixed().ingest(request, admit=admit)
+
+    def reserve_mixed_route(self, request):
+        from quantum_autopilot.security.service_boundary import admit_service_call
+        return self._mixed().demand(request, admit=lambda: admit_service_call(self, "reserve_mixed_route", (request,)))
+
+    def release_mixed_reservation(self, request):
+        from quantum_autopilot.security.service_boundary import admit_service_call
+        return self._mixed().release(request, admit=lambda: admit_service_call(self, "release_mixed_reservation", (request,)))
+
+    def _complete_mixed_audit(self, result, operation):
+        from quantum_autopilot.security.service_boundary import service_resource
+        core = self._mixed()
+        for pending in core.pending_audit_for_request(result["request_id"]):
+            if (pending["receipt_sha256"], pending["operation"]) != (result["receipt_sha256"], operation):
+                # The receipt may have expired or been invalidated on restart.
+                # Recover the original hash explicitly; never silently erase a
+                # pending outcome merely because the current state changed.
+                identity = self.security.current_identity()
+                self.security.authorize("network.operate", service_resource(self))
+                self.security.audit.record(identity, "network.operate", service_resource(self), "reconciled",
+                    {"request_id": pending["request_id"], "operation": pending["operation"],
+                     "artifact_sha256": pending["receipt_sha256"]})
+            core.audit_completed(pending["request_id"], pending["receipt_sha256"], pending["operation"])
 
     def configure_laboratory(self, request):
         return self.laboratory.configure(request)
@@ -738,7 +918,7 @@ class AssuranceDashboardService:
         return {"status": "persisted", "physical_action_performed": False, "topology": topology.to_dict()}
 
     # ------------------------------------------------------------------
-    # Live network engine (design §2.5). Native-local only: no HTTP route.
+    # Live network engine shared by desktop and authenticated headless API.
     # ------------------------------------------------------------------
 
     @property
@@ -819,6 +999,8 @@ class AssuranceDashboardService:
 
     def network_command(self, verb: str, payload: Mapping[str, Any] | None = None) -> dict[str, Any]:
         """One engine command (topology verbs, pairs, input events, model archive, input source)."""
+        if verb == "export_technology_events" and self.security.identity_profile == "service":
+            raise ValueError("service clients must download evidence; server file destinations are not accepted")
         return self.network_engine.command(verb, payload)
 
     def fpga_device_state(self) -> dict[str, Any]:
@@ -841,7 +1023,12 @@ class AssuranceDashboardService:
         network does not run ahead while a node is recalibrated).
         """
 
-        result = self.network_engine.run_calibration(request, tick_interval_s=tick_interval_s)
+        clock = getattr(self, "_headless_clock", None)
+        handoff = clock.hold("recalibration") if clock is not None else nullcontext()
+        with handoff:
+            from quantum_autopilot.security.service_boundary import admit_service_call
+            admit_service_call(self, "recalibrate_node", (request,))
+            result = self.network_engine.run_calibration(request, tick_interval_s=tick_interval_s)
         return {"status": "persisted", "physical_action_performed": False, "topology": result["topology"],
                 "calibration": result["calibration"]}
 
@@ -1295,14 +1482,44 @@ def make_handler(
                     )
                 elif parsed.path == "/api/v1/control-plane/topology":
                     self._send_json(HTTPStatus.OK, service.control_plane_topology())
+                elif parsed.path == "/api/v1/network/state":
+                    query = parse_qs(parsed.query, keep_blank_values=True)
+                    if set(query) - {"metadata_only"} or any(len(rows) != 1 for rows in query.values()):
+                        raise ValueError("invalid network state query")
+                    choice = query.get("metadata_only", ["false"])[0]
+                    if choice not in {"true", "false"}:
+                        raise ValueError("metadata_only must be true or false")
+                    self._send_json(HTTPStatus.OK, service.network_live_state(metadata_only=choice == "true"))
+                elif parsed.path == "/api/v1/console/snapshot":
+                    query = parse_qs(parsed.query, keep_blank_values=True)
+                    if set(query) - {"include_static"} or any(len(rows) != 1 for rows in query.values()):
+                        raise ValueError("invalid console snapshot query")
+                    choice = query.get("include_static", ["true"])[0]
+                    if choice not in {"true", "false"}:
+                        raise ValueError("include_static must be true or false")
+                    self._send_json(HTTPStatus.OK, service.console_snapshot(include_static=choice == "true"))
+                elif parsed.path == "/api/v1/network/decisions":
+                    query = parse_qs(parsed.query, keep_blank_values=True)
+                    if set(query) - {"limit"} or any(len(rows) != 1 for rows in query.values()):
+                        raise ValueError("invalid decisions query")
+                    limit = int(query.get("limit", ["50"])[0])
+                    if not 1 <= limit <= 200:
+                        raise ValueError("invalid decisions limit")
+                    self._send_json(HTTPStatus.OK, {"decisions": service.network_decisions(limit)})
                 elif parsed.path == "/api/v1/laboratory":
                     self._send_json(HTTPStatus.OK, service.laboratory_state())
+                elif parsed.path == "/api/v1/mixed-controller/status":
+                    if parsed.query:
+                        raise ValueError("mixed status has no query parameters")
+                    self._send_json(HTTPStatus.OK, service.mixed_controller_status())
                 elif self._send_static(parsed.path):
                     return
                 else:
                     self._send_json(HTTPStatus.NOT_FOUND, {"error": "not_found"})
             except (PermissionError, TimeoutError):
                 raise
+            except EquipmentDenied:
+                self._send_json(HTTPStatus.CONFLICT, {"error": "resource_authority_conflict_or_unavailable"})
             except ValueError:
                 self._send_json(
                     HTTPStatus.UNPROCESSABLE_ENTITY,
@@ -1323,6 +1540,14 @@ def make_handler(
                 "/api/v1/control-plane/model-replay",
                 "/api/v1/laboratory/runs",
                 "/api/v1/laboratory/configuration",
+                "/api/v1/network/step",
+                "/api/v1/network/commands",
+                "/api/v1/console/commands",
+                "/api/v1/console/evidence",
+                "/api/v1/mixed-controller/configure",
+                "/api/v1/mixed-controller/observations",
+                "/api/v1/mixed-controller/demands",
+                "/api/v1/mixed-controller/release",
             }:
                 self._send_json(HTTPStatus.NOT_FOUND, {"error": "not_found"})
                 return
@@ -1342,6 +1567,14 @@ def make_handler(
                 request = json.loads(self.rfile.read(content_length).decode("utf-8"), object_pairs_hook=unique_fields)
                 if self.path == "/api/v1/assess-cell":
                     response = service.assess_published_cell(request)
+                elif self.path == "/api/v1/mixed-controller/configure":
+                    response = service.configure_mixed_controller(request)
+                elif self.path == "/api/v1/mixed-controller/observations":
+                    response = service.ingest_mixed_observations(request)
+                elif self.path == "/api/v1/mixed-controller/demands":
+                    response = service.reserve_mixed_route(request)
+                elif self.path == "/api/v1/mixed-controller/release":
+                    response = service.release_mixed_reservation(request)
                 elif self.path == "/api/v1/control-plane/cycles":
                     response = service.run_control_cycle(request)
                 elif self.path == "/api/v1/control-plane/scenarios":
@@ -1352,9 +1585,35 @@ def make_handler(
                     response = service.run_lab_experiment(request)
                 elif self.path == "/api/v1/laboratory/configuration":
                     response = service.configure_laboratory(request)
+                elif self.path == "/api/v1/network/step":
+                    if not isinstance(request, dict) or set(request) - {"metadata_only"}:
+                        raise ValueError("invalid step request")
+                    response = service.network_step(metadata_only=request.get("metadata_only", False))
+                elif self.path == "/api/v1/network/commands":
+                    if (not isinstance(request, dict) or set(request) != {"verb", "payload"}
+                            or not isinstance(request["verb"], str) or not isinstance(request["payload"], dict)):
+                        raise ValueError("invalid network command")
+                    if request["verb"] == "export_technology_events":
+                        raise ValueError("HTTP clients cannot choose server file destinations")
+                    response = service.network_command(request["verb"], request["payload"])
+                elif self.path == "/api/v1/console/commands":
+                    if (set(request) != {"verb", "payload"} or not isinstance(request["verb"], str)
+                            or not isinstance(request["payload"], dict)):
+                        raise ValueError("invalid console command")
+                    response = service.console_command(request["verb"], request["payload"])
+                elif self.path == "/api/v1/console/evidence":
+                    if set(request) != {"scope"}:
+                        raise ValueError("invalid evidence request")
+                    response = service.console_evidence(request["scope"])
                 else:
                     response = service.assess(request)
                 self._send_json(HTTPStatus.OK, response)
+            except DurableResultAuditPending as error:
+                # The transaction already committed. Do not report an unknown
+                # internal failure that could encourage a new reservation ID.
+                self._send_json(HTTPStatus.SERVICE_UNAVAILABLE, error.recovery())
+            except EquipmentDenied:
+                self._send_json(HTTPStatus.CONFLICT, {"error": "resource_authority_conflict_or_unavailable"})
             except (UnicodeDecodeError, json.JSONDecodeError):
                 self._send_json(HTTPStatus.BAD_REQUEST, {"error": "invalid_json"})
             except (PermissionError, TimeoutError):

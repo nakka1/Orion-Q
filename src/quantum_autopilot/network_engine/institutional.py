@@ -85,7 +85,7 @@ def _repeater_location(latitude, longitude):
     A local angular grid avoids assigning terrestrial equipment to open water.
     This is a demonstration placement, not a surveyed or optimized fibre route.
     """
-    from ..console.geodata import load_brazil
+    from ..geography.geodata import load_brazil
     from ..control_plane.geodesy import geodesic_km
     land = load_brazil()
     if land.contains_land(longitude, latitude):
@@ -176,13 +176,15 @@ def ensure_institutional_workspace(store, topology_id=DEFAULT_TOPOLOGY_ID):
     from ..quantum_protocols.satellite_bridges import upgrade_satellite_bridge_workspace
     from ..quantum_protocols.global_geo import upgrade_geo_constellation_workspace
     from .global_operations_topology import upgrade_global_operations_workspace
+    from ..quantum_protocols.hybrid_upgrade import upgrade_hybrid_workspace
     with closing(store._connect()) as connection:
         migrated = connection.execute('SELECT 1 FROM topology_events WHERE topology_id=? AND event_kind=? LIMIT 1',
                                       (topology_id, GLOBAL_EVENT)).fetchone()
     if migrated:
         topology = upgrade_satellite_bridge_workspace(store,topology)
         topology = upgrade_geo_constellation_workspace(store,topology)
-        return upgrade_global_operations_workspace(store,topology), created
+        topology=upgrade_global_operations_workspace(store,topology)
+        return upgrade_hybrid_workspace(store,topology), created
     # The topology replacement and its event are one version-checked transaction.
     # The persistent event prevents reopening from restoring operator removals or
     # reconfiguring channels after the initial, explicitly scoped demo upgrade.
@@ -204,4 +206,5 @@ def ensure_institutional_workspace(store, topology_id=DEFAULT_TOPOLOGY_ID):
     topology = upgrade_satellite_bridge_workspace(store,topology)
     topology = upgrade_geo_constellation_workspace(store,topology)
     topology = upgrade_global_operations_workspace(store,topology)
+    topology = upgrade_hybrid_workspace(store,topology)
     return topology, created

@@ -29,7 +29,7 @@ class TechnologyRegistry:
             raise ProtocolError('unsupported_composition','ISL detector BBM92 cannot compose with ground/swapping drivers without quantum storage and relay operations')
         records=[topology.node(node_id).telemetry.get('communicator') for node_id in config.path]
         present=[r for r in records if r]
-        if any(r['physical_type']=='satellite' for r in present) and not set(config.technologies)&{'satellite_doppler','satellite_isl'}:
+        if any(r['physical_type']=='satellite' for r in present) and not set(config.technologies)&{'satellite_doppler','satellite_isl','orbital_relay'}:
             raise ProtocolError('incompatible_node','orbital devices require the implemented free-space satellite driver')
         modes={r['integration']['mode'] for r in present}
         if len(modes)>1:
@@ -76,7 +76,8 @@ class TechnologyRegistry:
 def default_registry():
     from .protocols import MemoryAdapter, PurificationAdapter, SatelliteAdapter, SwappingAdapter, TwinFieldAdapter
     from .isl import InterSatelliteAdapter
+    from .orbital_relay import OrbitalRelayAdapter
     registry = TechnologyRegistry()
-    for adapter in (SwappingAdapter(), TwinFieldAdapter(), PurificationAdapter(), SatelliteAdapter(), MemoryAdapter(), InterSatelliteAdapter()):
+    for adapter in (SwappingAdapter(), TwinFieldAdapter(), PurificationAdapter(), SatelliteAdapter(), MemoryAdapter(), InterSatelliteAdapter(), OrbitalRelayAdapter()):
         registry.register(adapter)
     return registry

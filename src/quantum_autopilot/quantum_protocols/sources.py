@@ -86,7 +86,10 @@ class SimulatedAcquisitionSource:
         det = p.get('detector_efficiency', .8)
         dark = p.get('dark_probability', 1e-7)
         op = command.operation
-        if op == 'generate':
+        if op == 'generate' and 'orbital_relay' in config.technologies:
+            from .orbital_relay_simulation import generate_observation
+            raw=generate_observation(rng,command,config,environment,p)
+        elif op == 'generate':
             length = args['length_km'] * p.get('route_factor', 1.2)
             eta = transmission(length, p.get('attenuation_db_km', .2), p.get('insertion_loss_db', 2.) + loss)
             attempts = max(1, int(duration * p.get('attempt_rate_hz', 100000.)))
@@ -109,6 +112,9 @@ class SimulatedAcquisitionSource:
             if not raw['correlations']:
                 raw['heralds'] = 0  # No admitted pair without separate characterization.
                 raw['memory_writes'] = 0
+        elif op == 'bsm' and 'orbital_relay' in config.technologies:
+            from .orbital_relay_simulation import observe_bsm
+            raw=observe_bsm(rng,command,config,environment,p)
         elif op == 'bsm':
             probability = p.get('bsm_success', .5) * p.get('memory_read_efficiency', .7) ** 2 * det ** 2
             success = int(rng.random() < probability)
@@ -129,6 +135,11 @@ class SimulatedAcquisitionSource:
             raw = {'alice_outcome': a, 'bob_outcome': b}
         elif op == 'readout':
             raw = {'readout': int(rng.random() < math.prod(efficiencies))}
+        elif op == 'tf_block' and p.get('tf_estimation_mode')=='finite_sns_v2':
+            from .tf_simulation import generate_observation
+            raw=generate_observation(rng,command,config,environment,p,source_id=self.source_id,
+                                    origin=self.origin,sequence=self._sequences[config.session_id]+1)
+            lengths=raw['effective_arm_lengths_km']
         elif op == 'tf_block':
             lengths = [x * p.get('route_factor', 1.2) for x in args['arm_lengths_km']]
             gate = math.erf(p.get('gate_half_width_ps', 200.) / (math.sqrt(2.) * max(jitter, 1e-6)))
@@ -178,7 +189,7 @@ class SimulatedAcquisitionSource:
             raise ProtocolError('unsupported_operation', op)
         quantum_flight_s = 0.
         if op == 'generate':
-            quantum_flight_s = raw['effective_length_km']/(C_KM_S/1.468)
+            quantum_flight_s = raw['quantum_flight_s'] if 'orbital_relay' in config.technologies else raw['effective_length_km']/(C_KM_S/1.468)
         elif op == 'tf_block':
             quantum_flight_s = max(lengths)/(C_KM_S/1.468)
         elif op in ('satellite_block','isl_block'):
@@ -189,8 +200,8 @@ class SimulatedAcquisitionSource:
                     self._sequences[config.session_id], command.emitted_at_s +
                     (duration if op in ('generate','tf_block','satellite_block','isl_block') else p.get('operation_duration_s',1e-5)) + quantum_flight_s,
                     p.get('clock_offset_s', 0.), command.quantum_channel_ids, command.classical_channel_ids, raw)
-        if op in ('satellite_block','isl_block'):
-            previous=[r for r in self.records if r['operation'] in ('satellite_block','isl_block')]
+        if op in ('satellite_block','isl_block') or raw.get('tf_schema') or raw.get('orbital_relay_schema'):
+            previous=[r for r in self.records if r['operation'] in ('satellite_block','isl_block') or r['raw'].get('tf_schema') or r['raw'].get('orbital_relay_schema')]
             if len(previous)>=16:self.records.remove(previous[0])
         self.records.append(acquisition.to_dict())
         return acquisition

@@ -29,7 +29,8 @@ Threads of a started provider:
 * `console-service` worker (one) — serialises snapshot builds and commands;
 * `console-network-step` daemon — calls `service.network_step()` once per
   network second, and nothing else. It is held while a full recalibration runs
-  (that call drives its own ticks) and joined by `stop()`.
+  (that call drives its own ticks); `stop()` retires presentation immediately
+  and a private drain joins in-flight work before releasing device resources.
 * A lazy local process evaluates the unchanged SO(3) AlphaBeta baseline for
   those workers. It owns only numerical state; the service, supervisor, model
   admission and command journal stay in the parent process.
@@ -469,6 +470,10 @@ class ServiceProvider(DataProvider):
         self._future = None
         self._future_background = False
         self._foreground_busy = False
+        self._shutdown_complete = threading.Event()
+        self._shutdown_complete.set()
+        self._shutdown_thread: threading.Thread | None = None
+        self._shutdown_error: Exception | None = None
         self._last_full_poll_at = 0.0
         self._example = None
         self._completed.connect(self._on_completed)
@@ -637,6 +642,12 @@ class ServiceProvider(DataProvider):
         return self.service.topology_store.path
 
     def start(self) -> None:
+        if self.stopping:
+            raise RuntimeError("provider is still releasing its previous session")
+        if self._shutdown_error is not None:
+            raise RuntimeError("previous session resource release failed; retry stop before starting")
+        if self._executor is not None:
+            return
         if self.has_network_engine:
             from ..network_engine.baseline_worker import BaselineWorker
             self._baseline_worker = BaselineWorker()
@@ -645,59 +656,107 @@ class ServiceProvider(DataProvider):
         self._selection_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="console-selection")
         self.request_refresh()
         self._timer.start()
-        self._start_stepper()
+        # The first read initializes the controller journal and engine schemas.
+        # Start ticks only after that read is durable and admitted by Qt; two
+        # simultaneous bootstraps can otherwise contend on SQLite's WAL setup.
+
+    @property
+    def stopping(self) -> bool:
+        """Pending durable worker drain/resource release, independent of Qt."""
+        return not self._shutdown_complete.is_set()
+
+    @property
+    def shutdown_error(self) -> Exception | None:
+        """Resource-release failure; acquisition remains blocked until retried."""
+        return self._shutdown_error
 
     def stop(self) -> None:
+        """Retire presentation now; finish accepted operations outside Qt.
+
+        Waiting for an executor on the GUI thread creates a circular wait when
+        an operation or completion needs a queued Qt callback. Releasing its
+        devices immediately instead would race the operation. A private drain
+        thread keeps ownership until every accepted operation has finished.
+        """
         self._timer.stop()
         self._live_timer.stop()
+        if self.stopping:
+            return
+        self._shutdown_complete.clear()
         with self._snap_lock:
             self._publication_epoch += 1
         stop, stepper = self._step_stop, self._stepper
         if stop is not None:
-            stop.set()                      # no tick is started after this line
-        invalidate = getattr(self.service, "invalidate_policy_preparation", None)
-        if callable(invalidate):
-            try:
-                with self._identity_context():
-                    invalidate()
-            except PermissionError:
-                # Revocation never prevents releasing threads/device sessions.
-                pass
-        if self._executor:
-            # A command accepted behind a read must finish even if its window
-            # closes. Only unneeded background reads may be cancelled.
-            self._executor.shutdown(wait=True, cancel_futures=not self._foreground_busy)
-            self._executor = None
-        if self._live_executor:
-            self._live_executor.shutdown(wait=True, cancel_futures=True)
-            self._live_executor = None
-        self._live_future = None
-        if self._selection_executor:
-            # Accepted selections retain their individual fresh permission
-            # decisions/receipts even if their presentation is no longer needed.
-            self._selection_executor.shutdown(wait=True, cancel_futures=False)
-            self._selection_executor = None
+            stop.set()
+        executors = (
+            (self._executor, not self._foreground_busy),
+            (self._live_executor, True),
+            # Each accepted inspection retains its authorization/audit receipt.
+            (self._selection_executor, False),
+        )
+        self._executor = self._live_executor = self._selection_executor = None
+        self._future = self._live_future = None
+        self._future_background = False
         self._selection_futures.clear()
         self._presentation_stats["selection_jobs_pending"] = 0
-        if stepper is not None:
-            stepper.join(timeout=30.0)      # at most the tick that was already running
-            if not stepper.is_alive():
-                self._stepper = self._step_stop = None
-        if self._baseline_worker is not None:
-            self._baseline_worker.close()
-            self._baseline_worker = None
-        engine=getattr(self.service,'_network_engine',None)
-        fpga = getattr(engine, "fpga", None)
-        if not self.stepping and fpga is not None and callable(getattr(fpga, "close", None)):
-            fpga.close()
-        if engine is not None and callable(getattr(engine,'close_satellite_receivers',None)):
-            engine.close_satellite_receivers()
-        elif engine is not None and callable(getattr(engine,'close_ogs',None)):
-            engine.close_ogs()
-        self._step_hold.clear()
-        self._future = None
-        self._future_background = False
         self._set_busy(False)
+        self._shutdown_error = None
+        for executor, cancel in executors:
+            if executor is not None:
+                # Admit no new work; foreground commands already accepted
+                # behind a read are drained, never silently cancelled.
+                executor.shutdown(wait=False, cancel_futures=cancel)
+        service_cleanup = any(callable(getattr(self.service, name, None)) for name in (
+            "invalidate_policy_preparation", "_release_controller_io_resources"))
+        if any(executor is not None for executor, _ in executors) or stepper is not None or service_cleanup:
+            self._shutdown_thread = threading.Thread(
+                target=self._finish_stop, args=(executors, stepper),
+                name="console-session-drain", daemon=True)
+            self._shutdown_thread.start()
+        else:
+            self._finish_stop(executors, stepper)
+
+    def _finish_stop(self, executors, stepper) -> None:
+        try:
+            for executor, _ in executors:
+                if executor is not None:
+                    executor.shutdown(wait=True)
+            if stepper is not None:
+                # Do not revoke a baseline/device while an in-flight tick uses
+                # it. This join is never performed on the Qt thread.
+                stepper.join()
+                self._stepper = self._step_stop = None
+            invalidate = getattr(self.service, "invalidate_policy_preparation", None)
+            if callable(invalidate):
+                try:
+                    with self._identity_context():
+                        invalidate()
+                except PermissionError:
+                    # Revocation cannot prevent releasing device sessions.
+                    pass
+            if self._baseline_worker is not None:
+                self._baseline_worker.close()
+                self._baseline_worker = None
+            engine = getattr(self.service, '_network_engine', None)
+            fpga = getattr(engine, "fpga", None)
+            if fpga is not None and callable(getattr(fpga, "close", None)):
+                fpga.close()
+            if engine is not None and callable(getattr(engine, 'close_satellite_receivers', None)):
+                engine.close_satellite_receivers()
+            elif engine is not None and callable(getattr(engine, 'close_ogs', None)):
+                engine.close_ogs()
+            release_io = getattr(self.service, "_release_controller_io_resources", None)
+            if callable(release_io):
+                release_io()
+            self._step_hold.clear()
+        except Exception as exc:
+            self._shutdown_error = exc
+            try:
+                self.error.emit(f"Session resource release failed: {type(exc).__name__}")
+            except RuntimeError:
+                pass  # The owning Qt window may already have been destroyed.
+        finally:
+            self._shutdown_complete.set()
 
     # ------------------------------------------------------- network stepping
     @property
@@ -769,6 +828,8 @@ class ServiceProvider(DataProvider):
                 return callback()
 
     def _schedule(self, callback, *, background: bool = False, label: str | None = None) -> bool:
+        if self.stopping or self._executor is None:
+            return False
         if self._future is not None and (background or not self._future_background):
             return False
         # The single worker serializes reads and commands. An explicit command
@@ -799,7 +860,12 @@ class ServiceProvider(DataProvider):
             if snap is not None:
                 # The future completes only after the guarded worker has made
                 # its audit batch durable. Rendering does not query services.
-                self._deliver_publication(snap)
+                delivered = self._deliver_publication(snap)
+                # A listener may stop/revoke this provider while receiving the
+                # frame. Never start (or restart) acquisition after that stop.
+                if (delivered and snap.epoch == self._publication_epoch
+                        and self._executor is not None and self._timer.isActive()):
+                    self._start_stepper()
         except Exception as exc:
             self.error.emit(str(exc))
             failed = True
@@ -824,6 +890,8 @@ class ServiceProvider(DataProvider):
                     self._schedule(self.refresh, background=self._snap is not None)
 
     def request_refresh(self) -> None:
+        if self.stopping:
+            return
         if not self._executor:
             self.refresh()
         elif not self._schedule(self.refresh, background=self._snap is not None):
@@ -921,6 +989,15 @@ class ServiceProvider(DataProvider):
 
     @_guarded(deferred=True)
     def dispatch(self, verb: str, target: str = "") -> bool:
+        if self.stopping or self._shutdown_error is not None:
+            raise RuntimeError("provider session is releasing resources")
+        if self._executor is not None and self.security is not None and self._calling_identity() is None:
+            # Explicit anonymous scope is a refusal at presentation admission,
+            # not an accepted job. Capture only: no vault/SDK/audit I/O on Qt.
+            # Authenticated candidates are still freshly checked by the worker;
+            # a callback without a scope retains the provider's captured session.
+            from quantum_autopilot.security import AuthenticationError
+            raise AuthenticationError("authenticated identity is required")
         allowed = {"select_node", "select_link", "recalibrate", "isolate", "acknowledge", "set_decision_source",
                    "run_lab_experiment", "configure_laboratory",
                    "export_record", "run_scenario", "replay_model", "reload", "add_simulated_node", "configure_simulated_link", "apply_simulated_node_action", "run_workspace_path", "run_temporal_path",
@@ -1034,7 +1111,7 @@ class ServiceProvider(DataProvider):
         if not isinstance(publication, _Publication):
             raise TypeError("a prepared publication is required")
         with self._snap_lock:
-            if (publication.epoch != self._publication_epoch or
+            if (self.stopping or publication.epoch != self._publication_epoch or
                     publication.sequence < self._delivered_publication_sequence):
                 self._presentation_stats["coalesced_publication_frames"] += 1
                 return False
@@ -1205,7 +1282,10 @@ class ServiceProvider(DataProvider):
                 self.loading_progress.emit({'completed': completed, 'total': 5, 'message': message})
         health = self._safe(self.service.health, {})
         progress(1, "Service health received; reading topology and event records…")
-        topology_payload = self._safe(self.service.control_plane_topology, {})
+        # Topology identifies every later command/receipt. A failed read must
+        # reach the retry/error path, retaining the last valid frame instead of
+        # publishing an empty topology as a successfully loaded workspace.
+        topology_payload = self.service.control_plane_topology()
         events = self._safe(lambda: self.service.control_plane_events(limit=100), {}).get("events", [])
         model = self._safe(self.service.wdm_model_status, {})
         lanes = self._safe(self.service.evidence_lanes, {})

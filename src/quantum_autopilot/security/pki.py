@@ -8,11 +8,9 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from contextlib import contextmanager
-import hashlib
 import hmac
 import ipaddress
 import json
-import os
 from pathlib import Path
 import re
 import sqlite3
@@ -167,7 +165,7 @@ class OperationalPKI:
         self._ca = x509.load_pem_x509_certificate(self.ca_path.read_bytes())
         self._key = serialization.load_pem_private_key(self.key_path.read_bytes(), password=self.password)
 
-    def provision(self, identity, *, kind, services, server=False, days=30):
+    def provision(self, identity, *, kind, services, server=False, days=30, server_names=()):
         principal = self.runtime.authorize("security.manage", "security:pki")
         if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", identity) or isinstance(days, bool) or
                 not isinstance(days, int) or not 1 <= days <= 90):
@@ -175,12 +173,32 @@ class OperationalPKI:
         if (kind not in {"sae", "kme", "service"} or not isinstance(services, (list, tuple)) or not services or
                 len(services) > 32 or any(not isinstance(s, str) or not re.fullmatch(r"[A-Za-z0-9_.:-]{1,128}", s) for s in services)):
             raise ValueError("certificate kind and services required")
+        if (not isinstance(server, bool) or not isinstance(server_names, (tuple, list))
+                or len(server_names) > 32 or (server_names and not server)):
+            raise ValueError("server SANs require a server certificate")
+        extra_names = []
+        for name in server_names:
+            if not isinstance(name, str) or not name or len(name) > 253:
+                raise ValueError("invalid server SAN")
+            try:
+                address = ipaddress.ip_address(name)
+            except ValueError:
+                if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?", name) or any(
+                        not label or len(label) > 63 or label.startswith("-") or label.endswith("-")
+                        for label in name.split(".")):
+                    raise ValueError("invalid server SAN")
+                extra_names.append(x509.DNSName(name))
+            else:
+                if address.is_unspecified or address.is_multicast:
+                    raise ValueError("invalid server SAN")
+                extra_names.append(x509.IPAddress(address))
         # Bind to an administrator-provisioned backend principal as well as SAN.
         self.runtime.principal(identity)
         key, now = ec.generate_private_key(ec.SECP256R1()), datetime.now(timezone.utc)
         names = [x509.UniformResourceIdentifier(OPERATIONAL_PREFIX + identity)]
         if server:
             names.extend([x509.DNSName("localhost"), x509.IPAddress(ipaddress.ip_address("127.0.0.1"))])
+            names.extend(name for name in extra_names if name not in names)
         cert = (x509.CertificateBuilder().subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, identity)]))
             .issuer_name(self._ca.subject).public_key(key.public_key()).serial_number(x509.random_serial_number())
             .not_valid_before(now - timedelta(minutes=1)).not_valid_after(now + timedelta(days=days))

@@ -54,7 +54,8 @@ def test_institutional_workspace_retains_real_scenario_and_causal_operation_conf
     # Startup registers the communicator inventory after additive migrations.
     topology=CommunicatorStore(store,topology.topology_id).seed(topology,'simulated')
     before=topology.to_dict()
-    assert len(topology.nodes)==71 and len(topology.links)==131
+    # The finite SNS center and four dedicated orbital devices are additive.
+    assert len(topology.nodes)==76 and len(topology.links)==136
     assert ensure_institutional_workspace(store)[0].to_dict()==before
     institutions=[topology.node(ident) for ident in institutional_ids(topology)]
     assert institutions and all(node.telemetry['communicator']['physical_type']=='installation' for node in institutions)

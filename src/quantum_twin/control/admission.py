@@ -89,7 +89,8 @@ class DigitalTwinOrchestrator:
         If omitted, ``configured_inference_latency_s`` from the constructor is
         used. Measured forward latency is logged but never drives decoherence.
         """
-        assert self.model is not None, "run_intelligent requer um modelo treinado."
+        if self.model is None:
+            raise RuntimeError("run_intelligent requer um modelo treinado.")
         self.model.eval()
 
         total_steps = len(X_test)

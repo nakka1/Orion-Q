@@ -26,7 +26,11 @@ def validate_institutional_demo(destination, repository_root):
         legacy_ids={n.node_id for n in brazil_institutions().nodes if n.node_id!='UNIJORGE'}
         legacy_links=[l for l in state['links'] if 'technology' not in l['provenance']]
         checks['unijorge_removed_existing_sites_preserved'] = 'UNIJORGE' not in {n['node_id'] for n in state['nodes']} and legacy_ids <= {n['node_id'] for n in state['nodes']}
-        checks['international_modular_topology'] = len(state['nodes'])==71 and len(state['links'])==131 and len(state['technologies']['sessions'])==36
+        checks['international_modular_topology'] = len(state['nodes'])==76 and len(state['links'])==136 and len(state['technologies']['sessions'])==38
+        from ..quantum_protocols.orbital_relay_topology import PATH, SESSION_ID
+        checks['hybrid_drivers_registered'] = (
+            {'TF-RIO-FINITE-CENTER', *PATH} <= {n['node_id'] for n in state['nodes']}
+            and {'RIO-SNS-FINITE', SESSION_ID} <= set(state['technologies']['sessions']))
         operations=state['technologies'].get('global_operations',{})
         institutions=[row for row in operations.get('components',()) if row.get('institutional_endpoint')]
         checks['institutional_send_receive_roles']=len(institutions)==20 and all(

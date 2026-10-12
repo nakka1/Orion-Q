@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QWidget, QToolTip
 from ..geodata import load_world
 from ..theme import C, qc, mono, text as text_font, current_theme
 from .figures import link_pen, marker_kind, marker_side, paint_marker, segment_distance
-from .signal_geography import globe_cross_rect, paint_signal_cross, signal_globe_ocean
+from .signal_geography import globe_cross_rect, paint_signal_cross, signal_cross_vector, signal_globe_ocean
 
 EARTH_KM = 6371.
 SATELLITE_ICON_PX = 32.  # logical screen pixels, independent of zoom
@@ -260,7 +260,11 @@ class OrbitGlobe(QWidget):
             p.drawPath(path)
         p.setClipping(False); p.setPen(QPen(qc(limb), 1.2)); p.drawEllipse(centre, radius, radius)
         if self.signal_mode:
-            paint_signal_cross(p, globe_cross_rect(centre, radius))
+            anchor, depth = self.project(signal_cross_vector(), radius)
+            if depth >= 0:
+                cross = globe_cross_rect(anchor, radius)
+                if cross.intersects(QRectF(self.rect())):
+                    paint_signal_cross(p, cross)
         p.end(); self._base_key = key; self._base = image; self.earth_builds += 1
         return image
 

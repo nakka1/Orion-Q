@@ -32,7 +32,7 @@ def test_four_way_split_sizes_match_fractions():
 
 def test_four_way_split_rejects_fractions_not_summing_to_one():
     df = _make_df(100)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="Fractions must sum"):
         make_four_way_split(df, train_frac=0.5, validation_frac=0.2, calibration_frac=0.2, test_frac=0.2)
 
 
@@ -74,7 +74,7 @@ def test_log_decision_after_freeze_rejects_non_test_phase():
     protocol = ModelSelectionProtocol(make_four_way_split(df))
     protocol.log_decision("threshold", 0.65, phase="validation")
     protocol.freeze()
-    with pytest.raises(AssertionError):
+    with pytest.raises(ProtocolViolationError, match="frozen"):
         protocol.log_decision("threshold", 0.70, phase="validation")
 
 
@@ -131,7 +131,7 @@ def test_cost_weight_tuning_blocked_after_freeze():
     protocol.log_decision("C_fidelity", 5e-5, phase="validation", rationale="risk-aware cost weight sweep")
     protocol.freeze()
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ProtocolViolationError, match="frozen"):
         protocol.log_decision("C_QPU", 2e-6, phase="validation", rationale="re-tuned after seeing test results")
 
 
@@ -150,7 +150,7 @@ def test_conformal_calibration_alpha_tuning_blocked_after_freeze():
                            rationale="target 90% coverage, chosen before touching test")
     protocol.freeze()
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ProtocolViolationError, match="frozen"):
         protocol.log_decision("conformal_alpha", 0.05, phase="calibration",
                                rationale="tightened after observing test-set coverage was too wide")
 

@@ -226,7 +226,8 @@ def test_received_vector_not_configured_orbit_drives_physical_geometry(config):
     output=process_observation(raw,{'parameters':cfg.parameters,'endpoints':cfg.endpoints,'origin':'physical',
         'environment':{'ground_positions':[(0.,0.),(0.,.01)],'ground_altitudes_m':[0.,0.]}})
     assert output['geometry'][0]['range_km']==pytest.approx(500.)
-    assert output['geometry'][0]['point_ahead_urad']==pytest.approx(50.03461428)
+    # Inertial beacon-to-outgoing 2*v/c includes Omega x delta (500 km range).
+    assert output['geometry'][0]['point_ahead_urad']==pytest.approx(50.27785308394916)
 
 
 def test_precomputed_results_refused_inside_ogs_packets(config,tmp_path):
@@ -272,7 +273,8 @@ def test_wgs84_overhead_azimuth_and_point_ahead():
     geo=state_geometry(state,(0.,0.))
     assert geo['range_km']==pytest.approx(500.) and geo['elevation_deg']==pytest.approx(90.)
     assert geo['radial_velocity_km_s']==pytest.approx(0.)
-    assert geo['point_ahead_urad']==pytest.approx(2*7.5/299792.458*1e6)
+    # ECEF mechanical tracking and inertial optical point-ahead differ by Omega x delta.
+    assert geo['point_ahead_urad']==pytest.approx(2*(7.5+7.2921159e-5*500.)/299792.458*1e6)
 
 
 def test_received_ecef_geographic_conversion_uses_wgs84_height():

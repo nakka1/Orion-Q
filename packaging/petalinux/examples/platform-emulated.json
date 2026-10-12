@@ -1,0 +1,12 @@
+{
+  "schema": "orion.petalinux.platform.v1",
+  "backend_mode": "emulated-pl-external",
+  "architecture": "aarch64",
+  "limits": {
+    "abi_major": 1,
+    "abi_minor": 0,
+    "slots": 8,
+    "ring_budget_bytes": 67108864,
+    "max_events": 256
+  }
+}

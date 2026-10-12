@@ -51,6 +51,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from quantum_twin.core.config import PhysicsConfig
+from quantum_twin.core.validation import integer
 from quantum_twin.simulation.environment import QuantumRepeaterEnvironment
 from quantum_twin.quantum.swapping import WernerStateSwapping
 from quantum_twin.quantum.purification import DensityMatrixBBPSSW
@@ -86,7 +87,7 @@ class ClosedLoopMultiHopEnvironment:
 
     def __init__(self, n_hops: int, config: PhysicsConfig = None, max_rounds: int = None,
                  n_gates_per_purify: int = 10, energy_cfg: EnergyConfig = None):
-        assert n_hops >= 1
+        integer("n_hops", n_hops, minimum=1)
         self.n_hops = n_hops
         self.config = config if config is not None else PhysicsConfig()
         self.max_rounds = max_rounds

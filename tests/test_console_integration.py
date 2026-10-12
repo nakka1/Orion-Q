@@ -20,7 +20,6 @@ from quantum_autopilot.control_plane.journal import ControlJournal  # noqa: E402
 from quantum_autopilot.qkd.dashboard_api import AssuranceDashboardService  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-BUNDLE = ROOT / "outputs/wdm_model_bundle_v527/edge_lstm_dual_head_uniform_v1.wdmbundle.npz"
 
 
 @pytest.fixture(scope="module")
@@ -65,8 +64,12 @@ def test_empty_service_clears_demo_values_and_previous_widgets(app, provider):
     assert len(views["telemetry"].card_hosts) == 1
 
 
-def test_real_model_metrics_keep_correct_titles_units_and_count(app, provider):
-    provider.service.wdm_model_bundle_path = BUNDLE
+def test_real_model_metrics_keep_correct_titles_units_and_count(app, provider, tmp_path):
+    from tests.test_wdm_model_bundle import _export as export_test_bundle
+
+    bundle, exported = export_test_bundle(tmp_path)
+    provider.service.wdm_model_bundle_path = bundle
+    provider.service.expected_wdm_bundle_sha256 = exported["bundle_sha256"]
     snap = provider.build()
     view = screen("telemetry")
     view.apply(snap)

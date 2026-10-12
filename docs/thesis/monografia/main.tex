@@ -22,8 +22,8 @@
 
 \sloppy
 
-\title{Integração de Aprendizado de Máquina em Redes Quânticas:\\
-Controladores Aprendidos e uma Plataforma de Controle Auditável}
+\title{OrionQ: uma Plataforma para Simulação e Controle\\
+Auditável de Redes Quânticas}
 
 \author{Alexandre O. S. Santos\inst{1,2,3}, João M. S. Souza\inst{2,3}, Otto Menegasso Pires\inst{2,3},\\
 Leonardo S. Almeida\inst{1}, Gilson Amorim Carvalho\inst{1}}
@@ -45,93 +45,88 @@ Leonardo S. Almeida\inst{1}, Gilson Amorim Carvalho\inst{1}}
 \maketitle
 
 \begin{abstract}
-Operating a quantum network requires continuous decisions: when to purify
-entangled pairs, how to compensate polarization drift, how to share a fibre
-between classical traffic and key distribution, and how to tune and monitor
-key-distribution links. This work develops learned controllers for these
-decisions, evaluates them against retuned baselines on held-out seeds, and
-integrates them into ORION-Q, a control platform for simulated quantum networks.
-The network controllers run on a closed-form physics layer transcribed from the
-SeQUeNCe simulator and checked against it to $2.5\times10^{-12}$. On aerial fibre
-calibrated to published field statistics, a polarization compensator reaches a
-mean QBER of 0.0133 against 0.0461 for a retuned alpha-beta filter (3.5 times,
-95\% CI 3.3--3.7), although its weights do not transfer between operating
-points; a predictive allocator delivers 2.7 times the classical throughput of
-static admission at matched key service; and the routing agent does not beat
-the best heuristic. On decoy-state QKD links, an actor-critic agent raises the
-provable secret key rate by 8.8--18.9\% over 25--80 km, and a gradient-boosting
-classifier over public observables reaches a macro F1 of 0.830 where a QBER
-threshold detects one of four attacks; on 515 benign days of the Cambridge
-quantum network, that threshold fires on 16.5\% of days. ORION-Q admits all six
-components (eleven configurations) through hash-pinned archives without unsafe
-deserialization --- the detector, shipped only as a pickle, through an export
-rebuilt with the author's pipeline and proven byte-identical to it ---, reproduces
-their reference outputs, evaluates them in shadow
-mode and exposes an auditable activation flow with review, approval, read-back
-and rollback. A preliminary study, in which classical WDM telemetry did not
-yield an admission controller better than persistence, motivated this design.
-Inside ORION-Q, the five controllers were then run in closed loop on the plant each was
-trained on, with the author's packages incorporated into the platform; before
-scoring, each campaign regenerates through ORION-Q's replay the author's exported
-episodes and published tables. On new seeds, the compensators beat a retuned
-alpha-beta filter in every seed at both operating points (3.3 and 4.8 times),
-provided the actuator exceeds 120--250~rad/s; the key-rate agent beats the
-commissioned setting by 13.6--20.8\% up to 65~km but not at 80~km; the
-synchroniser beats the alpha-beta tracker in every run, by up to 5\%; the
-allocator carries 2.4--2.6 times the classical traffic of silencing it, at the
-same key service; and the routing agent never beats the best heuristic: in
-the author's analytic twin it ties it at long deadlines and falls three points
-below at the nominal one, and with SeQUeNCe itself as the plant it falls below
-at both. On sessions from
-random streams the author never used, the detector flags 84--89\% of attack
-periods against 7--14\% for the QBER threshold. The author's Verilog, simulated
-for the first time, matches its fixed-point references bit for bit. All results
-are simulated and no physical actuation is performed.
+Operating a quantum network means running heterogeneous links --- fibre
+entanglement distribution with repeaters, decoy-state and twin-field quantum
+key distribution (QKD), satellite downlinks and inter-satellite links --- and
+taking continuous control decisions on them. This work presents OrionQ, a
+platform that simulates such networks and controls them in an auditable way.
+OrionQ combines a control plane with an independent safety supervisor, explicit
+input, output and action contracts, separated evidence tracks and a hashed
+audit journal; a live network engine that turns simulated raw observables into
+QBER, key rate, alarms, routes and calibration reports; and an authenticated
+service with desktop and terminal clients. Each supported technology has an
+explicit model with declared parameters and validation status: the author's
+fibre plants for polarization drift, clock synchronization, decoy-state QKD,
+attacks and classical--quantum coexistence; Bell-diagonal and Werner models of
+memories, swapping and purification, checked against the SeQUeNCe simulator to
+$2.5\times10^{-12}$ and $4.4\times10^{-16}$; finite-size sending-or-not-sending
+twin-field QKD; BBM92 with finite-key processing; and satellite and
+inter-satellite optical links with reference orbits, link budgets and Doppler,
+with parameters inspired by the Micius experiments. Learned controllers enter only as
+optional components: six (eleven configurations) are admitted through
+hash-pinned archives without unsafe deserialization, and the control plane
+offers an auditable activation flow with review, approval, read-back and
+rollback. In simulation, OrionQ controls the fibre and repeater links in closed
+loop and decides admission and availability for the twin-field and satellite
+links. Before scoring, each closed-loop campaign
+regenerates the author's published results through the platform's replay; on
+new seeds, the polarization compensators beat a retuned alpha-beta filter at
+both operating points (3.3 and 4.8 times), provided the actuator exceeds
+120--250~rad/s, the key-rate agent beats the
+commissioned setting by 13.6--20.8\% up to 65~km, the synchroniser and the
+allocator beat their baselines, the routing agent never beats the best
+heuristic, and the attack detector flags 84--89\% of event periods against
+7--14\% for a QBER threshold. With SeQUeNCe as the plant, the routing
+decisions taken inside OrionQ were executed by the simulator; and with the
+terrestrial part of the demonstration network mapped onto native SeQUeNCe
+simulations, OrionQ issued the requests and handled reservations, deliveries,
+injected faults and recovery from the simulator's own callbacks, meeting every
+functional criterion declared in advance; this is a functional, partial
+verification without statistical claims. All results are simulated, no secret
+key is certified and no physical actuation is performed.
 \end{abstract}
 
 \begin{resumo}
-Operar uma rede quântica exige decisões contínuas: quando purificar pares
-emaranhados, como compensar a deriva de polarização, como dividir uma fibra entre
-tráfego clássico e distribuição de chaves e como ajustar e monitorar enlaces de
-QKD. Este trabalho desenvolve controladores aprendidos para essas decisões,
-avalia-os contra \textit{baselines} ressintonizados em sementes retidas e os
-integra ao ORION-Q, uma plataforma de controle para redes quânticas simuladas.
-Os controladores de rede operam sobre uma camada de física em forma fechada
-transcrita do simulador SeQUeNCe e conferida contra ele até $2{,}5\times10^{-12}$.
-Em fibra aérea calibrada por estatísticas de campo publicadas, um compensador de
-polarização atinge QBER média de 0,0133 contra 0,0461 de um filtro alfa-beta
-ressintonizado (3,5 vezes; IC 95\% 3,3--3,7), embora seus pesos não se transfiram
-entre pontos de operação; um alocador preditivo entrega 2,7 vezes a vazão
-clássica da admissão estática a serviço de chave igualado; e o agente de
-roteamento não supera a melhor heurística. Em enlaces de QKD com
-estados-isca, um agente ator-crítico eleva a taxa de chave secreta provável entre
-8,8\% e 18,9\% em vãos de 25 a 80 km, e um classificador por \textit{gradient
-boosting} sobre observáveis públicos atinge F1 macro de 0,830, enquanto um limiar
-de QBER detecta um de quatro ataques; em 515 dias benignos da rede quântica de
-Cambridge, esse limiar dispara em 16,5\% dos dias. O ORION-Q admite os seis
-componentes (onze configurações) por meio de pacotes com identidade SHA-256 e sem
-desserialização insegura --- o detector, entregue só como \textit{pickle}, por uma
-exportação reconstruída com o pipeline do autor e provada idêntica a ele ---, reproduz suas saídas de referência, avalia-os em modo
-\textit{shadow} e oferece um fluxo de ativação auditável, com revisão, aprovação,
-leitura de confirmação e reversão. Um estudo preliminar, no qual a telemetria
-clássica WDM não produziu um controlador de admissão melhor que a persistência,
-motivou esse desenho. No ORION-Q, os cinco controladores foram então executados
-em laço fechado sobre a planta em que foram treinados, com os pacotes do autor
-incorporados à plataforma; antes de pontuar, cada campanha regenera pela réplica
-do ORION-Q os episódios exportados e as tabelas publicadas pelo autor. Em
-sementes novas, os compensadores venceram um filtro alfa-beta ressintonizado em
-todas as sementes nos dois pontos de operação (3,3 e 4,8 vezes), desde que o
-atuador ultrapasse 120--250~rad/s; o ator de taxa de chave superou a
-configuração de comissionamento em 13,6\% a 20,8\% até 65~km, mas não a 80~km; o
-sincronizador venceu o filtro alfa-beta em todas as execuções, por até 5\%; o
-alocador carregou 2,4 a 2,6 vezes o tráfego clássico de silenciá-lo, com o mesmo
-serviço de chave; e o agente de roteamento não superou a melhor heurística: no
-gêmeo analítico do autor, empatou no prazo longo e ficou três pontos abaixo no
-nominal, e, com o próprio SeQUeNCe como planta, ficou abaixo nos dois prazos. Em sessões de fluxos
-aleatórios que o autor não usou, o detector marcou 84\% a 89\% dos períodos de
-ataque, contra 7\% a 14\% do limiar de QBER. O Verilog do autor, simulado pela
-primeira vez, é exato ao bit em relação às suas referências em ponto fixo. Todos os
-resultados são simulados e nenhuma atuação física é realizada.
+Operar uma rede quântica significa manter enlaces heterogêneos --- distribuição
+de emaranhamento em fibra com repetidores, distribuição quântica de chaves (QKD)
+com estados-isca e de campo gêmeo, descidas de satélite e enlaces entre
+satélites --- e tomar decisões contínuas de controle sobre eles. Este trabalho
+apresenta o OrionQ, uma plataforma que simula essas redes e as controla de forma
+auditável. O OrionQ reúne um plano de controle com supervisor de segurança
+independente, contratos explícitos de entrada, saída e ação, trilhas de
+evidência separadas e diário de auditoria com hashes; um motor de rede ao vivo,
+que transforma observáveis brutos simulados em QBER, taxa de chave, alarmes,
+rotas e relatórios de calibração; e um serviço autenticado, com clientes de
+interface gráfica e de terminal. Cada tecnologia suportada tem um modelo
+explícito, com parâmetros e estado de validação declarados: as plantas de fibra
+do autor para deriva de polarização, sincronismo, QKD com estados-isca, ataques
+e coexistência clássico-quântica; modelos Bell-diagonal e de Werner para
+memórias, troca e purificação, conferidos contra o simulador SeQUeNCe até
+$2{,}5\times10^{-12}$ e $4{,}4\times10^{-16}$; QKD de campo gêmeo de envio ou não
+envio com pulsos finitos; BBM92 com chave finita; e enlaces ópticos de satélite e
+entre satélites com órbitas de referência, orçamento de enlace e Doppler, com
+parâmetros inspirados nos experimentos do satélite Micius. Controladores
+aprendidos entram apenas como componentes opcionais: seis (onze configurações)
+são admitidos por pacotes com identidade SHA-256, sem desserialização insegura,
+e o plano de controle oferece um fluxo de ativação auditável, com revisão,
+aprovação, leitura de confirmação e reversão. Em simulação, o OrionQ controla em
+laço fechado os enlaces de fibra e de repetidores e decide a admissão e a
+disponibilidade dos enlaces de campo gêmeo e de satélite. Antes de pontuar, cada
+campanha em laço fechado regenera pela réplica da plataforma os resultados
+publicados pelo autor; em sementes novas, os compensadores de polarização
+venceram um filtro alfa-beta ressintonizado nos dois pontos de operação (3,3 e
+4,8 vezes), desde que o atuador ultrapasse 120--250~rad/s, o ator de taxa de chave superou a configuração de comissionamento em
+13,6\% a 20,8\% até 65~km, o sincronizador e o alocador venceram seus
+\textit{baselines}, o agente de roteamento nunca superou a melhor heurística e o
+detector marcou 84\% a 89\% dos períodos com evento, contra 7\% a 14\% de um
+limiar de QBER. Com o SeQUeNCe como planta, as decisões de roteamento tomadas no
+OrionQ foram executadas pelo simulador; e, com a parte terrestre da rede de
+demonstração levada a simulações nativas do SeQUeNCe, o OrionQ fez os pedidos e
+administrou reservas, entregas, falhas injetadas e recuperação a partir dos
+recibos do próprio simulador, cumprindo todos os critérios funcionais
+declarados antes da execução, numa verificação funcional e parcial, sem
+afirmação estatística. Todos os resultados são simulados, nenhuma chave
+secreta é certificada e nenhuma atuação física é realizada.
 \end{resumo}
 
 \noindent\textbf{Palavras-chave:} Redes Quânticas, Aprendizado de Máquina,
@@ -147,73 +142,81 @@ nós distantes, complementando a infraestrutura clássica de telecomunicações
 e o estado quântico não pode ser simplesmente amplificado, o alcance depende de
 repetidores quânticos, que combinam geração, armazenamento, purificação e troca
 de emaranhamento (\textit{entanglement swapping})
-\cite{briegel1998,dur1999,azuma2023}. Na era NISQ (\textit{Noisy
+\cite{briegel1998,dur1999,azuma2023}, de protocolos que contornam o limite de um
+enlace direto, como a QKD de campo gêmeo \cite{lucamarini2018,pirandola2017}, e de
+enlaces de satélite, que já distribuíram emaranhamento e chaves por mais de mil
+quilômetros \cite{yin2017,liao2017,lu2022}. Na era NISQ (\textit{Noisy
 Intermediate-Scale Quantum}), essas operações são imperfeitas e consomem
-recursos escassos, como tempo de memória e operações de dois qubits
-\cite{preskill2018}.
+recursos escassos, como tempo de memória, janelas de visibilidade e operações de
+dois qubits \cite{preskill2018}.
 
-Operar uma rede desse tipo exige decisões contínuas. Um repetidor precisa
-decidir se vale a pena purificar um par cuja fidelidade pode estar abaixo do
-limiar útil. Um enlace de distribuição quântica de chaves (QKD) com codificação
-em polarização precisa compensar a rotação lenta e aleatória introduzida pela
-birrefringência da fibra \cite{xavier2008}. Quando canais clássicos e quânticos
-compartilham a mesma fibra, o espalhamento Raman e outras contribuições de ruído
-degradam a taxa de erro quântico (QBER) e a taxa de chave secreta (SKR)
-\cite{eraerds2010,patel2012,thomas2023}, o que obriga o operador a equilibrar
-os dois tipos de tráfego. Para cada uma dessas tarefas já foram propostos
-modelos de aprendizado de máquina, por exemplo para roteamento de emaranhamento
-por aprendizado por reforço \cite{le2022}.
+Operar uma rede desse tipo exige simular e controlar ao mesmo tempo tecnologias
+muito diferentes. Um repetidor precisa decidir quando gerar, purificar, trocar ou
+descartar pares. Um enlace de QKD com codificação em polarização precisa
+compensar a rotação introduzida pela birrefringência da fibra \cite{xavier2008} e
+manter o sincronismo das janelas de detecção. Quando canais clássicos e
+quânticos compartilham a mesma fibra, o espalhamento Raman degrada a taxa de
+erro quântico (QBER) e a taxa de chave secreta (SKR)
+\cite{eraerds2010,patel2012,thomas2023}. Um enlace de satélite só existe dentro
+de uma janela de visibilidade e depende de apontamento, de correção de Doppler e
+de sincronismo abaixo de um nanossegundo \cite{yin2017,liao2017}. Simuladores de
+eventos discretos, como o SeQUeNCe \cite{wu2021} e o NetSquid
+\cite{coopmans2021}, representam bem os componentes físicos, e pilhas de rede
+quântica já foram propostas \cite{dahlberg2019} e demonstradas em laboratório
+\cite{pompili2022,delledonne2025}; falta, porém, uma camada que
+reúna essas tecnologias em uma mesma rede simulada, tome as decisões de controle
+sobre ela e trate controladores aprendidos \cite{le2022} como componentes que
+só podem agir depois de verificados.
 
-Um modelo com bom desempenho \textit{offline}, porém, ainda não é um
-controlador. Para influenciar decisões de rede, ele precisa de contratos de
-entrada e saída explícitos, de comparação com \textit{baselines} simples, como a
-persistência (repetir o último valor observado), e de mecanismos que impeçam um
-modelo não validado de agir. Sem isso, não é possível distinguir um ganho real de
-um artefato do cenário de treino. Este trabalho trata desse problema com a
-seguinte pergunta de pesquisa:
+Este trabalho trata desse problema com a seguinte pergunta de pesquisa:
 
 \begin{quote}
-\textit{Que ganho controladores aprendidos oferecem sobre alternativas simples
-nas decisões de controle de uma rede quântica, e como integrá-los a um plano de
-controle de forma que cada modelo seja opcional, verificável e comparado a
-baselines antes de influenciar decisões?}
+\textit{É possível construir uma plataforma que simule redes quânticas
+heterogêneas --- de enlaces de fibra com repetidores a enlaces de satélite --- e
+as controle de forma auditável, admitindo controladores aprendidos apenas depois
+de verificados e comparados a baselines, e demonstrar em simulação que esse
+controle funciona?}
 \end{quote}
 
-O trabalho começou com uma hipótese mais estreita: a de que a telemetria óptica
-clássica de multiplexação por comprimento de onda (WDM) permitiria prever a
-fidelidade futura de pares emaranhados e, assim, evitar purificações inúteis.
-O estudo preliminar descrito na Seção~\ref{sec:preliminar} testou essa hipótese
-com protocolos progressivamente mais rigorosos e encontrou limites claros. Esse
-resultado deslocou o foco para dois problemas complementares. O primeiro é
-desenvolver controladores aprendidos para decisões específicas e medir cada um
-contra a melhor alternativa simples disponível, ressintonizada nas mesmas
-condições (Seções~\ref{sec:modelos} a~\ref{sec:qkd}). O segundo é construir uma
-plataforma que integre esses controladores sem que nenhum deles possa agir antes
-de ser verificado (Seções~\ref{sec:arquitetura} a~\ref{sec:resultados}).
+A resposta proposta é o OrionQ. O trabalho começou com uma hipótese mais
+estreita, a de que a telemetria óptica clássica de multiplexação por comprimento
+de onda (WDM) permitiria prever a fidelidade futura de pares emaranhados; o
+estudo preliminar da Seção~\ref{sec:preliminar} testou essa hipótese, encontrou
+limites claros e a abandonou. A Seção~\ref{sec:arquitetura} descreve a
+arquitetura da plataforma; a Seção~\ref{sec:tecnologias}, as tecnologias que ela
+simula e controla; a Seção~\ref{sec:modelos}, os controladores aprendidos que
+ela integra; e as Seções~\ref{sec:metodologia} e~\ref{sec:resultados}, a
+avaliação do controle em simulação.
 
 As contribuições são:
-\begin{enumerate}  \item uma camada de física para estados Bell-diagonais conferida contra o
-        SeQUeNCe e um modelo de fibra calibrado por estatísticas de campo;
-  \item controladores aprendidos para compensação de polarização, alocação
-        híbrida clássico-quântica, roteamento e temporização de repetidor,
-        blocagem de chave, ajuste da taxa de chave, sincronismo e classificação
-        de ataques, comparados a \textit{baselines} ressintonizados em sementes
-        retidas, com resultados positivos e negativos;
-  \item uma validação externa da física de taxa de chave com dados públicos da
-        rede quântica de Cambridge;
-  \item a arquitetura do ORION-Q, um plano de controle simulado com supervisor
-        de segurança independente, trilhas de evidência separadas e diário de
-        auditoria;
-  \item a admissão de cinco desses componentes (dez configurações) na
-        plataforma, com verificação de identidade, leitura segura e paridade
-        numérica com as saídas originais, e o bloqueio justificado do sexto;
+\begin{enumerate}
+  \item o OrionQ, uma plataforma de simulação e controle de redes quânticas com
+        plano de controle supervisionado, contratos explícitos, trilhas de
+        evidência separadas, diário de auditoria, motor de rede ao vivo e
+        serviço autenticado;
+  \item modelos explícitos para as tecnologias que a plataforma opera ---
+        enlaces de fibra com QKD de estados-isca, deriva de polarização,
+        sincronismo e coexistência clássico-quântica; distribuição de
+        emaranhamento com memórias, troca e purificação; QKD de campo gêmeo com
+        pulsos finitos; QKD por emaranhamento com chave finita; enlaces de
+        satélite e entre satélites; e canais clássicos e telemetria de satélite
+        ---, cada um com parâmetros, fontes e estado de validação declarados;
+  \item a admissão de seis controladores aprendidos (onze configurações), com
+        verificação de identidade, leitura segura e paridade numérica com as
+        saídas originais, inclusive a do detector, entregue só como
+        \textit{pickle}, por uma exportação reconstruída e provada idêntica;
   \item um fluxo de ativação auditável, com preparação, revisão, aprovação,
         ativação, leitura de confirmação, reversão e recuperação;
-  \item uma metodologia de avaliação em três níveis (paridade, \textit{shadow}
-        e laço fechado) com protocolo congelado e \textit{baselines}
+  \item a demonstração, em simulação, de que o OrionQ controla essas redes:
+        laços fechados nas plantas de treino dos controladores, com portões que
+        regeneram os resultados publicados antes de pontuar, e o SeQUeNCe usado
+        como planta e como executor da parte terrestre de uma rede;
+  \item uma metodologia de avaliação em três níveis (paridade, \textit{shadow} e
+        laço fechado), com protocolo congelado e \textit{baselines}
         obrigatórios;
   \item resultados empíricos, inclusive negativos, registrados de forma
-        verificável.
+        verificável, e uma validação externa da física de taxa de chave com
+        dados públicos da rede quântica de Cambridge.
 \end{enumerate}
 
 % =====================================================================
@@ -221,47 +224,48 @@ As contribuições são:
 
 \subsection{Justificativa}
 
-Recursos de um repetidor quântico são escassos: cada tentativa de purificação
-consome pares armazenados e tempo de memória, e uma decisão errada não pode ser
-desfeita. Ao mesmo tempo, a literatura de aprendizado de máquina para redes
-quânticas costuma relatar o desempenho de um modelo isolado, em seu próprio
-ambiente de treino. Falta uma camada de engenharia que permita responder, para
-cada modelo, três perguntas antes de usá-lo: ele reproduz o comportamento
+Recursos de uma rede quântica são escassos: cada tentativa de purificação
+consome pares armazenados e tempo de memória, uma janela de satélite dura
+minutos, e uma decisão errada não pode ser desfeita. Ao mesmo tempo, simuladores
+costumam modelar uma tecnologia por vez, e a literatura de aprendizado de máquina
+para redes quânticas costuma relatar o desempenho de um modelo isolado, em seu
+próprio ambiente de treino. Falta uma plataforma que coloque tecnologias
+diferentes na mesma rede, decida sobre elas e permita responder, para cada
+controlador, três perguntas antes de usá-lo: ele reproduz o comportamento
 declarado? Ele supera uma regra simples nas mesmas condições? O que acontece se
 ele for ativado e precisar ser revertido? Uma plataforma que torne essas
-respostas explícitas reduz o risco de adotar modelos que não agregam valor e
-cria uma base reprodutível para comparar novos métodos.
+respostas explícitas reduz o risco de operar com modelos que não agregam valor e
+cria uma base reprodutível para comparar novos métodos e novas tecnologias.
 
 \subsection{Objetivo Geral}
 
-Desenvolver controladores de aprendizado de máquina para decisões de controle
-de redes quânticas e uma plataforma de software que os integre a uma rede
-simulada de forma opcional, auditável e comparada a \textit{baselines}.
+Desenvolver uma plataforma de software que simule redes quânticas heterogêneas e
+as controle de forma auditável, integrando controladores aprendidos como
+componentes opcionais, verificados e comparados a \textit{baselines}, e
+demonstrar esse controle em simulação.
 
 \subsection{Objetivos Específicos}
 
 \begin{itemize}
-  \item Construir uma camada de física em forma fechada para estados
-        Bell-diagonais, conferida contra o SeQUeNCe, e um modelo de fibra
-        calibrado por estatísticas de campo publicadas.
-  \item Desenvolver controladores aprendidos para compensação de polarização,
-        alocação híbrida, roteamento e temporização, blocagem de chave, ajuste
-        da taxa de chave, sincronismo e classificação de ataques, e compará-los
-        a \textit{baselines} ressintonizados em sementes retidas.
-  \item Confrontar a física de taxa de chave com dados públicos de uma rede de
-        QKD implantada.
-  \item Formalizar contratos de entrada, saída e ação para funções de controle:
-        admissão de purificação, compensação de polarização, sincronização,
-        ajuste de taxa de chave, roteamento e alocação de recursos.
-  \item Admitir na plataforma os modelos treinados fora dela, com verificação de identidade,
-        sem desserialização insegura e com paridade numérica frente às saídas
-        de referência.
-  \item Implementar um supervisor de segurança independente e um fluxo de
-        ativação com revisão, aprovação, ativação, confirmação e reversão.
-  \item Avaliar os modelos em modo \textit{shadow} e em laço fechado contra
-        persistência e \textit{baselines} clássicos, com protocolo definido
-        antes da execução.
-  \item Registrar a evidência e os limites de cada modelo em um registro
+  \item Projetar e implementar o plano de controle do OrionQ, com supervisor de
+        segurança independente, contratos de entrada, saída e ação, trilhas de
+        evidência separadas e diário de auditoria.
+  \item Implementar um motor de rede que processe, a partir de observáveis
+        brutos simulados, enlaces de fibra, de repetidores, de QKD de campo
+        gêmeo, de satélite e entre satélites, e um serviço que exponha essa rede
+        a clientes autenticados.
+  \item Modelar cada tecnologia suportada com parâmetros e fontes declarados e
+        conferir os modelos contra o SeQUeNCe, contra referências analíticas e,
+        quando houver, contra dados publicados.
+  \item Admitir na plataforma os controladores treinados fora dela, com
+        verificação de identidade, sem desserialização insegura e com paridade
+        numérica frente às saídas de referência.
+  \item Implementar um fluxo de ativação com revisão, aprovação, ativação,
+        confirmação e reversão.
+  \item Demonstrar o controle em laço fechado contra persistência e
+        \textit{baselines} clássicos, com protocolo definido antes da execução,
+        e controlar redes executadas pelo próprio SeQUeNCe.
+  \item Registrar a evidência e os limites de cada componente em um registro
         verificável.
 \end{itemize}
 
@@ -371,6 +375,66 @@ que se soma à QBER. Sistemas práticos compensam $R(t)$ com controle ativo
 \cite{xavier2008}, tipicamente por uma cascata de retardadores com reset sem fim
 \cite{noe1988}. Um preditor da rotação futura pode antecipar essa compensação.
 
+\subsection{QKD de campo gêmeo e o limite sem repetidores}
+\label{sec:fund_tf}
+
+Sem repetidores, nenhum protocolo pode extrair, de um canal de perdas com
+transmitância $\eta$, mais chave secreta do que o limite
+\begin{equation}
+R_{\mathrm{PLOB}} = -\log_2(1-\eta)\approx1{,}44\,\eta
+\label{eq:plob}
+\end{equation}
+bits por uso do canal, aproximação válida para $\eta\ll1$ \cite{pirandola2017}.
+Protocolos ponto a ponto, como o BB84 com estados-isca, têm taxa linear em
+$\eta$ e, portanto, decaem exponencialmente com a distância. Na QKD de campo
+gêmeo (TF-QKD) \cite{lucamarini2018}, as duas partes enviam pulsos coerentes
+fracos com fase aleatória a um nó central não confiável, onde um único fóton
+interfere. Como esse fóton só precisa atravessar metade do canal, a taxa escala
+com $\sqrt{\eta}$, o que permite ultrapassar a Eq.~\ref{eq:plob} a partir de
+algumas centenas de quilômetros: cerca de 200~km no caso ideal e 340~km com
+parâmetros realistas, segundo \citeasnoun{lucamarini2018}. O protocolo usa
+estados-isca e seleção de fase posterior. Na variante de envio ou não envio
+(SNS) \cite{wang2018sns}, cada parte decide aleatoriamente enviar um pulso ou
+nada nas janelas de chave, e a análise com número finito de pulsos
+\cite{jiang2019} fornece limites para o rendimento de fóton único e para o erro
+de fase a partir de três intensidades.
+
+\subsection{Enlaces ópticos de satélite}
+\label{sec:fund_sat}
+
+Num enlace óptico em espaço livre, a perda é dominada pela difração do feixe.
+Um feixe gaussiano com divergência $\theta$ chega a uma distância $L$ com raio
+$w(L)\approx\sqrt{w_0^2+(\theta L)^2}$, e uma abertura receptora de raio $a$
+captura a fração
+\begin{equation}
+\eta_{\mathrm{geo}} = 1-\exp\!\left(-\frac{2a^2}{w(L)^2}\right),
+\label{eq:geo}
+\end{equation}
+à qual se somam a atenuação atmosférica, que cresce com a massa de ar
+$1/\sin\varepsilon$ na elevação $\varepsilon$, as perdas de apontamento e a
+eficiência do receptor. Como o satélite se move, o feixe de descida precisa ser
+apontado à frente do receptor por um ângulo $\theta_{\mathrm{PA}}\approx2v_\perp/c$
+\cite{han2018}, a frequência chega deslocada por efeito Doppler, e o enlace só
+existe enquanto o satélite está acima de uma elevação mínima.
+
+O satélite Micius, em órbita circular heliossíncrona de cerca de 500~km, é a
+referência experimental desses enlaces. Ele distribuiu emaranhamento a duas
+estações separadas por 1.203~km, com fonte de 5,9 milhões de pares por segundo,
+perda conjunta das duas descidas entre 64 e 82~dB, cerca de 1,1 coincidência por
+segundo e violação da desigualdade de Bell com $S=2{,}37\pm0{,}09$; o
+sincronismo, feito por um laser pulsado enviado do satélite, teve
+\textit{jitter} de 0,77~ns, e a polarização foi compensada por placas de onda
+motorizadas \cite{yin2017}. Em QKD de descida com estados-isca, entre 645 e
+1.200~km, a chave peneirada caiu de cerca de 12 para 1~kbit/s, com QBER média
+de 1,1\%, \textit{jitter} de sincronismo de 0,529~ns e uma placa de meia-onda
+motorizada para compensação dinâmica da polarização \cite{liao2017}. A revisão
+do programa estima, para 1.000~km, perdas de cerca de 35~dB numa descida e
+75~dB nas duas descidas de distribuição de emaranhamento \cite{lu2022}; os 64 a
+82~dB medidos por \citeasnoun{yin2017} correspondem a uma distância somada das
+duas descidas entre 1.600 e 2.400~km.
+Cargas úteis mais leves já extraem chave em tempo real a partir de
+microssatélites \cite{li2025}.
+
 \subsection{Modelos e baselines}
 
 Os controladores usam regressão Ridge \cite{hoerl1970}, perceptrons
@@ -388,18 +452,43 @@ proporções usam intervalos de Wilson \cite{wilson1927}.
 % =====================================================================
 \section{Trabalhos Relacionados}
 
-\subsection{Simuladores e arquitetura}
+\subsection{Simuladores, pilhas e plataformas de controle}
 
 Simuladores de eventos discretos, como o SeQUeNCe \cite{wu2021} e o NetSquid
 \cite{coopmans2021}, modelam componentes físicos, protocolos e pilhas de rede
-quântica com alto nível de detalhe. Eles são a base usual para treinar e testar
-políticas de controle, mas não tratam da governança de modelos aprendidos
-dentro de um plano de controle: verificação de identidade dos pesos,
-comparação obrigatória com \textit{baselines}, ativação reversível e auditoria.
-A RFC~9340 \cite{kozlowski2023} descreve princípios arquiteturais para uma
-Internet Quântica, incluindo a separação entre plano de dados e de controle e o
-papel da sinalização clássica; o documento é informativo, e não uma
-especificação normativa.
+quântica com alto nível de detalhe, e são a base usual para estudar e treinar
+políticas de controle. Do lado da arquitetura, a RFC~9340 \cite{kozlowski2023}
+descreve princípios para uma Internet Quântica, incluindo a separação entre
+plano de dados e de controle e o papel da sinalização clássica; o documento é
+informativo, e não uma especificação normativa. \citeasnoun{dahlberg2019}
+propuseram uma camada de enlace que entrega pares emaranhados sob demanda com
+qualidade de serviço; \citeasnoun{pompili2022} demonstraram a entrega de
+emaranhamento por uma pilha de rede quântica completa entre nós de
+\textit{hardware}; e \citeasnoun{delledonne2025} apresentaram um sistema
+operacional para executar aplicações em nós de rede quântica. Para QKD, a
+especificação ETSI GS QKD 015 \cite{etsiqkd015} define uma interface de controle
+para redes definidas por \textit{software}, e a ETSI GS QKD 014 \cite{etsi014},
+uma interface de entrega de chaves às aplicações. Esses trabalhos tratam da pilha
+de um nó, de uma camada de protocolo ou de uma interface. Nenhum deles reúne, numa
+mesma rede simulada, enlaces de repetidores, de QKD de campo gêmeo e de satélite,
+nem trata da governança de controladores aprendidos: verificação de identidade
+dos pesos, comparação obrigatória com \textit{baselines}, ativação reversível e
+auditoria.
+
+\subsection{Comunicação quântica por satélite}
+
+Os experimentos do satélite Micius demonstraram distribuição de emaranhamento a
+1.200~km \cite{yin2017}, QKD de descida com estados-isca \cite{liao2017} e um
+conjunto de técnicas de engenharia --- apontamento à frente \cite{han2018},
+sincronismo por fótons \cite{wang2021sync}, compensação de polarização e
+correção de Doppler ---, revisadas por \citeasnoun{lu2022}. Trabalhos recentes
+estudam enlaces de subida com variáveis contínuas \cite{cheng2025} e extração de
+chave em tempo real a partir de microssatélites \cite{li2025}; uma análise ainda
+não revisada por pares aponta um canal lateral de temporização nos pulsos do
+Micius \cite{miller2025}, o que reforça a necessidade de monitorar a
+implementação, e não só a QBER. O OrionQ não reproduz esses experimentos: usa-os
+como referência para os parâmetros dos seus enlaces de satélite
+(Seção~\ref{sec:tec_sat}).
 
 \subsection{Aprendizado aplicado a repetidores e roteamento}
 
@@ -476,790 +565,87 @@ protocolo decide quanta chave extrair a partir dos dados observados. A pergunta
 tratada aqui é complementar: não quanto extrair de um bloco dado, mas quais
 janelas de tempo formam o bloco.
 
-Na literatura consultada, não identificamos trabalhos que integrem
-controladores de diferentes funções em um mesmo plano de controle com admissão
-verificável, avaliação \textit{shadow}, comparação obrigatória com persistência
-e ativação auditável; essa é a lacuna explorada pela plataforma das
-Seções~\ref{sec:arquitetura} a~\ref{sec:resultados}.
+Na literatura consultada, não identificamos uma plataforma que reúna
+tecnologias diferentes numa mesma rede simulada, decida sobre ela e integre
+controladores de diferentes funções com admissão verificável, avaliação
+\textit{shadow}, comparação obrigatória com persistência e ativação auditável;
+essa é a lacuna explorada pelo OrionQ.
 
 % =====================================================================
-\section{Estudo Preliminar: Admissão Preditiva com Telemetria WDM}
+\section{Estudo Preliminar e Mudança de Foco}
 \label{sec:preliminar}
 
-\subsection{Hipótese e formulação}
+O trabalho começou testando a hipótese de que parâmetros ópticos clássicos de um
+enlace WDM, observáveis sem medir o estado quântico (deriva de fase, potência,
+OSNR, BER, perda e latência), permitiriam prever a fidelidade futura
+$F(t+\Delta t)$ de um par emaranhado e, assim, recusar purificações destinadas a
+falhar. Uma rede EdgeLSTM foi treinada com uma perda quadrática que pesa mais a
+admissão de um par abaixo do limiar, primeiro sobre ruído de fase sintético
+\cite{uhlenbeck1930} e depois sobre telemetria derivada dos mesmos parâmetros
+físicos que degradam o par, com a fidelidade extraída de simulações de matriz
+densidade no Qiskit Aer \cite{javadi2024}. Como fótons perdidos produzem rodadas
+com $F=0$, a versão final teve duas saídas (DualHead): a probabilidade de chegada
+e a fidelidade condicionada à chegada.
 
-A hipótese inicial foi que parâmetros ópticos clássicos observáveis sem medir o
-estado quântico (deriva de fase, potência, OSNR, BER, perda e latência) estariam
-causalmente acima dos processos de decoerência e, portanto, permitiriam prever a
-fidelidade futura $F(t+\Delta t)$ de um par e evitar purificações destinadas a
-falhar. A formulação original propôs uma métrica de vida útil de coerência
-restante; nos experimentos, porém, o alvo efetivamente estimado foi
-$F(t+\Delta t)$ e a decisão avaliada foi a admissão da purificação.
+Os primeiros números pareciam favoráveis: o filtro elevou a taxa de sucesso das
+tentativas admitidas de 32\% para 87\% em três saltos, e uma campanha com dez
+sementes deu à DualHead rendimento de 50,5\%, contra no máximo 43,1\% das
+alternativas. Essas métricas, porém, premiam políticas que quase nunca agem, e a
+comparação não incluía a persistência. Com um protocolo definido antes da
+execução --- ajuste e calibração em prefixos temporais, política congelada com
+hash e avaliação única em dez sementes novas, com a utilidade líquida por
+chegada de par como métrica ---, nenhum modelo superou a persistência ($p=1{,}000$
+após Holm nas três comparações). A DualHead teve o menor MAE entre os modelos
+neurais (0,245, contra 0,290 da persistência) e a pior utilidade ($-0{,}134$,
+contra 0,067): prever melhor não se converteu em decidir melhor. A inferência em
+CPU, de cerca de 0,5~ms, também ficaria muito acima do $T_2$ de 30~$\mu$s
+adotado na simulação; como $T_2$ varia muito entre plataformas de memória
+\cite{krutyanskiy2023}, essa conclusão vale para o valor simulado.
 
-Para penalizar mais a admissão de um par cuja fidelidade real está abaixo do
-limiar (falso positivo, FP) do que o descarte de um par útil, usou-se uma perda
-quadrática sensível ao custo (CS-MSE):
-\begin{equation}
-L_{CS} = \frac{1}{N}\sum_{i=1}^{N}\left(F_i-\hat{F}_i\right)^2
-\left[1+\lambda\,\mathbb{I}(\mathrm{FP}_i)\right],
-\label{eq:csmse}
-\end{equation}
-em que $\mathbb{I}(\mathrm{FP}_i)$ vale 1 quando a previsão admite um par com
-fidelidade real abaixo do limiar. O indicador atua apenas como peso do erro
-quadrático, que permanece diferenciável.
-
-\subsection{Fase 1: ruído sintético}
-
-Na primeira fase, a deriva de fase do canal foi gerada por um processo de
-Ornstein-Uhlenbeck \cite{uhlenbeck1930}, que é gaussiano e markoviano, e uma
-rede EdgeLSTM foi treinada com a perda da Eq.~\ref{eq:csmse} para diferentes
-valores de $\lambda$, com dez sementes. A Tabela~\ref{tab:lambda} e a
-Figura~\ref{fig:lambda} mostram o compromisso resultante.
-
-\begin{table}[ht]
-\centering
-\caption{Efeito do peso $\lambda$ da CS-MSE sobre as decisões de admissão
-(média $\pm$ desvio-padrão, dez sementes). O \textit{baseline} admite todos os
-pares.}
-\label{tab:lambda}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccccc}
-\toprule
- & Descartes & Tentativas & Rendimento & $\Delta P_{\text{úteis}}$ & FP & MAE \\
-\midrule
-\textit{Baseline} & 0 & 796 & 26,38\% & -- & 586,0 & -- \\
-$\lambda=1$  & $528{,}0\pm176{,}9$ & $268{,}0\pm176{,}9$ & $86{,}2\pm20{,}5\%$ & $-14{,}8\pm8{,}9$ & $72{,}8\pm171{,}4$ & $0{,}095\pm0{,}053$ \\
-$\lambda=5$  & $680{,}3\pm65{,}6$ & $115{,}7\pm65{,}6$ & $90{,}9\pm10{,}7\%$ & $-102{,}8\pm62{,}7$ & $8{,}5\pm10{,}5$ & $0{,}170\pm0{,}010$ \\
-$\lambda=10$ & $738{,}3\pm51{,}7$ & $57{,}7\pm51{,}7$ & $90{,}1\pm17{,}0\%$ & $-153{,}9\pm53{,}0$ & $1{,}6\pm3{,}1$ & $0{,}175\pm0{,}003$ \\
-$\lambda=20$ & $756{,}1\pm33{,}6$ & $39{,}9\pm33{,}6$ & $100{,}0\pm0{,}0\%$ & $-170{,}1\pm33{,}6$ & $0{,}0\pm0{,}0$ & $0{,}175\pm0{,}004$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.62\textwidth]{figuras/fase1_pareto_lambda.png}
-\caption{Rendimento da QPU (acima) e MAE (abaixo) em função de $\lambda$; as
-barras indicam o desvio-padrão entre dez sementes.}
-\label{fig:lambda}
-\end{figure}
-
-Com $\lambda=10$, os falsos positivos caem de 586 para $1{,}6\pm3{,}1$, ao custo
-de $153{,}9\pm53{,}0$ pares úteis a menos e de um MAE maior, pois a perda
-desloca as previsões para baixo de propósito. O rendimento (pares úteis por
-tentativa) sobe porque o controlador tenta muito menos; sozinho, esse indicador
-favorece políticas que quase nunca agem. A escolha de $\lambda$ depende,
-portanto, do custo relativo entre um falso positivo e um par perdido. Em uma
-comparação adicional com média móvel, LSTM com MSE, XGBoost e Random Forest, a
-EdgeLSTM com CS-MSE teve o menor número de falsos positivos e o menor custo
-físico ponderado, enquanto a média móvel teve o maior escore de decisão linear.
-Como o custo ponderado atribui peso 100 aos falsos positivos, esse ordenamento
-reflete a escolha dos pesos, e não uma superioridade geral do modelo.
-
-\subsection{Fase 2: canal causal e topologia multi-salto}
-
-Na segunda fase, a telemetria passou a derivar dos mesmos parâmetros físicos
-que degradam o par (distância, perda, eficiência de transmissão, BER, $T_1$ e
-$T_2$), e a fidelidade foi extraída de uma simulação de matriz densidade no
-Qiskit Aer \cite{javadi2024}, com erro despolarizante e amortecimentos de
-amplitude e de fase. Um detalhe de implementação foi decisivo: o transpilador
-remove portas ociosas por padrão e, com isso, apagava a decoerência simulada; o
-nível de otimização foi fixado em zero para preservá-la. Como fótons perdidos
-geram rodadas com $F=0$, misturadas a rodadas com fidelidade degradada, a rede
-foi dividida em duas saídas (DualHead): a probabilidade de chegada do fóton,
-treinada com entropia cruzada binária, e a fidelidade condicionada à chegada,
-treinada com a CS-MSE. A troca de emaranhamento foi validada contra a
-Eq.~\ref{eq:swap}.
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.62\textwidth]{figuras/fase2_multisalto.png}
-\caption{Taxa de sucesso fim a fim entre as tentativas admitidas, para
-admissão sem filtro, com filtro EdgeLSTM e com oráculo, em um a três saltos.}
-\label{fig:multisalto}
-\end{figure}
-
-A Figura~\ref{fig:multisalto} mostra que o filtro por aprendizado de máquina
-elevou a taxa de sucesso das tentativas admitidas de 70\% para 98\% em um salto
-e de 32\% para 87\% em três saltos, contra 99\% do oráculo. Essa taxa é
-condicionada à admissão: ela não mede quantos pares úteis foram entregues, e um
-filtro muito conservador pode ter alta taxa de sucesso e baixa vazão. Por isso,
-a fase seguinte passou a usar a utilidade líquida por chegada de par como
-métrica primária.
-
-\subsection{Reavaliação com protocolo congelado}
-
-Uma primeira campanha com dez sementes indicou rendimento médio de 50,5\%
-(IC95\% [46,5; 54,4]) para a DualHead, contra 42,7\% (sem filtro), 43,1\%
-(reativo) e 43,0\% (LSTM de saída única), com $p<0{,}001$ após Holm. Essa
-comparação, porém, não incluía a persistência nem calibrava a incerteza fora
-do conjunto de teste. Um protocolo mais rigoroso foi então definido antes da
-execução: ajuste do modelo em um prefixo temporal, calibração da incerteza e dos
-limiares em um prefixo posterior, congelamento da política com hash e avaliação
-única em dez sementes novas. Duas correções de semântica precederam o teste:
-purificação e troca passaram a ser tarefas mutuamente exclusivas, e o limiar
-passou a ser o da fidelidade de entrada que produz saída útil pela
-Eq.~\ref{eq:bbpssw} (0,625 para uma saída de 0,65).
-
-\begin{table}[ht]
-\centering
-\caption{Avaliação com protocolo congelado (médias de dez sementes novas).
-Utilidade líquida por chegada de par; comparação pareada com persistência e
-correção de Holm.}
-\label{tab:v526}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lcccc}
-\toprule
-Controlador & MAE & Utilidade líquida & Diferença vs. persistência & $p$ (Holm) \\
-\midrule
-Persistência        & 0,290 & \phantom{$-$}0,067 & -- & -- \\
-EdgeLSTM (pontual)  & 0,316 & \phantom{$-$}0,047 & $-0{,}020$ & 1,000 \\
-EdgeLSTM (probabilística) & 0,257 & $-0{,}074$ & $-0{,}140$ & 1,000 \\
-EdgeLSTM DualHead   & 0,245 & $-0{,}134$ & $-0{,}201$ & 1,000 \\
-Oráculo (diagnóstico) & 0,000 & \phantom{$-$}0,364 & -- & -- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Nenhuma das três comparações foi positiva e significativa
-(Tabela~\ref{tab:v526}); todas as médias favoreceram a persistência. A DualHead
-teve o menor MAE entre os modelos neurais, mas a pior utilidade: prever melhor
-não se converteu em decidir melhor. A distância até o oráculo mostra que a
-informação sobre a fidelidade futura teria valor; o que faltou foi um preditor
-que a extraísse de forma útil nesse cenário.
-
-Dados medidos públicos levaram a conclusões compatíveis. Em 65.733 registros
-de telemetria óptica de um \textit{testbed} da Scuola Superiore
+Dados públicos medidos apontaram na mesma direção. Em 65.733 registros de um
+\textit{testbed} óptico da Scuola Superiore
 Sant'Anna\footnote{\url{https://github.com/Network-And-Services/optical-failure-dataset}},
-a telemetria WDM passada não melhorou a previsão de OSNR ou BER além do
-histórico do próprio alvo em nenhum dos 16 testes. Em varreduras com
-equipamento Toshiba publicadas pelo projeto
-IrelandQCI\footnote{\url{https://doi.org/10.5281/zenodo.21132088}}, a
-coexistência com sinal clássico aumentou a QBER em 0,0132 ($p=0{,}0015$ após
-Holm) e reduziu $\log(1+\mathrm{SKR})$ em 0,360 ($p=0{,}011$); a mesma direção
-apareceu em dados da Universidade de
-Bristol\footnote{\url{https://doi.org/10.5523/bris.61193flfovbn2puknndsr3qm5}}.
-Nesses dados, uma regra monotônica baseada somente na potência clássica
-ordenou a dominância conjunta QBER--SKR melhor do que uma rede neural de três
-saídas (acurácia 0,678 contra 0,563). Nenhuma base pública combinava
-telemetria WDM ordenada no tempo com um alvo quântico futuro medido no mesmo
-enlace; a hipótese temporal original permanece, portanto, não testada com dados
-físicos.
+a telemetria WDM passada não melhorou a previsão de OSNR ou BER em nenhum dos 16
+testes. Em varreduras de QKD com coexistência clássica do projeto
+IrelandQCI\footnote{\url{https://doi.org/10.5281/zenodo.21132088}} e da
+Universidade de Bristol\footnote{\url{https://doi.org/10.5523/bris.61193flfovbn2puknndsr3qm5}},
+o sinal clássico aumentou a QBER e reduziu a taxa de chave, e uma regra
+monotônica baseada só na potência clássica ordenou a dominância conjunta
+QBER--SKR melhor que uma rede neural (acurácia 0,678 contra 0,563). Nenhuma base
+pública combinava telemetria WDM ordenada no tempo com um alvo quântico futuro
+medido no mesmo enlace, e a hipótese foi abandonada.
 
-\subsection{Latência de inferência}
-
-A inferência da EdgeLSTM em CPU levou $\tau_{\mathrm{inf}}\approx0{,}5$~ms. Com
-o valor $T_2=30~\mu$s adotado na simulação, a razão $\tau_{\mathrm{inf}}/T_2$
-fica muito acima de 1: o par se degradaria durante a própria decisão. Como
-$T_2$ varia muito entre plataformas de memória \cite{krutyanskiy2023}, essa
-conclusão vale para o valor simulado e indica que, para memórias de coerência
-curta, a inferência precisaria de \textit{hardware} dedicado.
-
-\subsection{Consequência para o trabalho}
-
-O estudo preliminar mostrou que a qualidade de um modelo só pode ser julgada
-contra \textit{baselines} simples, com protocolo congelado e métricas
-operacionais, e que métricas isoladas, como rendimento ou MAE, podem enganar.
-Em vez de buscar um único preditor melhor, o trabalho passou a construir uma
-plataforma na qual qualquer modelo seja submetido a esse tipo de avaliação
-antes de influenciar a rede.
+Esse resultado mudou o foco do trabalho. Ele mostrou que um modelo só pode ser
+julgado contra \textit{baselines} simples, com protocolo congelado e métricas
+operacionais, e que métricas isoladas, como rendimento ou MAE, enganam. Em vez de
+buscar um preditor melhor para essa hipótese, o trabalho passou a desenvolver
+controladores aprendidos para decisões específicas e a construir uma plataforma
+em que qualquer modelo seja submetido a esse tipo de avaliação antes de
+influenciar a rede.
 
 % =====================================================================
-\section{Substrato Físico e Método dos Controladores}
-\label{sec:modelos}
-
-Os controladores das Seções~\ref{sec:rede} e~\ref{sec:qkd} foram
-desenvolvidos no pacote qnet\_autopilot, que contém uma camada de física, um
-ambiente de decisão, os agentes e os \textit{baselines} atrás de uma mesma
-interface, e uma camada de validação. Esta seção descreve o que eles têm em
-comum: a física, o modelo de fibra, a física de QKD e as regras de avaliação.
-
-\subsection{Camada de física e conferência com o SeQUeNCe}
-
-Treinar políticas exige milhares de episódios, e um simulador de eventos
-discretos completo é lento demais para isso. A camada de física é, por isso,
-uma transcrição em forma fechada das rotinas de estados Bell-diagonais do
-SeQUeNCe \cite{wu2021}. A transcrição mantém os nomes de variáveis e as
-assinaturas do simulador (\texttt{gate\_fid}, \texttt{meas\_fid},
-\texttt{p\_succ}, \texttt{c\_I}, \ldots), de modo que as duas implementações
-possam ser lidas lado a lado. Sobre ela operam BBPSSW, DEJMPS e a troca de
-emaranhamento. A geração é anunciada por um único fóton (\textit{single
-heralding}): o formalismo Bell-diagonal não representa a interferência de dois
-fótons do esquema de Barrett--Kok \cite{barrett2005}, uma restrição do
-formalismo que também torna possível a comparação direta com o simulador.
-
-A transcrição foi conferida em três níveis. No primeiro, cada rotina foi
-comparada à chamada correspondente do SeQUeNCe sobre estados aleatórios. No
-segundo, trajetórias inteiras foram executadas no ambiente analítico e, em
-paralelo, cada par vivo foi reconstruído a partir de objetos do simulador. Em
-212 passos sobre duas topologias em cadeia (91 gerações, 22 purificações, 46
-trocas e 7 entregas), a maior discrepância em qualquer componente de qualquer
-par foi $2{,}5\times10^{-12}$. Dois controles negativos mostram que a
-comparação é capaz de falhar: cobrar decoerência de uma ponta do par em vez de
-duas, ou usar portas perfeitas, produz divergências acima de $10^{-3}$. No
-terceiro nível, a política treinada dirigiu diretamente os protocolos do
-simulador sobre as mesmas requisições. Esse confronto também revelou dois
-parâmetros que o SeQUeNCe~1.0.0 aceita e ignora em silêncio: a fidelidade de
-porta, e o tempo de coerência ajustado depois da construção da memória, pois a
-taxa de decoerência só é derivada no construtor. Ambos produzem resultados
-otimistas sem levantar erro.
-
-\subsection{Modelo de fibra e pontos de operação}
-\label{sec:fibra}
-
-A fibra aplica ao estado de polarização uma rotação $R(t)\in SO(3)$ composta de
-três termos: deriva térmica lenta, modelada como processo de Ornstein-Uhlenbeck
-\cite{uhlenbeck1930}; uma banda mecânica de tons com harmônicos; e saltos
-discretos. O modelo existe em dois pontos de operação. O ponto de
-\textit{desenvolvimento} (banda acústica em 40~Hz, deriva de 0,05~rad/s) foi
-escolhido por plausibilidade, antes da calibração. O ponto \textit{calibrado}
-vem das estatísticas de campo da Seção~\ref{sec:campo}: tom de 60~Hz com harmônicos em 120 e
-180~Hz \cite{peterson2004} e deriva de 0,02~rad/s, compatível com o expoente
-espectral medido por \citeasnoun{ramaswamy2026}. A recalibração veio depois de
-parte dos resultados; por isso, cada resultado indica o ponto em que foi
-medido. A comparação principal do compensador foi repetida nos dois.
-
-\subsection{Física de QKD e ataques}
-\label{sec:ataques}
-
-A camada de QKD implementa o BB84 com estados-isca pelas
-Eqs.~\ref{eq:ganho}--\ref{eq:gllp}, com amostragem binomial de blocos finitos
-e três limitações do receptor: tempo morto, pós-pulsos
-(\textit{afterpulsing}) e erro intersímbolo por dispersão cromática. Os ataques
-são modelados como transformações dos rendimentos $(Y_n,e_n)$, e os observáveis
-são recalculados pelo mesmo caminho de código do canal honesto
-(Tabela~\ref{tab:ataques}). Assim, o que o receptor observa é derivado da
-física, e um ataque sem assinatura física não ganha assinatura no conjunto de
-dados. A Figura~\ref{fig:ataques} mostra a consequência: cada ataque deixa uma
-assinatura diferente, e o divisor de feixe não deixa nenhuma.
-
-\begin{table}[ht]
-\centering
-\caption{Ataques modelados como modificações do canal.}
-\label{tab:ataques}
-\small
-\begin{tabular}{>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{4.9cm}>{\raggedright\arraybackslash}p{4.5cm}}
-\toprule
-Ataque & Ação sobre o canal & Assinatura \\
-\midrule
-\textit{Intercept-and-resend} & $e'_n=(1-q)e_n+q\left(\tfrac{1}{2}e_n+\tfrac{1}{4}\right)$ & só o erro; ganho intacto \\
-PNS & $Y'_1=(1-b)Y_1$; $Y_{n\ge2}$ compensado & $Q_\mu$ e $E_\mu$ intactos; $Q_\nu$ cai \\
-Cegamento de detector & $Y'_{n\ge1}\ge p_{\text{forçado}}$; $Y'_0=Y_0+\ell$ & ganho acima da perda; vácuo clica \\
-Divisor de feixe & identidade & nenhuma, por construção \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.8\textwidth]{figuras/qkd_ganho_ataques.png}
-\caption{Ganho sob ataque dividido pelo ganho honesto, a 50~km, calculado
-diretamente da física. O PNS mantém o ganho na intensidade do sinal ($\mu$) e
-não consegue mantê-lo na isca fraca ($\nu$); o \textit{intercept-and-resend}
-não altera o ganho; o cegamento empurra o ganho acima do que a perda permite.}
-\label{fig:ataques}
-\end{figure}
-
-A unidade de simulação é um episódio: um enlace operando por 10 minutos, com
-acerto de contas a cada segundo ($10^9$ pulsos por período a 1~GHz), deriva de
-polarização abaixo e um evento que começa em instante não anunciado. O primeiro
-minuto é livre de eventos e funciona como calibração de comissionamento, e o
-vão é sorteado entre 20 e 70~km. Cada ataque sorteia um perfil temporal (degrau,
-40\%; rampa, 35\%; intermitente, 25\%), e 40\% dos episódios de ataque carregam
-uma excursão térmica simultânea.
-
-\subsection{Regras de avaliação}
-
-Quatro regras valem para todos os controladores. Primeira: nenhum controlador vê
-a verdade. O compensador recebe estimativas binomiais obtidas de fótons de
-monitoramento, nunca a rotação verdadeira; colunas de verdade ficam num espaço
-de nomes próprio, e a construção de janelas levanta erro se uma delas for usada
-como característica; o alvo de treino é uma medição futura; e a correção em
-vigor em cada instante foi calculada com dados de pelo menos uma latência de
-idade. Segunda: todo \textit{baseline} é ressintonizado em cada ponto de
-operação, e comparações entre políticas são pareadas por requisição quando a
-variância entre tarefas domina. Terceira: sementes de teste são disjuntas das
-de treino e de ajuste, a divisão temporal é cronológica com intervalo de guarda,
-e a divisão dos dados de ataque é por episódio. Quarta: todo número de destaque
-traz intervalo de confiança de 95\% por \textit{bootstrap} sobre sementes
-(10.000 reamostragens; 2.000 no alocador, cujas fronteiras são refeitas em cada
-uma), e quando o \textit{baseline} é o melhor temporizador escolhido com
-retrospectiva, essa escolha é refeita dentro de cada reamostragem. Resultados
-negativos são reportados como tais.
-
-% =====================================================================
-\section{Controladores de Rede}
-\label{sec:rede}
-
-\subsection{Compensação de polarização}
-\label{sec:compensador}
-
-O compensador recebe uma janela de estimativas recentes da rotação, expressas
-como incrementos relativos ao instante atual, o que torna o problema invariante
-a translação na esfera de Poincaré. Ele prevê a rotação uma latência de controle
-(40~ms) à frente. Três famílias são comparadas no mesmo laço fechado:
-persistência; filtro alfa-beta, ressintonizado por busca em grade em cada ponto
-de operação; e preditores ajustados, isto é, regressão Ridge, que é o preditor
-de Wiener para um processo gaussiano estacionário, e um MLP. O comando previsto
-é convertido em ângulos de uma cascata de retardadores X-Y-X com curso finito,
-velocidade finita e reset sem fim \cite{noe1988}, de modo que a avaliação inclui
-o custo de mover o atuador.
-
-\begin{table}[ht]
-\centering
-\caption{Compensação em laço fechado no ponto de desenvolvimento: 8 execuções
-de 20~s com sementes retidas e atuador ideal. IC de 95\% por
-\textit{bootstrap} entre colchetes. O resíduo é o ângulo de rotação residual.}
-\label{tab:comp_dev}
-\small
-\begin{tabular}{lcccc}
-\toprule
-Compensador & QBER média & p95 & Disponibilidade & Resíduo (mrad) \\
-\midrule
-Sem compensação & 0,1316 & 0,3341 & 56,0\% & 857,5 \\
-Persistência & 0,1329 [0,128; 0,138] & 0,3253 & 50,1\% & 876,9 \\
-Extrapolação linear & 0,3692 & 0,7953 & 17,2\% & 1724,6 \\
-Filtro alfa-beta & 0,0383 [0,036; 0,041] & 0,0985 & 96,6\% & 450,8 \\
-Ridge (Wiener) & 0,0077 [0,0072; 0,0083] & 0,0211 & 99,9\% & 193,9 \\
-MLP & 0,0074 [0,0069; 0,0079] & 0,0203 & 99,9\% & 188,6 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-A Tabela~\ref{tab:comp_dev} mostra duas linhas que merecem atenção antes das
-melhores. A persistência é pior do que não corrigir: com 40~ms de latência, ela
-aplica uma correção que a vibração já tornou obsoleta. A extrapolação linear é
-pior ainda, porque diferenciar duas estimativas ruidosas dobra a variância.
-Compensar mal é uma possibilidade real, e é por isso que o \textit{baseline}
-relevante é o alfa-beta ressintonizado. Depois de um salto na fibra, a
-recuperação (mediana e percentil 90) leva 0,9 e 52~ms para Ridge e MLP, 11,5 e
-73~ms para o alfa-beta e 236 e 473~ms para a persistência; sem compensação,
-apenas 3 dos 8 saltos se recuperam antes do fim da execução.
-
-A vantagem do preditor exige um atuador capaz de segui-lo. Variando a velocidade
-da cascata de retardadores, o preditor mantém a vantagem acima de 250~rad/s; entre
-120 e 250~rad/s os dois empatam; e abaixo de 120~rad/s o filtro clássico vence,
-porque um dispositivo lento filtra o comando como um passa-baixas. Em 20~s, o MLP
-move os elementos por cerca de 9.300~rad, contra 3.900 do alfa-beta. O MLP empata
-com o Ridge em todas as comparações deste ponto, o que é esperado: para um
-processo gaussiano estacionário, o preditor ótimo é linear.
-
-\begin{table}[ht]
-\centering
-\caption{Compensação em laço fechado no ponto calibrado (tom de 60~Hz com
-harmônicos em 120 e 180~Hz; deriva de 0,02~rad/s): 6 execuções de 20~s com
-sementes retidas. ``Desenvolvimento'' indica o modelo da
-Tabela~\ref{tab:comp_dev} transplantado sem retreino.}
-\label{tab:comp_cal}
-\small
-\begin{tabular}{llcc}
-\toprule
-Compensador & Treinado em & QBER média & IC 95\% \\
-\midrule
-Sem compensação & -- & 0,0646 & [0,053; 0,078] \\
-Persistência & -- & 0,1226 & [0,117; 0,127] \\
-Filtro alfa-beta & ressintonizado & 0,0461 & [0,045; 0,047] \\
-Ridge (Wiener) & ponto calibrado & 0,0133 & [0,0125; 0,0140] \\
-MLP & ponto calibrado & 0,0136 & [0,0128; 0,0144] \\
-Ridge (Wiener) & desenvolvimento & 0,2709 & [0,263; 0,278] \\
-MLP & desenvolvimento & 0,2594 & [0,253; 0,266] \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-A Tabela~\ref{tab:comp_cal} repete a comparação no ponto calibrado, com os
-preditores retreinados ali pela mesma receita e o alfa-beta ressintonizado pela
-mesma busca. A vantagem sobrevive: o filtro fica 3,47 vezes acima do Ridge
-(IC 95\% 3,28--3,71) e 3,38 vezes acima do MLP (3,18--3,62), contra 5,2 vezes
-(4,7--5,8) no ponto de desenvolvimento, e os preditores vencem nas 6 sementes.
-Mantidos os ganhos do ponto de desenvolvimento, o filtro teria ficado em 0,0524
-e a razão em 3,9; a ressintonia reduz a margem em um oitavo, e é por isso que
-ela é feita. Os modelos treinados a 40~Hz e transplantados chegam a
-0,26--0,27, quatro vezes pior que não compensar (IC 3,4--5,1). O que se
-transfere entre pontos de operação é a receita de treino, não os pesos.
-
-\textbf{Generalização em frequência.} Um compensador por enlace exige um
-polarímetro e um treino por enlace. Testou-se, por isso, se um único modelo
-cobre a faixa de frequências plausível. Ele não cobre
-(Figura~\ref{fig:generalizacao}). Treinado sobre 45--180~Hz e testado em cinco
-tons retidos, o modelo ficou em QBER média 0,0615 com janela longa densa e
-0,0793 com a janela curta original, ambos piores que o alfa-beta (0,0480) e 2,4 a
-3,1 vezes piores que o especialista treinado na frequência certa (0,0252). A
-dispersão entre três inicializações foi no máximo 0,0057, quase uma ordem abaixo
-das diferenças. Alongar a janela de 32 para 126~ms ajudou (de 0,079 para 0,062),
-mas não bastou; fornecer a frequência estimada como entrada piorou as duas
-janelas. Só aqui o MLP supera o Ridge: uma mistura de frequências não é um
-processo gaussiano estacionário, e o preditor precisa inferir o tom antes de
-prever sua fase. A recomendação que sobrevive é uma família de modelos de faixa
-estreita com um seletor.
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.85\textwidth]{figuras/comp_generalizacao.png}
-\caption{Um modelo único treinado sobre 45--180~Hz, avaliado por tom retido
-(QBER média em três sementes de ajuste, escala logarítmica). A janela longa
-densa chega perto do especialista em 75 e 105~Hz e falha em 50~Hz; a janela
-diluída é plana e medíocre em toda a banda.}
-\label{fig:generalizacao}
-\end{figure}
-
-\textbf{Porte para ponto fixo.} Um compensador que roda a cada 2~ms perto do
-atuador é candidato a lógica programável. Um modelo de referência em ponto
-fixo, bit a bit, de todo o caminho de inferência (incluindo logaritmo e
-exponencial em SO(3) por CORDIC) foi avaliado no mesmo laço fechado. Dezesseis
-bits bastam: o MLP fica em 1,02 e o Ridge em 0,98 vez a QBER do modelo em ponto
-flutuante. O limite é um degrau: a 14 bits, 1,05 e 1,28; a 12 bits, os dois vão
-a 0,15--0,17, o nível da persistência. A 16 bits, o Ridge requer 144
-multiplicações-acumulações por inferência e 0,29~KiB de parâmetros, e um único
-multiplicador-acumulador serial a 100~MHz resolve sua parte linear em 1,4~$\mu$s,
-contra um período de controle de 2~ms. O código Verilog gerado foi conferido por
-um modelo de ciclos em Python, exato ao bit em 64 vetores de referência; a
-simulação em ferramenta HDL e a síntese foram feitas depois, no ORION-Q
-(Seção~\ref{sec:rtl}), onde o porte também foi avaliado nos dois pontos de
-operação (Seção~\ref{sec:quant}).
-
-\subsection{Alocação híbrida clássico-quântica}
-\label{sec:alocador}
-
-A alocação é tratada como admissão: a cada instante, que fração da fibra
-liberar ao tráfego clássico, sabendo que o ruído Raman induzido eleva a QBER do
-canal quântico \cite{kumar2015} e que o serviço de chave é avaliado pela
-Eq.~\ref{eq:finita}. As políticas comparadas são admissão estática em vários
-níveis, limiar reativo sobre a QBER observada e um alocador preditivo que prevê
-a deriva e só admite tráfego clássico quando prevê estabilidade; a deriva usada
-é o resíduo deixado pelo compensador do ponto de desenvolvimento.
-
-Cobrar o custo de bloco finito reduz o serviço de chave de todas as políticas
-entre 30\% e 55\%, sem alterar a ordenação, mas move o ponto de operação. Por
-isso, as fronteiras foram retraçadas em vez de a conclusão ser extrapolada. A
-serviço de chave igualado, o alocador preditivo entrega 2,7 vezes a vazão
-clássica da admissão estática (IC 95\% 2,6--2,9, com as fronteiras retraçadas
-em cada reamostragem), contra 2,4 vezes com chave assintótica. Com os
-preditores, blocos de 10~s recuperam 80\% da taxa assintótica; com a
-persistência, nenhuma duração recupera mais que 3\%. O ganho vem da lei de
-controle frente à admissão estática, e não do componente de previsão: a
-documentação do pacote não registra vantagem relevante da previsão Ridge sobre a
-persistência.
-
-\subsection{Roteamento e temporização}
-\label{sec:roteamento}
-
-Roteamento e temporização de repetidor são formulados como um único processo
-de decisão de Markov, com ações \{\textsc{gerar}, \textsc{purificar},
-\textsc{trocar}, \textsc{entregar}, \textsc{descartar}, \textsc{esperar}\}. O
-estado é descrito por 11 características globais (fração do prazo restante,
-progresso da entrega, pares vivos, fidelidades média e máxima, pressão de
-memória, cobertura do caminho, limiar da requisição e orçamento consumido), e
-cada ação legal por 23 características, entre elas a probabilidade de
-\textit{heralding} do enlace, a fidelidade prevista do resultado e a idade do
-par mais antigo. A recompensa paga uma entrega qualificada mais um bônus
-proporcional à margem de fidelidade, e cobra um custo de tempo proporcional à
-fração do prazo consumida e um custo fixo por tentativa de geração. A política
-é um ator-crítico com GAE($\lambda$) \cite{schulman2016,mnih2016}, com
-retropropagação manual conferida contra diferenças finitas até $10^{-10}$ e
-modelagem de recompensa baseada em potencial \cite{ng1999}; a avaliação sempre
-reporta a recompensa não modelada.
-
-O primeiro resultado veio da conferência com o simulador. O ambiente analítico
-cobrava, por tentativa de \textit{heralding}, uma travessia do vão; o protocolo
-do SeQUeNCe cobra 4,1 vezes esse tempo, porque uma tentativa é uma negociação de
-várias mensagens, e a razão se mantém ao longo de um fator de oito em distância.
-Corrigido o custo, a vantagem de roteamento medida antes desapareceu, e o agente
-passou a empatar com as melhores heurísticas nos prazos nominais. Como o
-parâmetro estava nos ambientes de treino e de teste, nenhuma avaliação interna
-poderia tê-lo revelado.
-
-Com prazos quatro vezes maiores, a política treinada não faz nada: zero
-tentativas de geração, zero trocas, até o fim do prazo. A causa é a recompensa,
-não o treino: o custo por tentativa é fixo, enquanto o custo de tempo é uma
-fração do prazo. O prêmio disponível para qualquer aprendiz (melhor heurística
-menos a política de não fazer nada) cai de 0,126 entrega no prazo nominal para
-0,040 no prazo quádruplo. Com uma cobrança invariante ao prazo, o prêmio volta a
-0,448 e três de três sementes passam a treinar; ainda assim, a melhor semente
-fica em $-0{,}012\pm0{,}014$ entrega contra a heurística gulosa, pareado por
-requisição: um empate. Nesse regime, a geração domina o orçamento, e tomar a
-maior fidelidade disponível já está perto do ótimo. O agente aprendido não é
-melhor que a heurística, e é apresentado aqui como resultado negativo.
-
-\subsection{Blocagem de chave}
-\label{sec:blocagem}
-
-O controlador de blocagem escolhe as fronteiras dos blocos de amplificação de
-privacidade. Ele parte da consequência da Eq.~\ref{eq:finita} apontada na
-Seção~\ref{sec:finita}: como a chave de um bloco depende apenas do número de bits e da taxa
-média de erro, e não de quando os bits chegaram, janelas boas separadas no tempo
-podem ser liquidadas juntas. Três estratégias são comparadas: um temporizador
-que corta a cada $T$ segundos; um oráculo por intervalos, que escolhe com
-retrospectiva a partição contígua ótima em $O(n^2)$; e um oráculo agrupado, que
-abandona a contiguidade ordenando os segmentos por taxa de erro, propriedade
-conferida contra força bruta. O controlador causal correspondente vê apenas os
-10\% de bits que o protocolo publica para estimar parâmetros e, a cada instante,
-compara três continuações: encerrar o bloco, seguir com ele ou pular o
-segmento. Não há constante de ajuste na regra.
-
-Em 12 sementes de teste no ponto de desenvolvimento, sobre o enlace compensado
-por persistência (QBER 0,134), temporizadores de 5~s ou mais produzem zero bit
-em todas as sementes. O controlador entrega 4.075~bit/s (IC 95\% 3.590--4.566),
-7,9 vezes o melhor temporizador escolhido com retrospectiva (6,9--9,0) e 95\% do
-seu oráculo. Com os melhores compensadores, o melhor bloco é um só, do tamanho
-da execução, e o controlador o encontra ao custo de menos de 1\%. Sob
-perturbação crescente no melhor compensador, ele supera o melhor temporizador
-por 1,39 vez (1,29--1,53) a 0,6~rad e por 3,23 vezes (3,07--3,39) a 0,9~rad,
-vencendo em todas as sementes. Com pulsos coerentes no lugar da fonte de fóton
-único, a vantagem cresce, por exemplo de 1,39 para 2,18--3,71 vezes a 0,6~rad.
-Esse resultado é uma afirmação de contabilidade: a sinalização necessária para
-as duas pontas concordarem sobre o bloco não foi modelada, e não há ainda prova
-de segurança para blocos não contíguos. Na Seção~\ref{sec:bloc_lf}, o
-controlador é levado ao laço do ORION-Q, nos dois pontos de operação.
-
-% =====================================================================
-\section{Controladores de Enlace QKD}
-\label{sec:qkd}
-
-Um enlace de QKD com estados-isca implantado costuma monitorar a si mesmo por
-uma única estatística, a QBER, e interromper a produção de chave quando ela
-cruza um limiar. Esse teste é correto, mas operacionalmente fraco: dispara tarde,
-dispara por causa do ambiente, porque a deriva de polarização produz a mesma
-subida de erro, e não enxerga ataques que não perturbam a taxa de erro. Esta
-seção descreve três controladores que usam apenas os observáveis que as duas
-pontas já publicam (ganhos e erros por intensidade, contagem de vácuo e os
-limites da Eq.~\ref{eq:isca}), mais um termômetro no cabo.
-
-\subsection{Classificação de ataques}
-\label{sec:detector}
-
-Dezessete atributos são calculados por período, todos relativos à linha de base
-do próprio episódio: razões logarítmicas de ganho de sinal, de isca e de vácuo;
-deslocamentos da taxa de erro; razões dos limites $Y_1^L$ e $e_1^U$; ganho
-medido contra o previsto pela calibração; e três atributos de janela móvel
-(tendência do erro, volatilidade e correlação entre o erro e $|dT/dt|$). O último
-é o discriminador térmico: uma excursão de temperatura produz erro que sobe
-enquanto a temperatura se move e assenta quando ela para, correlação que um
-espião não tem. Quatro famílias são comparadas: um limiar de QBER calibrado
-para 1\% de alarme falso, que representa a prática atual; \textit{random
-forest}; SVM com núcleo RBF; e \textit{gradient boosting}. Ao melhor modelo
-acrescentam-se um limiar de decisão, calibrado em episódios fora do ajuste, e
-uma histerese de três períodos.
-
-O conjunto tem 168 episódios (24 por classe) e 90.720 períodos com atributos,
-dos quais 22.680 são pontuados em teste. O divisor de feixe é gerado e
-pontuado, mas não treinado, como controle negativo: a resposta correta nos seus
-períodos é ``normal''. A acurácia é deliberadamente omitida; as métricas são as
-de um operador (Tabela~\ref{tab:detector}).
-
-\begin{table}[ht]
-\centering
-\caption{Métricas operacionais do detector com período de decisão de 1~s.
-``Alarmes/hora'' conta inícios de alarme em períodos comprovadamente limpos.}
-\label{tab:detector}
-\small
-\begin{tabular}{lcccc}
-\toprule
-Detector & F1 macro & Alarme falso & Alarmes/hora & Precisão a 1\% \\
-\midrule
-Limiar de QBER & 0,128 & 0,0073 & 1,6 & 0,103 \\
-\textit{Random forest} & 0,832 & 0,0525 & 8,9 & 0,155 \\
-SVM (RBF) & 0,702 & 0,0761 & 36,4 & 0,113 \\
-\textit{Gradient boosting} & 0,830 & 0,0618 & 14,9 & 0,135 \\
-\quad + limiar de decisão & 0,825 & 0,0373 & 11,0 & 0,200 \\
-\quad + limiar + histerese & 0,818 & 0,0321 & 6,8 & 0,220 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-O limiar de QBER detecta 27\% dos períodos de \textit{intercept-and-resend},
-4\% dos de PNS, 11\% dos de cegamento e 3\% dos eventos de perda: na prática,
-um de quatro ataques. A assimetria é física, porque os três últimos não alteram
-a taxa de erro. \textit{Random forest} e \textit{boosting} classificam como
-normais 91\% dos períodos do divisor de feixe, e o SVM, 83\%. As ablações
-localizam a separação: sem os observáveis de isca, o \textit{recall} do PNS cai
-de 0,749 para 0,400; com apenas QBER e ganho, para 0,098. Sem o termômetro, o
-\textit{recall} da deriva térmica cai à metade e os alarmes falsos se
-multiplicam por nove, porque deriva térmica e \textit{intercept-and-resend}
-produzem a mesma subida de QBER e só se distinguem pela causa.
-
-Os casos adversos têm custo. O \textit{recall} do \textit{boosting} é 0,944 em
-ataques em degrau, 0,778 em rampa e 0,562 em rajadas, e cai de 0,897 para 0,631
-quando há excursão térmica simultânea; mesmo assim, o ataque é sempre detectado
-como algum evento. Em um gerador restrito a ataques em degrau isolados, o mesmo
-procedimento alcança F1 macro de 0,93 e alarme falso de 1,4\%: o número mais alto
-mede um problema mais fácil.
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=0.8\textwidth]{figuras/qkd_precisao_alarmes.png}
-\caption{Alarmes falsos por hora contra precisão sob prior de 1\%, com períodos
-de decisão de 1~s e 5~s (eixo horizontal logarítmico). A mudança de regime vem
-de decidir cinco vezes menos, com cinco vezes mais contagens por decisão, e não
-da troca de modelo.}
-\label{fig:precisao}
-\end{figure}
-
-O achado operacional central é que a precisão sob prior realista é governada
-pela taxa de decisão, e não pelo modelo (Figura~\ref{fig:precisao}). Com período
-de 5~s e limiar de decisão calibrado em episódios não vistos, o alarme falso vai
-praticamente a zero e a precisão sob prior de 1\% passa de 0,22 para 1,00. O
-preço é um atraso de dezenas de segundos e a classificação do
-\textit{intercept-and-resend} fraco como deriva térmica. Calibrar o limiar sobre
-os mesmos dados do ajuste produz um limiar nulo e piora o alarme falso; a
-calibração em 20\% dos episódios de treino, fora do ajuste, é o que torna o
-mecanismo eficaz.
-
-\subsection{Ajuste da taxa de chave}
-\label{sec:taxa}
-
-O ajuste do transmissor é formulado como decisão sequencial. O estado tem 16
-entradas: os observáveis do período anterior relativos à calibração, a
-configuração corrente e duas entradas absolutas do regime de perda. As nove
-ações são ajustes multiplicativos de $\mu$, $\nu$ e do \textit{clock}, e aditivos
-na fração de pulsos de sinal. A recompensa é a chave que se consegue provar no
-período, calculada pelos limites de isca sobre contagens binomiais finitas, e
-não a taxa assintótica. O agente é um ator-crítico com vantagem generalizada
-\cite{mnih2016,schulman2016}, treinado sorteando o vão entre 25 e 80~km, com
-temperatura de amostragem $T=0{,}25$ escolhida em sementes de validação.
-
-\begin{table}[ht]
-\centering
-\caption{Taxa de chave secreta provável (Mbit/s), média de 24 episódios de teste
-por vão, com desvio-padrão entre parênteses.}
-\label{tab:taxa}
-\small
-\begin{tabular}{lcccc}
-\toprule
-Vão & Comissionamento & Agente & Oráculo & Ganho \\
-\midrule
-25~km & 3,180 (0,451) & 3,782 (0,506) & 3,817 (0,584) & +18,9\% \\
-35~km & 2,732 (0,425) & 3,092 (0,397) & 3,059 (0,417) & +13,2\% \\
-50~km & 1,899 (0,319) & 2,128 (0,312) & 2,152 (0,353) & +12,1\% \\
-65~km & 1,038 (0,169) & 1,138 (0,213) & 1,220 (0,244) & +9,6\% \\
-80~km & 0,489 (0,072) & 0,532 (0,113) & 0,713 (0,107) & +8,8\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Até 50~km, o agente recupera mais de 90\% da distância entre a configuração de
-comissionamento e o oráculo, que reotimiza a cada período com acesso ao canal
-verdadeiro (Tabela~\ref{tab:taxa}); em 80~km, recupera apenas 19\%. Dois
-diagnósticos produziram esse resultado. Com atributos apenas relativos à
-calibração, o agente não distinguia regimes, pois uma queda de 20\% no ganho é
-idêntica em 25 e em 80~km, embora os dois exijam movimentos opostos; as duas
-entradas absolutas levaram o resultado em 80~km de $-14{,}7\%$ para $+1{,}6\%$, e
-a escolha da temperatura de amostragem fez o resto. Um agente especialista,
-treinado só em 50~km, perdia 86\% em 80~km. O comportamento aprendido é
-interpretável: em vãos curtos, o agente leva a isca ao piso da faixa
-($\nu\approx0{,}011$, contra 0,1 no comissionamento); em 80~km, eleva-a a
-$\nu\approx0{,}25$, onde a penalidade de estatística finita passa a dominar.
-
-\subsection{Sincronismo temporal}
-\label{sec:sincronismo}
-
-O coeficiente termo-óptico da sílica implica cerca de 40~ps de atraso por
-quilômetro por kelvin; em 50~km, um kelvin desloca a chegada do pulso em 2~ns,
-dez vezes a janela típica de um detector com porta. Quatro preditores foram
-comparados em laço fechado com latência: nenhuma correção, recalibração
-periódica, filtro alfa-beta e Ridge sobre a janela de estimativas mais o
-termômetro. A pontuação é a taxa de chave que sobrevive, e não o erro do
-atraso (Tabela~\ref{tab:sinc}).
-
-\begin{table}[ht]
-\centering
-\caption{Taxa de chave a 50~km (Mbit/s) por sincronizador e largura de janela,
-média de 12 execuções de uma hora, para detector silencioso (10~Hz de contagem
-de escuro) e ruidoso ($10^6$~Hz).}
-\label{tab:sinc}
-\small
-\begin{tabular}{llcccc}
-\toprule
-Escuro & Janela & Sem correção & Recalib. 60~s & Alfa-beta & Ridge + termômetro \\
-\midrule
-10~Hz & 200~ps & 0,136 & 1,001 & 1,464 & 1,508 \\
- & 500~ps & 0,309 & 1,631 & 1,958 & 1,971 \\
- & 1000~ps & 0,530 & 1,924 & 2,007 & 2,007 \\
-$10^6$~Hz & 200~ps & 0,000 & 0,429 & 0,948 & 0,998 \\
- & 350~ps & 0,000 & 0,536 & 1,064 & 1,099 \\
- & 1000~ps & 0,000 & 0,128 & 0,253 & 0,253 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Um enlace deixado sem rastreamento perde 85\% da chave em uma hora com detector
-silencioso, e toda ela com detector ruidoso, efeito do coeficiente termo-óptico
-e não de aprendizado de máquina. A recalibração periódica custa dos dois lados:
-a janela envelhece entre varreduras, e a varredura interrompe o enlace. A margem
-do preditor com termômetro é pequena e aparece onde deveria, com janela estreita
-e detector ruidoso, porque só ele tem acesso à variação de temperatura.
-
-\subsection{Validação com dados da rede de Cambridge}
-\label{sec:cambridge}
-
-Todos os resultados anteriores foram medidos no simulador do próprio trabalho.
-Para confrontar a física com uma rede implantada, foram usados os dados
-publicados da rede quântica de Cambridge \cite{dynes2019}\footnote{Dados sob
-licença CC-BY em \url{https://doi.org/10.17863/CAM.44524}.}: 575 instantâneos
-diários, de novembro de 2016 a julho de 2018, da taxa de chave e da QBER do
-enlace CAPE--TREL (10,6~km, 3,9~dB; BB84 com estados-isca a 1~GHz, $\mu=0{,}4$,
-$\nu=0{,}1$), e seis medidas da QBER contra a potência recebida de um canal
-clássico de 100~Gbit/s na mesma fibra. Os dados não trazem observáveis por
-intensidade nem ataques; o detector, portanto, não pode ser avaliado sobre eles.
-O que se testa é a premissa do detector e a física compartilhada pelos
-controladores (Figura~\ref{fig:cambridge}).
-
-\begin{figure}[ht]
-\centering
-\includegraphics[width=\textwidth]{figuras/qkd_cambridge.png}
-\caption{Enlace CAPE--TREL da rede de Cambridge. (a) QBER diária; em cinza, os 60 dias de comissionamento; tracejado, o limiar
-calibrado para 1\% de alarme falso; pontos, os dias em que ele dispara. (b)
-Taxa de chave contra QBER, com a inclinação medida na excursão de
-agosto--setembro de 2017 e a prevista pelo modelo. (c) QBER contra a potência
-clássica recebida, com o ajuste linear em miliwatts e a hipótese de QBER
-constante. Dados de \cite{dynes2019}.}
-\label{fig:cambridge}
-\end{figure}
-
-\textbf{O limiar de QBER em dias benignos.} Com 60 dias de comissionamento e
-orçamento de 1\% de alarme falso, o limiar disparou em 16,5\% dos 515 dias
-seguintes, em 17 episódios separados; com 90 dias de comissionamento, em 5,2\%.
-Todo alarme é falso, porque todos os dias são benignos. Uma linha de base móvel
-de 30 dias reduz a taxa para 2,3\%, mas aprende como normal um ataque que entre
-em rampa.
-
-\textbf{O custo de um ponto de QBER.} A taxa absoluta depende de parâmetros não
-publicados, mas a sensibilidade $d\ln R/dE_\mu$ é fixada quase inteiramente
-pelos termos de entropia da Eq.~\ref{eq:gllp}. Entre 22 de agosto e 12 de
-setembro de 2017, a QBER subiu de 2,9\% para 3,9\% e foi corrigida em um único
-dia; ao longo dessa excursão, a inclinação medida foi $-31{,}8\pm1{,}1$
-($R^2=0{,}994$). O modelo prevê $-33{,}7$ com a ineficiência de reconciliação
-$f=1{,}16$ usada em todo o trabalho, 6\% mais íngreme, e reproduz a medida com
-$f=1{,}10$. Os dias ruins também se separam nos dois tipos de degradação do
-gerador: 26 dias por erro e 7 por perda.
-
-\textbf{Coexistência.} Sobre as seis medidas, a forma linear em miliwatts
-prevista pelo espalhamento Raman ajusta os dados ($\chi^2=0{,}80$ com 4 graus
-de liberdade), e a hipótese de QBER constante é rejeitada ($\chi^2=22{,}0$,
-$p=0{,}0005$). A preferência depende quase só do ponto de maior potência, e a
-magnitude medida é 88 vezes menor que a assumida por padrão; os limites de
-potência clássica derivados com os valores padrão são, portanto, conservadores
-para um receptor dessa classe.
-
-\textbf{O limite de chave finita.} No ponto publicado (bloco peneirado de
-100~Mbit, QBER de 2,4\% e $\varepsilon_{\mathrm{sec}}=10^{-10}$), a
-Eq.~\ref{eq:finita} dá 0,6170 bit secreto por bit peneirado, contra 0,6472 do
-limite assintótico. Com a correção de fóton único para $\mu=0{,}4$, obtêm-se
-0,3495 e 0,2770 para erro de fase de fóton único igual ao observado e ao dobro
-dele: o limite ideal é de 1,8 a 2,2 vezes otimista para um sistema de pulsos
-coerentes. Sob o tráfego clássico máximo, a QBER de Cambridge sobe de 2,4\% para
-2,7\% e a rede continua operando; o limite concorda que a excursão é barata,
-com fração secreta 5,3\% menor.
-
-% =====================================================================
-\section{Arquitetura da Plataforma ORION-Q}
+\section{Arquitetura do OrionQ}
 \label{sec:arquitetura}
+
+\subsection{Requisitos}
+
+O projeto do OrionQ parte de sete requisitos, que orientam o resto desta seção.
+(R1) Tecnologias diferentes --- fibra, repetidores, campo gêmeo, satélite ---
+convivem na mesma rede, cada uma por um contrato de observáveis declarado. (R2) Só a
+entrada pode ser simulada: o processamento é o mesmo qualquer que seja a fonte,
+e trocar a fonte não concede permissão. (R3) Nenhum controlador aprendido age
+sem identidade verificada, paridade com as saídas de referência e supervisor no
+caminho; fora do contrato admitido, ou a referência assume, ou a decisão é
+marcada como fora do contrato. (R4) Toda decisão fica auditável, em diário
+com hashes e recibos lidos de volta. (R5) Evidências de naturezas diferentes não
+se misturam. (R6) Não existe atuação física. (R7) A rede é operada por clientes
+autenticados de um serviço, e não por acesso direto ao estado.
 
 \subsection{Laço de controle}
 
-A Figura~\ref{fig:arquitetura} resume a arquitetura. As entradas (sintéticas,
+A Figura~\ref{fig:arquitetura} resume a arquitetura do OrionQ\footnote{O projeto
+se chamava ORION-Q até a versão 5.56; arquivos, comandos e registros do
+repositório mantêm os prefixos \texttt{orion\_q} e \texttt{orion-q}.}. As entradas (sintéticas,
 \textit{replay} ou arquivo JSON medido) seguem o mesmo contrato e carregam
 proveniência por observação (medida, simulada, derivada ou prevista); trocar a
 fonte não concede nenhuma permissão adicional. Cada ciclo produz um
@@ -1298,9 +684,11 @@ gravados em um diário SQLite com hashes.
   \draw[aud] (snap.south) -- ++(0,-6.5mm) -| node[pos=0.3, above, font=\sffamily\tiny]{\textit{shadow}} (log.north);
   \draw[aud] (q05.south) |- ++(0,-5mm) -| ($(log.south)+(0,0)$);
 \end{tikzpicture}
-\caption{Arquitetura do ORION-Q. Linhas contínuas: laço de controle;
-tracejadas: registros de auditoria das sessões \textit{shadow} (recomendações
-registradas, nunca aplicadas) e do fluxo de ativação.}
+\caption{Arquitetura do plano de controle do OrionQ. Linhas contínuas: laço de
+controle; tracejadas: registros de auditoria das sessões \textit{shadow}
+(recomendações registradas, nunca aplicadas) e do fluxo de ativação. O motor da
+rede de demonstração (Seção~\ref{sec:demo}) registra suas decisões, com
+hash, em diário próprio.}
 \label{fig:arquitetura}
 \end{figure}
 
@@ -1310,8 +698,11 @@ A plataforma separa três trilhas: telemetria óptica medida, usada somente como
 observação de saúde do enlace; QBER e SKR medidos, válidos apenas dentro da
 grade experimental de origem; e fidelidade de Bell simulada, restrita ao
 ambiente de controle simulado. A conversão de BER, QBER ou SKR em fidelidade de
-Bell é proibida, e qualquer tentativa de usar evidência óptica ou de QKD para
-disparar PURIFY ou SWAP é recusada. O registro formal de reivindicações do
+Bell é proibida nas trilhas de evidência, e qualquer tentativa de usar evidência
+óptica ou de QKD para disparar PURIFY ou SWAP é recusada. A rede de
+demonstração (Seção~\ref{sec:demo}), que fica fora das trilhas de evidência,
+exibe por fibra uma estimativa de fidelidade derivada da QBER, rotulada como
+estimativa e sem efeito sobre a planta. O registro formal de reivindicações do
 trabalho usa essa mesma separação: cada afirmação tem um selo (suportada,
 exploratória, não suportada, refutada para os modelos avaliados ou não testada)
 e aponta para evidências com hash, verificadas automaticamente.
@@ -1329,7 +720,7 @@ dos limites são recusados. Cada componente ganha um adaptador com contrato
 explícito de domínio, cadência e horizonte, e só é admitido se reproduzir as
 saídas de referência fornecidas com o modelo. O catálogo resultante tem onze
 entradas, todas admitidas. O detector chegou só como \textit{pickle} e ficou
-bloqueado até que se construísse uma alternativa segura: o ORION-Q o retreina com
+bloqueado até que se construísse uma alternativa segura: o OrionQ o retreina com
 o pipeline do próprio autor, serializa o resultado como a exportação fez e
 compara os bytes com o arquivo do pacote --- idênticos ---, sem nunca
 desserializá-lo; só então as 2.400 árvores são gravadas como \textit{arrays}
@@ -1338,12 +729,11 @@ pacote conferindo o SHA-256 do membro \textit{pickle}. Todas as entradas ficam
 desligadas por padrão, e a plataforma funciona sem nenhum peso externo. A Tabela~\ref{tab:admissao} resume os
 contratos e a paridade verificada. A DualHead do estudo preliminar também está
 disponível como pacote congelado, com leitura sem \textit{pickle} e
-\textit{replay} no painel. As features de roteamento geradas no ORION-Q são
-ilustrativas e não reproduzem a normalização do simulador original.
+\textit{replay} no painel.
 
 \begin{table}[ht]
 \centering
-\caption{Componentes admitidos no ORION-Q, contratos dos adaptadores e verificação de paridade.}
+\caption{Componentes admitidos no OrionQ, contratos dos adaptadores e verificação de paridade.}
 \label{tab:admissao}
 \scriptsize
 \begin{tabular}{>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{3.5cm}}
@@ -1371,9 +761,11 @@ relógio com deriva térmica, o enlace \textit{decoy-state} na configuração de
 comissionamento, a planta metropolitana sob admissão quântico-primeiro e a
 cadeia de repetidores sob a heurística gulosa. O modelo recomenda ações, que
 são registradas e avaliadas, mas nunca aplicadas. No laço fechado,
-a ação do modelo altera o estado simulado. Em operação, esse nível só é
-acessível pelo fluxo de ativação descrito a seguir; as campanhas de avaliação o
-executam sob protocolo congelado, sem alterar o controlador ativo.
+a ação do modelo altera o estado simulado. No plano de controle, esse nível só
+é acessível pelo fluxo de ativação descrito a seguir; as campanhas de avaliação o
+executam sob protocolo congelado, sem alterar o controlador ativo. Na rede de
+demonstração (Seção~\ref{sec:demo}), o acesso é mais simples: uma permissão do
+operador, registrada com recibo.
 
 \subsection{Fluxo de ativação auditável}
 
@@ -1406,14 +798,105 @@ anterior se a gravação falhar. O padrão é o filtro alfa-beta, e a reversão
 volta a ele pelo mesmo fluxo. Cada execução do laço fica registrada no diário
 junto com a ativação sob a qual rodou.
 
+O fluxo governa o plano de controle. O motor da rede de demonstração
+(Seção~\ref{sec:demo}) usa uma permissão mais simples, sem preparação, revisão
+nem vínculo a uma campanha: um modelo aprendido só age ali quando a permissão de
+controle aprendido está ligada, o pacote do autor confere com o hash fixado e o
+contrato admite a planta, sempre sob o supervisor. Estender o fluxo auditado a
+esse motor fica como trabalho futuro.
+
+\subsection{Motor de rede e operação}
+\label{sec:demo}
+
+Para operar uma rede, e não só laços isolados, o OrionQ inclui um motor de rede
+ao vivo (Figura~\ref{fig:motor}). A cada passo de rede de 1~s, a fonte de entrada
+gera os observáveis brutos de cada enlace --- contagens, rotações de
+polarização, \textit{offsets} de relógio, eventos de detecção com marcação de
+tempo ---, e o mesmo processamento, qualquer que seja a fonte, produz QBER, taxa
+de chave, alarmes, rotas e relatórios de calibração. Os enlaces de fibra herdados
+dos laços fechados passam pelas plantas do autor, sob os mesmos supervisores; as
+sessões de protocolo --- repetidores, campo gêmeo, satélite e entre satélites ---
+passam pela física de referência da plataforma (Seção~\ref{sec:tecnologias}); e
+o SeQUeNCe pode substituir o gêmeo analítico como planta do roteamento ou
+executar, numa campanha separada, a parte terrestre da rede
+(Seção~\ref{sec:sequence}). Na configuração de demonstração de 08/10, a rede tinha
+71 pontos e 131 enlaces, dos quais 35 com as plantas do autor e 96 com sessões de
+protocolo. A topologia aparece em mapa geográfico, e os comandos do operador
+(desligar uma fibra, isolar ou recalibrar um nó, pedir um par) são verbos do
+serviço cujo efeito, inclusive o redirecionamento, é lido de volta no passo
+seguinte. Só a entrada é simulada, e não há atuação física.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  font=\sffamily\scriptsize,
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=8mm, fill=white},
+  lay/.style={box, fill=gray!10},
+  arr/.style={-{Stealth[length=2mm]}, thick}]
+  \node[box, text width=118mm] (in) {Fontes de entrada: simulada $\cdot$ \textit{replay} $\cdot$ JSON medido $\cdot$ fluxos de estação terrestre};
+  \node[lay, below=6mm of in, xshift=-41mm, text width=36mm] (fib) {Enlaces de fibra\\(plantas do autor)\\polarização $\cdot$ sincronismo\\taxa de chave $\cdot$ ataques};
+  \node[lay, below=6mm of in, text width=38mm] (ref) {Sessões de protocolo\\(física de referência)\\repetidores $\cdot$ campo gêmeo\\BBM92 $\cdot$ satélite $\cdot$ ISL};
+  \node[lay, dashed, below=6mm of in, xshift=41mm, text width=36mm] (seq) {SeQUeNCe\\(campanhas separadas)\\planta do roteamento\\executor da parte terrestre};
+  \node[box, below=6mm of ref, text width=118mm] (st) {Estado da rede a cada passo: QBER $\cdot$ chave $\cdot$ alarmes $\cdot$ rotas $\cdot$ calibração $\cdot$ recibos clássicos};
+  \node[box, below=6mm of st, text width=56mm, xshift=-31mm] (cp) {Plano de controle: controladores (opcionais), referências, supervisor, roteamento e reservas};
+  \node[box, below=6mm of st, text width=56mm, xshift=31mm] (sv) {Serviço autenticado (TLS mútuo) e diário com hashes};
+  \node[box, below=6mm of sv, text width=56mm] (cl) {Clientes: console gráfico $\cdot$ monitor em terminal};
+  \draw[arr] (in.south -| fib) -- (fib);
+  \draw[arr] (in) -- (ref);
+  \draw[arr] (fib) -- (st.north -| fib);
+  \draw[arr] (ref) -- (st);
+  \draw[arr] (seq) -- (st.north -| seq);
+  \draw[arr] (st.south -| cp) -- (cp);
+  \draw[arr] (st.south -| sv) -- (sv);
+  \draw[arr] (cp) -- (sv);
+  \draw[arr] (sv) -- (cl);
+\end{tikzpicture}
+\caption{Motor de rede do OrionQ. A mesma entrada alimenta os enlaces de fibra e
+as sessões de protocolo; o SeQUeNCe (tracejado) entra em campanhas separadas,
+como planta do roteamento ou executor da parte terrestre da rede. O estado
+resultante passa pelo plano de controle e é exposto aos clientes por um serviço
+autenticado. Não há caminho para atuação física.}
+\label{fig:motor}
+\end{figure}
+
+Nos enlaces herdados, um modelo aprendido só age quando a permissão de controle
+aprendido está ligada, quando o pacote do autor confere com o hash fixado e
+quando o contrato admite a planta; caso contrário, age o controlador de
+referência, e a interface diz qual. A permissão só muda por um comando
+confirmado, lido de volta e registrado com recibo, e começa desligada na
+demonstração institucional. O detector de ataques roda sempre e, treinado em
+outros vãos, fica fora do contrato em toda fibra simulada, com essa marca em
+cada decisão. Na topologia metropolitana, o agente de roteamento, revisado só na
+cadeia de quatro nós, também age fora do contrato; na demonstração
+institucional, o contrato de roteamento é imposto e a referência assume. Por
+fibra, a interface exibe a estimativa de fidelidade $F=1-3\,\mathrm{QBER}/2$, que
+supõe estado de Werner; ela não entra na planta nem dispara PURIFY ou SWAP.
+
+Em torno do motor, a plataforma tem a infraestrutura de um serviço: identidade
+do usuário do sistema operacional com cinco funções e escopos conferidos a cada
+chamada; diário de segurança encadeado por HMAC; infraestrutura de chaves com
+TLS~1.3 e autenticação mútua; cofre de segredos; um núcleo de serviço sem
+interface para Linux, com monitor em terminal; e um contrato entre o processador
+e a lógica programável (PS/PL) emulado em software, com um correlacionador em
+Verilog simulado e sintetizado de forma genérica e receitas para PetaLinux. Nada
+disso rodou em placa, em equipamento de laboratório ou em estação terrestre, e a
+camada de segurança não tem certificação.
+
 \subsection{Implementação}
 
 A plataforma foi escrita em Python, com PyTorch \cite{paszke2019} e Qiskit Aer
-\cite{javadi2024} no núcleo científico (cerca de 23 mil linhas), uma camada de
-plano de controle e console nativo em PySide6 (cerca de 39 mil linhas) e um
-pacote executável para Windows. A suíte automatizada tem 3.724 testes. Em
-Linux, 3.721 passam e 3 são próprios do Windows: dois valores de referência
-numéricos gravados nessa plataforma e o lançador do executável. O registro de
+\cite{javadi2024} no núcleo científico (cerca de 23 mil linhas) e uma camada de
+plano de controle, console nativo em PySide6, motor de rede e serviços (cerca de
+101 mil linhas). A versão 5.65.0 é distribuída como executável para Windows e
+como pacotes para Linux, estes validados apenas sob WSL2. A suíte automatizada
+tem 8.740 testes. Na execução completa em Linux, em 11/10, num contêiner com
+Python 3.11, 8.651 passaram, 56 foram omitidos e 33 falharam, nenhum deles entre
+os testes das campanhas em laço fechado ou do registro de reivindicações. As
+falhas vêm do ambiente (renderização de ícones, recursos do Windows, execução
+como administrador, variável de ambiente com o pacote do
+autor), de arquivos de
+evidência que só existem localmente, da carga da máquina e de testes
+desatualizados. O registro de
 reivindicações do estudo preliminar é verificado por 69 checagens automáticas, e o
 da plataforma --- laços fechados, ponto fixo, blocagem, detector, RTL e segurança da ativação,
 20 afirmações, inclusive as que não se confirmaram --- por 795 checagens sobre os
@@ -1428,7 +911,589 @@ bit; passaram a usar a tolerância declarada no protocolo, sem mudar nenhum resu
 Linux.
 
 % =====================================================================
-\section{Avaliação na Plataforma: Metodologia}
+\section{Tecnologias Suportadas pelo OrionQ}
+\label{sec:tecnologias}
+
+O OrionQ está preparado para simular e controlar seis famílias de tecnologias
+(Tabela~\ref{tab:tecnologias}). ``Preparado'' tem aqui um sentido preciso: a
+tecnologia tem um modelo explícito no código, com parâmetros e fontes declarados,
+entra na plataforma por um contrato de observáveis declarado e tem um estado de
+validação registrado. Os modelos têm duas origens. As plantas do autor, incorporadas
+dos pacotes \texttt{qnet\_network} e \texttt{qnet\_qkd}, são aquelas em que os
+controladores aprendidos foram treinados (Seção~\ref{sec:modelos}). A física de
+referência foi escrita na própria plataforma, em forma reduzida, para as
+tecnologias que esses pacotes não cobrem; nenhum controlador aprendido atua sobre
+ela. Em todas as tecnologias, nenhuma chave é certificada e não há atuação
+física.
+
+\begin{table}[ht]
+\centering
+\caption{Tecnologias suportadas pelo OrionQ, com a origem do modelo, o que a
+plataforma decide e o estado de validação.}
+\label{tab:tecnologias}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.3cm}>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{2.0cm}}
+\toprule
+Tecnologia & Modelo e origem & O que o OrionQ decide & Verificação & Estado \\
+\midrule
+Enlace de fibra com QKD de estados-isca & BB84 com estados-isca, deriva de polarização, atraso térmico, ataques e ruído Raman; plantas do autor & compensação, sincronismo, ajuste do transmissor, detecção de ataques, alocação clássico-quântica & portões de reprodução, laços fechados, dados de Cambridge & controladores avaliados em laço fechado \\
+Repetidores: geração, memória, troca e purificação & Bell-diagonal (autor) e Werner (plataforma); SeQUeNCe como planta ou executor & roteamento e temporização, reservas, entrega & SeQUeNCe até $2{,}5\times10^{-12}$ e $4{,}4\times10^{-16}$; campanhas nativas & componentes conferidos; execução nativa parcial \\
+QKD de campo gêmeo (SNS) & pulsos finitos de \citeasnoun{jiang2019} numa sessão; forma assintótica reduzida nas demais; plataforma & admissão de blocos e disponibilidade & limites conferidos com um oráculo independente & sem validação externa \\
+QKD por emaranhamento (BBM92) & coincidências, peneiramento, reconciliação, chave finita, Toeplitz; plataforma & processamento por bloco e admissão de chave & execuções funcionais & funcional \\
+Bancada emulada e entrega de chaves & fonte SPDC emulada; BB84 ideal; KME ETSI 014; plataforma & reserva e entrega de chaves de teste & 49 testes e 14 falhas de entrega & chaves de teste \\
+Satélite e entre satélites & órbitas de referência, feixe gaussiano, atmosfera, apontamento, Doppler, relé orbital; plataforma & janelas de visibilidade, disponibilidade, rotas, isolamento e restauração & óptica contra código de referência ($2{,}2\times10^{-8}$) e geometria analítica & hipotético; sem validação externa \\
+Canais clássicos e telemetria de satélite & atraso de propagação, recibos, fluxos de estação terrestre, quadros de missão; plataforma & admissão de recibos, autenticação, novas tentativas & dois quadros reais do Suomi~100 recebidos por terceiros; recibos nativos do SeQUeNCe & ingestão exercitada; sem recepção própria \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Enlaces de fibra com QKD de estados-isca}
+\label{sec:tec_fibra}
+
+Os enlaces de fibra usam as plantas do autor. A camada de QKD implementa o BB84
+com estados-isca pelas Eqs.~\ref{eq:ganho}--\ref{eq:gllp}, com rendimentos
+$Y_n=Y_0+\eta_n-Y_0\eta_n$, erros $e_n=(e_0Y_0+e_d\eta_n)/Y_n$, amostragem
+binomial de blocos finitos e três limitações do receptor: tempo morto, pós-pulsos
+(\textit{afterpulsing}) e erro intersímbolo por dispersão cromática. Os valores
+padrão são $\mu=0{,}5$, $\nu=0{,}1$, erro de alinhamento $e_d=1{,}5\%$,
+\textit{clock} de 1~GHz e ineficiência de reconciliação $f=1{,}16$. Os ataques
+são transformações dos rendimentos $(Y_n,e_n)$, e os observáveis são
+recalculados pelo mesmo caminho de código do canal honesto
+(Tabela~\ref{tab:ataques}); assim, um ataque sem assinatura física não ganha
+assinatura nos dados.
+
+\begin{table}[ht]
+\centering
+\caption{Ataques modelados como modificações do canal.}
+\label{tab:ataques}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{4.9cm}>{\raggedright\arraybackslash}p{4.5cm}}
+\toprule
+Ataque & Ação sobre o canal & Assinatura \\
+\midrule
+\textit{Intercept-and-resend} & $e'_n=(1-q)e_n+q\left(\tfrac{1}{2}e_n+\tfrac{1}{4}\right)$ & só o erro; ganho intacto \\
+PNS & $Y'_1=(1-b)Y_1$; $Y_{n\ge2}$ compensado & $Q_\mu$ e $E_\mu$ intactos; $Q_\nu$ cai \\
+Cegamento de detector & $Y'_{n\ge1}\ge p_{\text{forçado}}$; $Y'_0=Y_0+\ell$ & ganho acima da perda; vácuo clica \\
+Divisor de feixe & identidade & nenhuma, por construção \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\label{sec:fibra}
+A fibra aplica ao estado de polarização uma rotação $R(t)\in SO(3)$ composta de
+deriva térmica lenta, modelada como processo de Ornstein-Uhlenbeck
+\cite{uhlenbeck1930}, de uma banda mecânica de tons com harmônicos e de saltos
+discretos; a QBER de polarização é $(1-\vec s\cdot\vec r)/2$ para os vetores de
+Stokes enviado e recebido, equivalente à Eq.~\ref{eq:erro_pol}. O modelo existe
+em dois pontos de operação. O de \textit{desenvolvimento} (banda acústica em
+40~Hz, deriva de 0,05~rad/s) foi escolhido por plausibilidade; o
+\textit{calibrado} vem das estatísticas de campo da Seção~\ref{sec:campo}: tom de
+60~Hz com harmônicos em 120 e 180~Hz \cite{peterson2004} e deriva de 0,02~rad/s,
+compatível com o expoente espectral medido por \citeasnoun{ramaswamy2026}. A
+rotação é estimada com 400 fótons de monitoramento por base, e o controle roda a
+cada 2~ms, com 40~ms de latência. O relógio sofre atraso térmico de
+40~ps/km/K, e a eficiência da porta de detecção de largura $W$, para um
+desalinhamento $\Delta$ e \textit{jitter} $\sigma$, é
+\begin{equation}
+\eta_g=\tfrac12\left[\mathrm{erf}\!\left(\frac{W/2-\Delta}{\sqrt2\,\sigma}\right)-\mathrm{erf}\!\left(\frac{-W/2-\Delta}{\sqrt2\,\sigma}\right)\right].
+\label{eq:porta}
+\end{equation}
+A coexistência com tráfego clássico injeta ruído Raman de potência
+$P_0e^{-\alpha L}\rho\,\Delta\lambda\,L$ no sentido direto e
+$P_0\rho\,\Delta\lambda\,(1-e^{-2\alpha L})/(2\alpha)$ no contrário
+\cite{chapuran2009,eraerds2010,peters2009}, e a QBER resultante é
+$[\tfrac12(N_R+N_d)+e_{\mathrm{opt}}N_s]/(N_s+N_R+N_d)$ para $N_s$ contagens de
+sinal, $N_R$ de Raman e $N_d$ de escuro; mistura de quatro ondas e modulação de
+fase cruzada não são modeladas.
+
+Em cada passo de rede, o OrionQ executa quatro etapas por fibra: compensação de
+polarização, com o supervisor aceitando, limitando ou recusando cada comando;
+sincronismo, com uma estimativa de \textit{offset} por segundo, obtida de 2.000
+fótons, e previsão 2~s à frente; ajuste do transmissor, pelo ator de taxa de
+chave ou pela configuração de comissionamento; e detecção de ataques sobre 17
+atributos, com a chave descartada enquanto um alarme estiver ativo. A alocação
+clássico-quântica é decidida pelo alocador aprendido na planta metropolitana em
+que ele foi treinado e, nas topologias de demonstração, pela referência
+quântico-primeiro. Esses laços são os avaliados nas
+Seções~\ref{sec:metodologia} e~\ref{sec:resultados}.
+
+\subsection{Distribuição de emaranhamento e repetidores}
+\label{sec:tec_emar}
+
+O OrionQ tem dois modelos de repetidor e pode usar um terceiro, externo. O
+primeiro é o gêmeo analítico do autor, em que cada par é um estado
+Bell-diagonal (Seção~\ref{sec:modelos}). A geração é anunciada no ponto médio
+de um vão de comprimento $L$, e cada braço, de comprimento $L/2$, tem eficiência
+$\eta_{\text{braço}}=\eta_{\mathrm{mem}}\,\kappa^2\,10^{-\alpha L/20}\,\eta_d$,
+com $\kappa$ o acoplamento em cada interface; a tentativa com um único fóton anunciado sucede com
+probabilidade $p=\tfrac12\eta_A\eta_B$ (o gêmeo usa anúncio por um único fóton;
+o esquema de Barrett--Kok \cite{barrett2005}, com $p^2$, não é representável no
+formalismo Bell-diagonal), e cada tentativa custa $k$ travessias do vão, com $k=4{,}1$
+medido contra o protocolo do SeQUeNCe. Cada memória é um canal de Pauli com taxas
+$e_i/T_{\mathrm{coh}}$, e troca, BBPSSW e DEJMPS são as rotinas do SeQUeNCe
+transcritas. O ambiente oferece seis primitivas --- esperar, gerar, purificar,
+trocar, entregar e descartar ---, e o relógio avança pela latência de cada uma.
+
+O segundo é a física de referência da plataforma, em estados de Werner, usada
+pelas sessões de protocolo. A transmissão de um vão é
+$\eta=10^{-(L\alpha+\mathrm{IL})/10}$, com perda de inserção IL e comprimento
+efetivo 20\% maior que o geodésico; a visibilidade
+$V=(4F-1)/3$ decai como $V(t)=V_0e^{-t/T}$ na memória; a troca produz
+$V'=V_1V_2(1-\varepsilon_{\mathrm{op}})$, equivalente à Eq.~\ref{eq:swap} sem erro
+de operação; e a purificação BBPSSW de pares desiguais, com $a=1-F_1$ e
+$b=1-F_2$, tem
+\begin{equation}
+p_s=F_1F_2+\frac{F_1b+F_2a}{3}+\frac{5ab}{9},\qquad
+F'=\frac{F_1F_2+ab/9}{p_s},
+\label{eq:bbpssw_ref}
+\end{equation}
+seguida do erro de operação, generalizando a Eq.~\ref{eq:bbpssw}. A probabilidade
+de anúncio inclui as eficiências dos detectores, o \textit{jitter} pela função
+erro e as contagens de escuro, e a medição de Bell em óptica linear sucede no
+máximo em metade das tentativas. Um resultado só é usado depois que o recibo
+clássico chega, com o atraso de propagação dos vãos; o par expira ao exceder o
+tempo de memória ou quando $F\le0{,}5$; a troca é feita à medida que os vãos
+ficam prontos, com no máximo uma purificação por par elementar; e o par é
+entregue se $F\ge0{,}7$. Os valores padrão (detectores de eficiência 0,8 com
+\textit{jitter} de 50~ps, 0,2~dB/km mais 2~dB de inserção, $10^5$ tentativas por
+segundo, coerência de 1~s, quatro memórias por nó, eficiência de escrita e
+leitura de 0,7, erro de operação de 0,005 na troca e de 0,01 na purificação) são
+hipóteses de engenharia declaradas; as sessões de demonstração usam oito
+memórias.
+
+O terceiro é o próprio SeQUeNCe \cite{wu2021}, que o OrionQ usa de duas formas:
+como planta do agente de roteamento, no lugar do gêmeo analítico, e, numa
+campanha separada, como executor da parte terrestre de uma rede, com geração de
+Barrett--Kok, reservas e protocolos nativos (Seção~\ref{sec:sequence}). O gêmeo do autor foi conferido contra o
+SeQUeNCe até $2{,}5\times10^{-12}$ (Seção~\ref{sec:modelos}); os componentes de
+transmissão, memória, troca, purificação e atraso da física de referência, em 22
+casos, sob protocolo congelado, com três sementes e intervalos de
+Clopper--Pearson \cite{clopper1934} com correção de Bonferroni, com erro máximo
+de fidelidade de $4{,}4\times10^{-16}$ e de tempo de 0,25~ps.
+
+O OrionQ decide o roteamento e a temporização sobre esses modelos. Para cada
+pedido, monta o ambiente do autor sobre o componente conexo da rede, com os
+comprimentos reais das fibras, e roda episódios com o agente revisado ou com a
+heurística gulosa de reserva; a rota do plano é o caminho mais frequente entre
+os episódios que entregaram. Fibras isoladas, em calibração, comprometidas ou
+desligadas saem do grafo. Nas sessões de protocolo, a plataforma agenda troca e
+purificação, aplica o limiar de entrega e administra reservas. A física de
+referência só representa estados de Werner (DEJMPS e \textit{hashing} não estão
+implementados), e o quadro de Pauli é acompanhado logicamente, sem correção
+física.
+
+\subsection{QKD de campo gêmeo}
+\label{sec:tec_tf}
+
+A QKD de campo gêmeo segue a variante de envio ou não envio. A sessão do Rio de
+Janeiro usa o modelo com pulsos finitos de \citeasnoun{jiang2019}; as demais
+sessões de campo gêmeo usam uma forma assintótica reduzida, em que o erro da
+janela X substitui o erro de fase. No modelo finito, cada braço tem transmitância
+$\eta_i=10^{-(1{,}2L_i\alpha+\mathrm{IL})/10}\,\eta_d$, multiplicada pela
+eficiência da porta temporal, com comprimento efetivo 20\% maior que o
+geodésico, e a simulação gera, por estratos de intensidade, as
+contagens de vácuo e de um só braço ($S_{00}$, $S_{01}$, $S_{10}$, $S_{02}$,
+$S_{20}$), a janela de fase X com desalinhamento $e_d$ e a janela Z. O
+processamento calcula intervalos de Chernoff para cada contagem e os limites
+\begin{gather}
+s_1^L=\frac{\mu_2^2e^{\mu_1}(S_{01}^L+S_{10}^L)-\mu_1^2e^{\mu_2}(S_{02}^U+S_{20}^U)-2(\mu_2^2-\mu_1^2)S_{00}^U}{2\mu_1\mu_2(\mu_2-\mu_1)},\nonumber\\
+e_1^{ph,U}=\frac{T_X^U-\tfrac12e^{-2\mu_1}S_{00}^L}{2\mu_1e^{-2\mu_1}s_1^L},
+\label{eq:sns}
+\end{gather}
+em que $\mu_1$ e $\mu_2$ são as intensidades fraca e forte e $T_X$ a taxa de
+erro da janela de fase. Com $n_1$ eventos de fóton único, limitado
+inferiormente a partir de $N_Z\,2p(1-p)\mu e^{-\mu}s_1^L$ para probabilidade de
+envio $p$, a chave é
+$\ell=\lfloor n_1[1-h(e_1^{ph,U})]-\mathrm{leak}-\log_2(2/\varepsilon_{\mathrm{cor}})-2\log_2[1/(\sqrt2\,\varepsilon_{\mathrm{PA}}\hat\varepsilon)]\rfloor$.
+Reconciliação, verificação e amplificação de privacidade por matrizes de Toeplitz
+são executadas, e o material é descartado em seguida. Fontes com intensidades,
+probabilidades de envio ou taxas diferentes são recusadas, porque a prova usada
+supõe fontes simétricas.
+
+O código não traz uma fórmula explícita em $\sqrt{\eta}$, nem calcula o limite da
+Eq.~\ref{eq:plob}; a dependência aparece porque, com braços simétricos, cada
+fóton atravessa metade do canal. Num oráculo independente, sobre contagens
+sintéticas agregadas, com $10^{12}$ pulsos, intensidades 0,1/0,4/0,4, detectores de eficiência 0,8, contagem de
+escuro de $10^{-10}$ por porta, 0,2~dB/km, desalinhamento de 0,15 e probabilidade
+de envio de 0,01, braços de 100~km dão cerca de $4{,}0\times10^{6}$ bits
+condicionais e braços de 200~km, cerca de $1{,}7\times10^{4}$, em três sementes.
+Dobrar a distância de 200 para 400~km reduz a transmitância por um fator
+$10^4$ e a chave por cerca de 240: mais perto da escala de raiz quadrada (fator
+100) do que da linear, provavelmente pelos efeitos de bloco finito e do ruído.
+Os limites $s_1^L$, $e_1^{ph,U}$ e $n_1$ calculados pelo processamento coincidem
+com os do oráculo dentro da tolerância de teste ($10^{-10}$), em três sementes de
+um caso de teste.
+Na rede de demonstração, a sessão do Rio de Janeiro processou cerca de 19 mil
+bits condicionais por fase de 60~s, e zero nos cenários degradado e
+indisponível. O OrionQ decide a admissão dos blocos e a disponibilidade da
+sessão; não otimiza as intensidades. Não há modelo nativo de campo gêmeo no
+SeQUeNCe nem validação externa.
+
+\subsection{QKD por emaranhamento e entrega de chaves}
+\label{sec:tec_bbm92}
+
+As sessões de satélite e entre satélites usam BBM92 \cite{bennett1992}. Os
+eventos de detecção marcados no tempo são alinhados pelo relógio e pelo tempo de
+voo, restritos ao intervalo em que as duas estações apontam e casados um a um,
+com descarte de portas ambíguas; a base Z forma a chave e a base X estima o erro.
+A reconciliação, em oito passadas no estilo Cascade, cobra dois bits por
+paridade revelada; uma etiqueta de verificação de 34 bits garante
+$\varepsilon=10^{-10}$; e a chave final segue a forma da Eq.~\ref{eq:finita}, com o
+termo de amostragem de Serfling de \citeasnoun{tomamichel2017},
+$\mu=\sqrt{(n+k)(k+1)\ln(1/\varepsilon)/(2nk^2)}$, e
+$\ell=\lfloor n[1-h(\hat e_X+\mu)]-\mathrm{leak}-v-2\log_2(1/\varepsilon_{\mathrm{PA}})\rfloor$,
+seguida de amplificação de privacidade por Toeplitz calculada por FFT. Os bits
+são condicionais: um único processo central vê as duas sequências, as sementes
+vêm de um gerador pseudoaleatório e não há prova composável.
+
+Fora da rede, uma bancada de laboratório emulada reproduz uma fonte de
+conversão paramétrica descendente (SPDC) com pares de Poisson a 40~kHz, detecção
+por braço de $0{,}7\times10^{-0{,}3}$, \textit{jitter} gaussiano de 60~ps, fundo de
+200~Hz e tempo morto de 30~ns, analisados numa janela de coincidência de 500~ps
+com acidentais estimadas por $R_aR_bW T$; ela não afirma emaranhamento e
+reproduz agregados experimentais públicos. Um gerador BB84 ideal de fóton único
+produz chaves de teste, abortando quando o limite superior do erro de fase passa
+de 0,11, e as entrega a aplicações por um subconjunto da interface ETSI GS QKD
+014 \cite{etsi014}: estado, \texttt{enc\_keys} e \texttt{dec\_keys}, sobre TLS
+com autenticação mútua, com chaves de 256 bits e até 64 por pedido. Dois
+gerenciadores de chaves independentes rodam em processos separados, com livros
+de registro próprios e reservas irreversíveis; 49 testes e 14 verificações de
+falha de entrega cobrem esse caminho. As chaves são material de teste.
+
+\subsection{Enlaces de satélite e entre satélites}
+\label{sec:tec_sat}
+
+As órbitas são de referência e hipotéticas: circular baixa (LEO) a 500~km e 60°
+de inclinação, com movimento médio $n=\sqrt{\mu_\oplus/r^3}$ e nodo escolhido
+para que o traço passe sobre a estação de referência; ponte em órbita média a
+10.000~km; e geoestacionária com raio $(\mu_\oplus/\Omega_\oplus^2)^{1/3}=42.164$~km.
+Um adaptador opcional propaga elementos orbitais públicos (TLE e OMM) por SGP4
+\cite{vallado2006}. Ele foi conferido contra o vetor de referência publicado e
+exercitado com dados reais fora da rede de demonstração: com efemérides públicas
+da CelesTrak, propagou 90 minutos da órbita da Estação Espacial Internacional; com
+o TLE público do nanossatélite Suomi~100 (época de 06/10/2026), previu a posição
+do satélite vista de Salvador às 14:08~UTC de 08/10/2026, abaixo do horizonte, a
+$-54{,}6^\circ$ de elevação. Essas previsões não foram comparadas com
+rastreamento medido. Da geometria saem elevação e azimute,
+máscara de elevação de 20° (10° numa das sessões), janelas de passagem por bissecção, deslocamento
+Doppler $\Delta f=-(v_r/c)(c/\lambda)$, tempo de voo $L/c$ e ângulo de
+apontamento à frente $\theta_{\mathrm{PA}}=2v_\perp/c$ \cite{han2018}.
+
+O orçamento óptico segue a Eq.~\ref{eq:geo}, com divergência limitada por
+difração, $\theta=\max(\theta_{\mathrm{cfg}},\lambda/(\pi D_T/2))$, e
+\textit{jitter} de apontamento gaussiano por eixo $\sigma$, que alarga o feixe
+efetivo para $w_{\mathrm{ef}}^2=w^2+4(L\sigma)^2$; desvios determinísticos de
+rastreamento, de apontamento à frente e de alinhamento entram por uma
+distribuição $\chi^2$ não central. A atmosfera transmite
+$e^{-\tau/\max(0{,}05,\sin\varepsilon)}$, a turbulência só penaliza o acoplamento em
+fibra monomodo, e o filtro espectral cobra o Doppler residual. A comparação com
+a referência de \citeasnoun{wallnofer2022} deu diferença relativa de
+$2{,}2\times10^{-8}$, e o apontamento à frente coincide com a expressão analítica
+até $3{,}6\times10^{-14}$~$\mu$rad. A Tabela~\ref{tab:micius} compara os parâmetros
+padrão com os do Micius. A polarização sofre uma rotação lenta, compensada de
+forma ideal com resíduo de 0,01~rad, que entra no erro como $\sin^2$ do resíduo;
+o \textit{jitter} de detecção é de 50~ps, a janela de coincidência de 1~ns, e a
+incerteza de relógio admitida, de até 1~$\mu$s: a plataforma não modela nem
+qualifica sincronismo abaixo de um nanossegundo.
+
+\begin{table}[ht]
+\centering
+\caption{Parâmetros dos enlaces de satélite do OrionQ e dos experimentos do
+Micius. As perdas do OrionQ são calculadas pela plataforma com os valores padrão,
+por braço e antes da eficiência dos detectores.}
+\label{tab:micius}
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{5.1cm}>{\raggedright\arraybackslash}p{5.3cm}}
+\toprule
+Parâmetro & Micius & OrionQ (padrão) \\
+\midrule
+Órbita & circular heliossíncrona, cerca de 500~km \cite{yin2017,lu2022} & circular hipotética a 500~km e 60°; GEO e MEO de referência \\
+Fonte de pares & 5,9 milhões/s, cerca de 810~nm \cite{yin2017} & 5 milhões/s, 850~nm \\
+Perda das descidas & 64--82~dB medidos nas duas descidas \cite{yin2017}; cerca de 35 e 75~dB estimados para uma e duas descidas a 1.000~km \cite{lu2022} & LEO: 23,6~dB por braço no zênite e 32,7~dB a 20° de elevação; GEO, com receptores de 4~m: cerca de 34 a 37~dB por braço \\
+Sincronismo & \textit{jitter} de 0,77~ns \cite{yin2017} e 0,529~ns \cite{liao2017} & \textit{jitter} de 50~ps simulado; janela de 1~ns; sem modelo de sincronismo \\
+Polarização & placas de onda motorizadas \cite{yin2017}; placa de meia-onda motorizada \cite{liao2017,lu2022} & compensação ideal com resíduo de 0,01~rad \\
+Apontamento à frente & demonstrado em transmissor terrestre \cite{han2018} & primeira ordem, compensado com resíduo configurável \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Na distribuição por duas descidas, os pares chegam como processo de Poisson,
+cada fóton sobrevive com a transmitância do seu braço, as marcas de tempo
+recebem o tempo de voo e o \textit{jitter}, e o ruído de fundo e de escuro e o
+tempo morto completam o fluxo, que segue o processamento BBM92 da
+Seção~\ref{sec:tec_bbm92}; QKD de descida com estados-isca não está
+implementada. Os enlaces entre satélites exigem linha de visada acima da
+atmosfera, alcance de até 90.000~km e campo de visão de 20~$\mu$rad, e são
+bloqueados por divergência de comprimento de onda, de codificação ou por
+obstrução da Terra. Um relé orbital hipotético, com memórias em dois satélites
+geoestacionários, 16 modos e coerência de 30~s, entregou 19 pares em três
+sementes e nenhum nos cenários degradado e indisponível.
+
+O OrionQ decide a disponibilidade de cada enlace (elevação, nuvens, apontamento,
+campo de visão e um intervalo comum em que as duas estações rastreiam o
+satélite), declara o estado do enlace a partir de dados de bordo recentes,
+roteia por satélite quando o enlace está disponível e explica o bloqueio quando
+não está, recusa demandas fim a fim compostas de sessões BBM92 independentes,
+reserva recursos por sessão e isola e restaura satélites. Ele anuncia janelas de
+observação, mas não envia comandos a nenhum equipamento. Numa ponte por órbita
+média, um bloco de 2~s produziu 46 coincidências com QBER nula, depois que o
+primeiro perfil testado (receptores de 2~m e \textit{jitter} de 2~$\mu$rad), que
+não produziu nenhuma, foi substituído pelo atual. As
+órbitas, os terminais e as fontes são hipotéticos, não há perturbações orbitais,
+refração nem exclusão solar, e nenhum desses modelos tem validação externa.
+
+\subsection{Canais clássicos e telemetria de satélite}
+\label{sec:tec_classica}
+
+Todo resultado quântico depende de comunicação clássica, e o OrionQ a modela
+explicitamente. Um salto de fibra atrasa a mensagem em $1{,}2L/(2\times10^5$~km/s$)$
+e um salto orbital em $L/c$; os resultados de geração, troca e chave só são
+admitidos quando o recibo clássico correspondente chega, e a transcrição pública
+do processamento de chave é marcada como não autenticada. Nas campanhas com o
+SeQUeNCe, esses recibos vêm do canal clássico nativo do simulador
+(Seção~\ref{sec:sequence}).
+
+Uma estação terrestre óptica entrega à plataforma quatro fluxos separados: dados
+de bordo (posição do satélite, válidos por até 5~s), rastreamento (até 60~s),
+marcas de tempo dos detectores, em picossegundos inteiros, e estado. Qualquer
+marca perdida invalida o bloco, e resultados pré-calculados, como QBER ou chave,
+são recusados, porque a plataforma recalcula tudo. A ingestão é autenticada,
+restrita à máquina local, limitada em clientes e tamanho de mensagem e protegida
+contra repetição e duplicação.
+
+A comunicação clássica de satélite também é tratada, sem estação própria nem
+enlace de rádio. O OrionQ tem um leitor de quadros no formato KISS e um
+decodificador do quadro de telemetria do nanossatélite Suomi~100, que recebem
+dados de missão por uma entrada autenticada própria. Para exercitá-los com dados
+reais, foram usados dois quadros de 96~bytes que uma estação pública da rede
+SatNOGS, em Taiwan, recebeu do Suomi~100 em 437,775~MHz em 08/10/2026, às 13:54 e
+13:55~UTC, e publicou na internet. A plataforma os baixou seis a sete minutos
+depois, preservou seus hashes, conferiu os dois códigos CRC de cada quadro e
+decodificou sua estrutura. Transportados por uma estação local emulada até a
+entrada de missão, os quadros passaram nos 17 casos de teste; enviados à entrada
+quântica, foram recusados como pacotes inválidos, como deveriam. Os valores
+decodificados permanecem brutos: as escalas não estão confirmadas, e o relógio
+de bordo aparece deslocado em cerca de sete anos, por causa não estabelecida.
+
+O OrionQ, portanto, não se comunicou com o satélite. Ele ingeriu e decodificou
+telemetria real recebida por terceiros e propagou a órbita do mesmo satélite a
+partir do TLE público. A recepção operacional de ponta a ponta --- rádio,
+demodulação, decodificação de protocolos espaciais e estação qualificada --- não
+foi demonstrada, e uma estação remota exigiria um \textit{proxy} com TLS.
+
+% =====================================================================
+\section{Controladores Integrados ao OrionQ}
+\label{sec:modelos}
+
+Os controladores que o OrionQ integra --- seis aprendidos e uma regra causal de
+blocagem --- foram desenvolvidos antes da plataforma, no qnet\_autopilot do autor, em duas versões: a de rede
+(compensação de polarização, alocação híbrida, roteamento e temporização,
+blocagem de chave) e a de QKD (ajuste da taxa de chave, sincronismo e
+classificação de ataques). Esta seção resume o que cada um decide, em que planta
+foi treinado e o que mostrou no ambiente de origem (Tabela~\ref{tab:controladores});
+os detalhes de treino estão nos pacotes do autor, incorporados ao repositório.
+No OrionQ, esses controladores são componentes opcionais: só agem depois de
+admitidos (Seção~\ref{sec:arquitetura}) e são reavaliados em laço fechado, em
+sementes novas (Seção~\ref{sec:resultados}).
+
+\begin{table}[ht]
+\centering
+\caption{Controladores integrados ao OrionQ e seus resultados no ambiente de
+origem (qnet\_autopilot).}
+\label{tab:controladores}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.9cm}>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{2.15cm}>{\raggedright\arraybackslash}p{3.6cm}}
+\toprule
+Controlador & Decide & Planta de treino & \textit{Baseline} & Resultado de origem \\
+\midrule
+Compensador de polarização (Ridge, MLP) & rotação a corrigir 40~ms à frente & fibra com deriva, dois pontos de operação & alfa-beta ressintonizado & QBER 0,0133 contra 0,0461 no ponto calibrado (3,5 vezes); pesos não se transferem entre pontos \\
+Alocador híbrido & fração da fibra liberada ao tráfego clássico & planta metropolitana com ruído Raman & admissão estática & 2,7 vezes a vazão clássica, a serviço de chave igualado \\
+Roteamento e temporização (ator-crítico) & gerar, purificar, trocar, entregar, descartar ou esperar & gêmeo Bell-diagonal, cadeia de quatro nós & heurística gulosa & não supera a heurística (resultado negativo) \\
+Blocagem de chave (regra causal) & fronteiras dos blocos de amplificação & fibra compensada & melhor temporizador & 7,9 vezes o melhor temporizador; sem prova de segurança \\
+Ator de taxa de chave (ator-crítico) & ajustes de $\mu$, $\nu$, \textit{clock} e fração de sinal & enlace \textit{decoy-state} de 25 a 80~km & comissionamento & +8,8\% a +18,9\% na chave provável \\
+Sincronizador (Ridge e termômetro) & \textit{offset} 2~s à frente & relógio com deriva térmica & alfa-beta & margem pequena, só com janela estreita e detector ruidoso \\
+Detector de ataques (\textit{gradient boosting}) & classe do período e alarme & sessões com ataques e excursões térmicas & limiar de QBER & F1 macro 0,830 contra 0,128; o limiar vê um de quatro ataques \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Física de origem e regras de avaliação}
+
+Treinar políticas exige milhares de episódios, e um simulador de eventos
+discretos completo é lento demais para isso. A física de rede do autor é, por
+isso, uma transcrição em forma fechada das rotinas de estados Bell-diagonais do
+SeQUeNCe \cite{wu2021}, que mantém os nomes de variáveis e as assinaturas do
+simulador para que as duas implementações possam ser lidas lado a lado. A
+transcrição foi conferida em três níveis: cada rotina contra a chamada
+correspondente do SeQUeNCe; trajetórias inteiras, com cada par vivo reconstruído
+a partir de objetos do simulador, em que a maior discrepância em 212 passos (91
+gerações, 22 purificações, 46 trocas e 7 entregas) foi $2{,}5\times10^{-12}$,
+enquanto dois controles negativos produziram divergências acima de $10^{-3}$; e
+a política treinada dirigindo os protocolos do próprio simulador. Esse confronto
+revelou dois parâmetros que o SeQUeNCe~1.0.0 aceita e ignora em silêncio, a
+fidelidade de porta e o tempo de coerência ajustado depois da construção da
+memória, ambos com resultados otimistas sem erro.
+
+Quatro regras valem para todos os controladores. Nenhum controlador vê a
+verdade: recebe estimativas, como as binomiais dos fótons de monitoramento, e
+colunas de verdade ficam num espaço de nomes que a construção de janelas recusa.
+Todo \textit{baseline} é ressintonizado em cada ponto de operação. Sementes de
+teste são disjuntas das de treino e de ajuste, a divisão temporal é cronológica
+com intervalo de guarda, e a dos dados de ataque é por episódio. E todo número
+de destaque traz intervalo de confiança de 95\% por \textit{bootstrap} sobre
+sementes, com o melhor temporizador escolhido com retrospectiva refeito em cada
+reamostragem quando ele é o \textit{baseline}. Resultados negativos são
+reportados como tais.
+
+\subsection{Controladores de rede}
+\label{sec:rede}
+
+\label{sec:compensador}
+\textbf{Compensação de polarização.} O compensador recebe uma janela de
+estimativas recentes da rotação, expressas como incrementos relativos ao instante
+atual, e prevê a rotação uma latência de controle (40~ms) à frente; o comando é
+convertido em ângulos de uma cascata de retardadores com curso finito,
+velocidade finita e reset sem fim \cite{noe1988}. No ponto de desenvolvimento, o
+Ridge (preditor de Wiener) ficou em QBER média 0,0077 e o alfa-beta
+ressintonizado em 0,0383, 5,2 vezes acima (IC 95\% 4,7--5,8); a persistência foi pior que não
+compensar, porque aplica uma correção que a vibração já tornou obsoleta. No ponto
+calibrado, com os preditores retreinados e o filtro ressintonizado, o Ridge ficou
+em 0,0133 e o alfa-beta em 0,0461 (3,47 vezes; IC 95\% 3,28--3,71), e os modelos
+treinados no ponto de desenvolvimento e transplantados chegaram a 0,26--0,27,
+quatro vezes pior que não compensar: o que se transfere é a receita de treino,
+não os pesos. A vantagem exige um atuador acima de 250~rad/s; entre 120 e
+250~rad/s os dois empatam, e abaixo disso o filtro vence. Um modelo único treinado
+sobre 45--180~Hz ficou pior que o alfa-beta (0,0615 contra 0,0480), o que indica
+uma família de modelos de faixa estreita com um seletor. No porte para ponto
+fixo, 16 bits bastam (o Ridge fica em 0,98 vez a QBER do modelo em ponto
+flutuante e exige 144 multiplicações-acumulações por inferência; um único
+multiplicador-acumulador serial a 100~MHz resolve sua parte linear em
+1,4~$\mu$s, contra um período de 2~ms), e 12 bits levam ao nível da
+persistência; o Verilog gerado foi simulado e sintetizado depois, no OrionQ
+(Seção~\ref{sec:rtl}).
+
+\label{sec:alocador}
+\textbf{Alocação híbrida.} A alocação é tratada como admissão: que fração da
+fibra liberar ao tráfego clássico, sabendo que o ruído Raman eleva a QBER e que o
+serviço de chave é avaliado pela Eq.~\ref{eq:finita}. A serviço de chave
+igualado, o alocador entrega 2,7 vezes a vazão clássica da admissão estática
+(IC 95\% 2,6--2,9, com as fronteiras retraçadas em cada reamostragem); o ganho
+vem da lei de controle, e não do componente de previsão.
+
+\label{sec:roteamento}
+\textbf{Roteamento e temporização.} Roteamento e temporização de repetidor formam
+um único processo de decisão de Markov sobre as seis primitivas do ambiente
+(Seção~\ref{sec:tec_emar}), com 11 características globais e 23 por ação, e a
+política é um ator-crítico com vantagem generalizada \cite{schulman2016,mnih2016}.
+O primeiro resultado veio da conferência com o simulador: o ambiente cobrava uma
+travessia do vão por tentativa de anúncio, e o protocolo do SeQUeNCe cobra 4,1
+vezes esse tempo, porque a tentativa é uma negociação de várias mensagens.
+Corrigido o custo, a vantagem de roteamento medida antes desapareceu, e o agente
+passou a empatar com as melhores heurísticas nos prazos nominais; como o
+parâmetro estava nos ambientes de treino e de teste, nenhuma avaliação interna
+poderia tê-lo revelado. Com prazos quatro vezes maiores e uma cobrança invariante
+ao prazo, a melhor semente fica em $-0{,}012\pm0{,}014$ entrega contra a
+heurística gulosa: um empate. O agente não é melhor que a heurística, e é
+apresentado como resultado negativo.
+
+\label{sec:blocagem}
+\textbf{Blocagem de chave.} O controlador de blocagem escolhe as fronteiras dos
+blocos de amplificação de privacidade a partir de uma consequência da
+Eq.~\ref{eq:finita}: como a chave de um bloco depende só do número de bits e da
+taxa média de erro, janelas boas separadas no tempo podem ser liquidadas juntas.
+Vendo apenas os 10\% de bits publicados para estimar parâmetros, ele compara a
+cada instante encerrar o bloco, seguir com ele ou pular o segmento, sem constante
+de ajuste. Num enlace compensado por persistência (QBER 0,134), temporizadores de
+5~s ou mais produzem zero bit, e o controlador entrega 4.075~bit/s, 7,9 vezes o
+melhor temporizador escolhido com retrospectiva (IC 6,9--9,0). É uma afirmação de
+contabilidade: a sinalização entre as pontas não foi modelada, e não há prova de
+segurança para blocos não contíguos.
+
+\subsection{Controladores de enlace QKD}
+\label{sec:qkd}
+
+Um enlace de QKD implantado costuma monitorar a si mesmo pela QBER, que dispara
+tarde, dispara por causa do ambiente e não enxerga ataques que não perturbam a
+taxa de erro. Os três controladores de QKD usam apenas os observáveis que as
+duas pontas já publicam (ganhos e erros por intensidade, contagem de vácuo e os
+limites da Eq.~\ref{eq:isca}), mais um termômetro no cabo.
+
+\label{sec:detector}
+\textbf{Classificação de ataques.} Dezessete atributos por período, relativos à
+linha de base do episódio, alimentam um classificador; o discriminador térmico é
+a correlação entre o erro e $|dT/dt|$, que um espião não tem. Em 168 episódios
+(22.680 períodos pontuados em teste), o limiar de QBER calibrado para 1\% de
+alarme falso detecta 27\% dos períodos de \textit{intercept-and-resend}, 4\% dos
+de PNS e 11\% dos de cegamento --- um de quatro ataques ---, com F1 macro de
+0,128; o \textit{gradient boosting} chega a 0,830, e o divisor de feixe, sem
+assinatura física, fica corretamente como normal em 91\% dos períodos. Sem os
+observáveis de isca, o \textit{recall} do PNS cai de 0,749 para 0,400; sem o
+termômetro, o da deriva térmica cai à metade e os alarmes falsos se multiplicam
+por nove. O achado operacional central é que a precisão sob prior realista é
+governada pela taxa de decisão, e não pelo modelo: com período de 5~s e limiar
+calibrado fora do ajuste, a precisão sob prior de 1\% passa de 0,22 para 1,00, ao
+custo de dezenas de segundos de atraso.
+
+\label{sec:taxa}
+\textbf{Ajuste da taxa de chave.} O ajuste do transmissor é uma decisão
+sequencial com 16 entradas e nove ações limitadas sobre $\mu$, $\nu$, o
+\textit{clock} e a fração de pulsos de sinal, e a recompensa é a chave que se
+consegue provar no período com contagens finitas. Treinado sorteando o vão entre
+25 e 80~km, o agente ganhou de 18,9\% (25~km) a 8,8\% (80~km) sobre a
+configuração de comissionamento e recuperou mais de 90\% da distância até um
+oráculo que reotimiza com o canal verdadeiro até 50~km, mas só 19\% a 80~km. Duas
+entradas absolutas do regime de perda foram decisivas, porque uma queda de 20\%
+no ganho é idêntica em 25 e 80~km e exige movimentos opostos; o comportamento é
+interpretável, com a isca no piso ($\nu\approx0{,}011$) em vãos curtos e em
+$\nu\approx0{,}25$ a 80~km.
+
+\label{sec:sincronismo}
+\textbf{Sincronismo temporal.} O atraso termo-óptico de 40~ps/km/K desloca a
+chegada do pulso em 2~ns por kelvin em 50~km, dez vezes a janela típica de uma
+porta de detecção (Eq.~\ref{eq:porta}). Pontuados pela taxa de chave que
+sobrevive, um enlace sem rastreamento perde 85\% da chave em uma hora com
+detector silencioso e toda ela com detector ruidoso; o Ridge com termômetro só se
+destaca do alfa-beta com janela estreita e detector ruidoso (0,998 contra
+0,948~Mbit/s com janela de 200~ps e $10^6$ contagens de escuro por segundo),
+porque só ele vê a variação de temperatura.
+
+\subsection{Validação com dados da rede de Cambridge}
+\label{sec:cambridge}
+
+Para confrontar a física com uma rede implantada, foram usados os dados
+publicados da rede quântica de Cambridge \cite{dynes2019}\footnote{Dados sob
+licença CC-BY em \url{https://doi.org/10.17863/CAM.44524}.}: 575 instantâneos
+diários, de novembro de 2016 a julho de 2018, da taxa de chave e da QBER do
+enlace CAPE--TREL (10,6~km, 3,9~dB; BB84 com estados-isca a 1~GHz), e seis medidas
+da QBER contra a potência de um canal clássico de 100~Gbit/s na mesma fibra
+(Figura~\ref{fig:cambridge}). Com 60 dias de comissionamento e orçamento de 1\%
+de alarme falso, o limiar de QBER disparou em 16,5\% dos 515 dias benignos
+seguintes. Ao longo de uma excursão de agosto a setembro de 2017, a inclinação
+$d\ln R/dE_\mu$ medida foi $-31{,}8\pm1{,}1$, contra $-33{,}7$ previstos pelo modelo
+com $f=1{,}16$, 6\% mais íngreme. A forma linear em miliwatts prevista pelo
+espalhamento Raman ajusta as medidas de coexistência ($\chi^2=0{,}80$ com 4 graus
+de liberdade), e a QBER constante é rejeitada ($p=0{,}0005$); a magnitude medida
+do ruído Raman é 88 vezes menor que a assumida por padrão. No ponto publicado, a Eq.~\ref{eq:finita}
+dá 0,6170 bit secreto por bit peneirado, contra 0,6472 do limite assintótico, e
+a correção de fóton único para pulsos coerentes mostra que o limite ideal é de
+1,8 a 2,2 vezes otimista.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\textwidth]{figuras/qkd_cambridge.png}
+\caption{Enlace CAPE--TREL da rede de Cambridge. (a) QBER diária; em cinza, os 60
+dias de comissionamento; tracejado, o limiar calibrado para 1\% de alarme falso;
+pontos, os dias em que ele dispara. (b) Taxa de chave contra QBER, com a
+inclinação medida na excursão de agosto--setembro de 2017 e a prevista pelo
+modelo. (c) QBER contra a potência clássica recebida, com o ajuste linear em
+miliwatts e a hipótese de QBER constante. Dados de \cite{dynes2019}.}
+\label{fig:cambridge}
+\end{figure}
+
+% =====================================================================
+\section{Avaliação do OrionQ: Metodologia}
 \label{sec:metodologia}
 
 \subsection{Níveis de evidência}
@@ -1461,14 +1526,17 @@ engenharia, não testes de significância.
 \textbf{As plantas dos modelos.} As duas versões do qnet\_autopilot que
 produziram os pesos --- a de rede (roteamento, compensador e alocador) e a de
 QKD (ator de taxa de chave, sincronizador e detector) --- foram incorporadas ao
-repositório do ORION-Q como pacotes independentes, copiados byte a byte a partir
+repositório do OrionQ como pacotes independentes, copiados byte a byte a partir
 dos arquivos do autor, com um manifesto que registra o hash de cada arquivo;
 só as poucas importações absolutas foram renomeadas, para que as duas versões
-convivam no mesmo processo. As suítes do autor passam sobre as cópias (878 e 926
+convivam no mesmo processo, e quatro arquivos de compatibilidade receberam um
+\textit{patch} documentado, que impede que um substituto mínimo do gmpy2 seja
+tomado por uma instalação completa e não altera física, dados de referência nem
+pesos. As suítes do autor passam sobre as cópias (878 e 926
 testes, com o SeQUeNCe onde é exigido). Os registros de resultado do autor
 (tabelas e \textit{logs}, sem \textit{pickles}) também foram incorporados, como
 referência dos portões descritos a seguir. Com isso, cada laço fechado do
-ORION-Q roda sobre a planta em que o modelo foi treinado, e não sobre um
+OrionQ roda sobre a planta em que o modelo foi treinado, e não sobre um
 produtor escrito para a plataforma. A planta da polarização é uma transcrição do
 modelo de fibra (tom com harmônicos, deriva térmica de Ornstein-Uhlenbeck,
 saltos, monitoramento com 400 fótons por base reprojetado em SO(3)); a mesma
@@ -1479,14 +1547,14 @@ plantas são o próprio código do autor.
 (i) Um contrato admite o modelo só na planta que seus metadados declaram e
 recusa qualquer diferença (fibra, período, horizonte, fótons; caixa de ações e
 tempo morto; vão de treino; plano de enlaces; topologia e custos).
-(ii) O ORION-Q entrega ao modelo apenas o que um controlador real veria (a
+(ii) O OrionQ entrega ao modelo apenas o que um controlador real veria (a
 estimativa de rotação, os observáveis publicados do período anterior, a
 estimativa do atraso, a telemetria da planta metropolitana, as características
 do estado e das ações legais), nunca o estado oculto da planta.
 (iii) Um supervisor fica entre o modelo e a planta; quando o modelo é recusado,
 um controlador de reserva assume (filtro alfa-beta, manutenção dos parâmetros,
 quântico-primeiro, heurística gulosa).
-(iv) Antes de qualquer pontuação, a campanha regenera pela réplica do ORION-Q
+(iv) Antes de qualquer pontuação, a campanha regenera pela réplica do OrionQ
 resultados que o autor publicou ou exportou --- episódios inteiros, tabelas do
 manuscrito ou valores declarados nos metadados --- e para se algum não for
 reproduzido.
@@ -1495,7 +1563,7 @@ novas, disjuntas das de treino, validação e teste do autor; as comparações u
 o teste de permutação de sinais pareado e exato, com correção de Holm, e
 intervalos por \textit{bootstrap} sobre sementes.
 
-\textbf{Compensador de polarização.} O compensador ganhou no ORION-Q um alvo de
+\textbf{Compensador de polarização.} O compensador ganhou no OrionQ um alvo de
 controle próprio, separado da política do repetidor. A cada 2~ms, o controlador
 recebe a estimativa de rotação e as covariáveis e propõe a rotação da fibra
 40~ms à frente. O supervisor recusa propostas não finitas ou fora de SO(3) e
@@ -1528,13 +1596,13 @@ próprio autor.
 \textbf{Ator de taxa de chave e sincronizador.} O ator roda no ambiente
 \textit{decoy-state} do autor no ponto de referência (50~km nominais, 1~dB de
 perda extra, tempo morto de 50~ns, 240 períodos de 1~s por episódio), nos vãos
-de 25, 35, 50, 65 e 80~km. A cada período, o ORION-Q pede à réplica um dos nove
+de 25, 35, 50, 65 e 80~km. A cada período, o OrionQ pede à réplica um dos nove
 ajustes limitados e confere, bit a bit, que os parâmetros adotados pela planta
 são os propostos. O sincronizador roda no laço de porta do autor a 50~km, com
 2.000 fótons por estimativa e 2~s de latência; as sete primeiras atualizações
 usam a regra de aquecimento do próprio autor, registrada. Os portões regeneram
-o episódio exportado de 40 períodos e as Tabelas~\ref{tab:taxa}
-e~\ref{tab:sinc}. As sementes novas são 950000--950019 (taxa de chave) e
+o episódio exportado de 40 períodos e as tabelas publicadas do ator e do
+sincronizador. As sementes novas são 950000--950019 (taxa de chave) e
 600--619 (sincronismo); as hipóteses são unilaterais, ator contra comissionamento
 por vão e Ridge contra alfa-beta por janela e contagem de escuro.
 
@@ -1558,7 +1626,7 @@ requisições reproduza a primeira campanha.
 \textbf{Detector.} O detector é um monitor e não fecha laço: o que se avalia é
 se a réplica é o detector do autor e como ele se sai em sessões que ninguém usou.
 O portão regenera o conjunto de sessões do autor e reproduz as métricas por
-classe da Tabela~\ref{tab:detector}, as tabelas do divisor de feixe, dos casos
+classe publicadas pelo autor, as tabelas do divisor de feixe, dos casos
 difíceis e da confusão e as duas calibrações, com as funções de pontuação do
 próprio autor sobre a réplica. A avaliação usa dois conjuntos novos de 168
 episódios. O gerador dá ao episódio $i$ do conjunto de semente $s$ o fluxo
@@ -1576,7 +1644,7 @@ que as 15 variáveis sem antecipação sejam idênticas bit a bit.
 
 \textbf{Ponto fixo.} O porte do compensador para ponto fixo
 (Seção~\ref{sec:compensador}) foi medido pelo autor só no ponto de desenvolvimento.
-No ORION-Q, os compensadores são reconstruídos a partir dos \textit{arrays} do
+No OrionQ, os compensadores são reconstruídos a partir dos \textit{arrays} do
 pacote e passam pela quantização do próprio autor; o portão regenera a varredura
 de largura de palavra do autor, linha a linha. Os formatos são calibrados nas
 sementes de ajuste, e cada configuração roda nas 20 sementes de avaliação, com a
@@ -1587,9 +1655,9 @@ em relação ao ponto flutuante (Holm sobre quatro casos).
 
 \textbf{Blocagem.} O controlador de blocagem (Seção~\ref{sec:blocagem}), na versão
 que pode pular segmentos, liquida a QBER por amostra do laço supervisionado do
-ORION-Q, nas mesmas 20 sementes e com os mesmos compensadores, contra
+OrionQ, nas mesmas 20 sementes e com os mesmos compensadores, contra
 temporizadores de 0,1 a 20~s e os dois oráculos do autor. Os portões regeneram,
-pelo laço do ORION-Q, a tabela de blocagem do autor nas suas 12 sementes e, pelo
+pelo laço do OrionQ, a tabela de blocagem do autor nas suas 12 sementes e, pelo
 laço do autor, a de estresse sob vibração crescente. O melhor temporizador é
 escolhido com retrospectiva, a favor dele. Com persistência, a hipótese é de
 superioridade sobre o melhor temporizador; com os compensadores aprendidos, de não
@@ -1603,8 +1671,14 @@ autor e sintetizado no Yosys para a família Xilinx~7 (mapeamento lógico, sem
 posicionamento nem análise de tempo).
 
 % =====================================================================
-\section{Avaliação na Plataforma: Resultados}
+\section{Avaliação do OrionQ: Resultados}
 \label{sec:resultados}
+
+Os resultados estão organizados pelas capacidades que demonstram: a
+fidelidade da integração (paridade e reprodução dos resultados publicados), o
+monitoramento em modo \textit{shadow}, o controle em laço fechado de cada função
+nas plantas de treino, o monitoramento de ataques, o controle de redes executadas
+pelo SeQUeNCe, o \textit{hardware} e, por fim, o desempenho da plataforma.
 
 \subsection{Paridade}
 
@@ -1613,6 +1687,43 @@ pacotes nos volumes indicados na Tabela~\ref{tab:admissao}; no detector, as sete
 sessões de exemplo exportadas saíram idênticas byte a byte, entrada, gabarito e
 saída. A paridade confirma que a plataforma executa os modelos
 como foram entregues; ela não é evidência de desempenho.
+
+\subsection{Reprodução dos resultados publicados}
+
+Antes de qualquer pontuação em sementes novas, cada campanha regenerou pela
+réplica do OrionQ, na planta do autor, resultados que o próprio autor publicou
+ou exportou (Tabela~\ref{tab:portoes}). Nenhum portão falhou. Dois detalhes
+tornaram a reprodução possível e não estavam documentados como tal: o exemplo
+exportado do ator de taxa de chave amostra com um gerador separado, semeado com
+a semente do episódio, e as tabelas de avaliação do autor usam o gerador de uma
+política recém-construída; conhecidas essas convenções, as ações sorteadas
+também se reproduzem, o que a paridade \textit{offline} não conferia. No
+sincronismo, o \textit{script} do autor reajusta o Ridge com ruído de medida sem
+semente, de modo que os coeficientes exportados diferem dos da tabela em até
+0,013; mesmo assim, as 24 entradas se reproduzem na precisão publicada.
+
+\begin{table}[ht]
+\centering
+\caption{Portões de reprodução: resultados do autor regenerados pelo OrionQ
+na planta de origem antes de cada campanha.}
+\label{tab:portoes}
+\small
+\begin{tabular}{p{3.2cm}p{7.6cm}p{2.6cm}}
+\toprule
+Componente & Resultado regenerado & Divergência \\
+\midrule
+Compensador & QBER retida declarada nos metadados, 2 pontos (6 e 8 sementes) & $\leq 6\times10^{-17}$ \\
+Compensador + atuador & varredura de velocidade do autor: 4 compensadores $\times$ 9 dispositivos & $\leq 3\times10^{-17}$ \\
+Ator de taxa de chave & episódio exportado de 40 períodos (ações sorteadas, parâmetros, bits de chave) & 0 \\
+ & tabela publicada: 15 médias e desvios & na precisão publicada \\
+Sincronizador & tabela publicada: 24 entradas, 4 sincronizadores & na precisão publicada \\
+Alocador & 4 episódios exportados e o ponto de cobertura 1 da fronteira com chave finita & 0 \\
+Roteamento & 2.091 decisões dos 48 episódios exportados; 2 tabelas retidas & 0 e $6\times10^{-17}$ \\
+Compensador em ponto fixo & varredura de largura de palavra do autor: 20 linhas $\times$ 10 colunas & $3\times10^{-16}$ (relativa) \\
+Detector & 7 sessões exportadas; métricas por classe de 4 detectores publicados (240 valores), divisor de feixe, casos difíceis, confusão e calibrações & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Campanhas shadow}
 
@@ -1655,13 +1766,13 @@ repetiu a QBER retida declarada pelo Ridge (0,0132653151857) e pelo MLP
 (0,0136375117637) com diferença da ordem de $10^{-16}$. A ressintonia escolheu
 $\alpha=0{,}01$ e $\beta=0$, o que torna o filtro uma persistência suavizada. Com
 40~ms de atraso, 2,4 períodos do tom de 60~Hz, estimar velocidade não ajuda. Nas
-sementes da Tabela~\ref{tab:comp_cal}, esse filtro chega a 0,0441, contra
+sementes da comparação original no ponto calibrado, esse filtro chega a 0,0441, contra
 0,0461 do filtro ressintonizado na grade original: o \textit{baseline} desta
 campanha é mais forte que o do manuscrito.
 
 \begin{table}[ht]
 \centering
-\caption{Compensação em laço fechado supervisionado no ORION-Q, ponto calibrado:
+\caption{Compensação em laço fechado supervisionado no OrionQ, ponto calibrado:
 20 sementes novas de 20~s. IC de 95\% por \textit{bootstrap} sobre sementes.
 Disp.\ é a fração do tempo com QBER abaixo de 11\%; a chave é a taxa
 assintótica do BB84 com taxa peneirada de 100~kbit/s; o resíduo é o ângulo
@@ -1687,8 +1798,8 @@ ficou 3,33 vezes menor (IC 95\% 3,24--3,42) e a do MLP, 3,24 vezes menor
 (3,16--3,33); contra a ausência de compensação, 6,4 e 6,2 vezes; contra a
 persistência, 9,3 e 9,1 vezes. Nas seis comparações o $p$ exato foi $2^{-20}$
 (o menor possível com 20 sementes) e o $p$ de Holm, $5{,}7\times10^{-6}$. A
-razão contra o alfa-beta fica próxima da registrada no qnet\_autopilot (3,47,
-Tabela~\ref{tab:comp_cal}), agora com sementes novas, um \textit{baseline} mais
+razão contra o alfa-beta fica próxima da registrada no qnet\_autopilot (3,47;
+Seção~\ref{sec:compensador}), agora com sementes novas, um \textit{baseline} mais
 forte e o supervisor no caminho. A taxa de chave do Ridge foi 1,6 vez a do
 alfa-beta. Na planta certa, o MLP empatou com o Ridge (2,6\% acima), como no
 ambiente de origem, e não perdeu em todas as sementes como nas campanhas
@@ -1709,7 +1820,7 @@ desenvolvimento e recusou os calibrados; a reprodução da QBER retida declarada
 ficou abaixo de $10^{-16}$; e o Ridge (0,0076) e o MLP (0,0072) ficaram 4,75 e
 5,00 vezes abaixo do alfa-beta ressintonizado (0,0361; IC 95\% 4,53--4,96 e
 4,78--5,24), em 20 de 20 sementes, dentro da faixa do manuscrito (5,2; IC
-4,7--5,8, Tabela~\ref{tab:comp_dev}).
+4,7--5,8; Seção~\ref{sec:compensador}).
 
 \begin{table}[ht]
 \centering
@@ -1746,48 +1857,43 @@ filtro ressintonizado por dispositivo, a vantagem já é significativa a
 250~rad/s. Os \textit{resets} disparam com frequência sob o preditor, mas ocupam
 no máximo 3\% do tempo e não mudam a ordenação.
 
-\subsection{Reprodução dos resultados publicados}
-
-Antes de qualquer pontuação em sementes novas, cada campanha regenerou pela
-réplica do ORION-Q, na planta do autor, resultados que o próprio autor publicou
-ou exportou (Tabela~\ref{tab:portoes}). Nenhum portão falhou. Dois detalhes
-tornaram a reprodução possível e não estavam documentados como tal: o exemplo
-exportado do ator de taxa de chave amostra com um gerador separado, semeado com
-a semente do episódio, e as tabelas de avaliação do autor usam o gerador de uma
-política recém-construída; conhecidas essas convenções, as ações sorteadas
-também se reproduzem, o que a paridade \textit{offline} não conferia. No
-sincronismo, o \textit{script} do autor reajusta o Ridge com ruído de medida sem
-semente, de modo que os coeficientes exportados diferem dos da tabela em até
-0,013; mesmo assim, as 24 entradas se reproduzem na precisão publicada.
+\subsection{Compensador em ponto fixo}
+\label{sec:quant}
 
 \begin{table}[ht]
 \centering
-\caption{Portões de reprodução: resultados do autor regenerados pelo ORION-Q
-na planta de origem antes de cada campanha.}
-\label{tab:portoes}
+\caption{Compensador em ponto fixo no laço do OrionQ: QBER média em ponto fixo
+dividida pela do ponto flutuante, 20 sementes novas. Entre parênteses, IC 95\%.}
+\label{tab:quant}
 \small
-\begin{tabular}{p{3.2cm}p{7.6cm}p{2.6cm}}
+\begin{tabular}{llcccc}
 \toprule
-Componente & Resultado regenerado & Divergência \\
+Ponto & Modelo & 16 bits, CORDIC 8 & 16 bits, CORDIC 16 & 14 bits & 12 bits \\
 \midrule
-Compensador & QBER retida declarada nos metadados, 2 pontos (6 e 8 sementes) & $\leq 6\times10^{-17}$ \\
-Compensador + atuador & varredura de velocidade do autor: 4 compensadores $\times$ 9 dispositivos & $\leq 3\times10^{-17}$ \\
-Ator de taxa de chave & episódio exportado de 40 períodos (ações sorteadas, parâmetros, bits de chave) & 0 \\
- & Tabela~\ref{tab:taxa}: 15 médias e desvios & na precisão publicada \\
-Sincronizador & Tabela~\ref{tab:sinc}: 24 entradas, 4 sincronizadores & na precisão publicada \\
-Alocador & 4 episódios exportados e o ponto de cobertura 1 da fronteira com chave finita & 0 \\
-Roteamento & 2.091 decisões dos 48 episódios exportados; 2 tabelas retidas & 0 e $6\times10^{-17}$ \\
-Compensador em ponto fixo & varredura de largura de palavra do autor: 20 linhas $\times$ 10 colunas & $3\times10^{-16}$ (relativa) \\
-Detector & 7 sessões exportadas; métricas por classe de 4 detectores da Tabela~\ref{tab:detector} (240 valores), divisor de feixe, casos difíceis, confusão e calibrações & 0 \\
+Calibrado & Ridge & 1,001 (0,995--1,007) & 1,000 & 1,136 & 9,0 \\
+ & MLP & 0,999 (0,994--1,005) & 0,999 & 1,143 & 8,1 \\
+Desenvolv. & Ridge & 1,010 (0,994--1,028) & 1,009 & 1,208 & 19,3 \\
+ & MLP & 1,038 (1,025--1,051) & 1,037 & 1,002 & 23,0 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+A réplica regenerou a varredura do autor com erro relativo de $3\times10^{-16}$, e
+o compensador reconstruído dos \textit{arrays} coincidiu com a réplica do OrionQ e
+com as campanhas em laço fechado. Nos dois pontos e em sementes novas, 16 bits
+bastam (Tabela~\ref{tab:quant}): com a configuração do RTL, o ponto fixo fica a
+menos de 1\% do ponto flutuante no ponto calibrado e a até 3,8\% no de
+desenvolvimento, não inferior com margem de 5\% nos quatro casos ($p$ de Holm
+$\leq 0{,}046$), e vence o alfa-beta em todas as sementes. O degrau que o autor
+encontrou entre 12 e 14 bits se repete: a 14 bits o custo vai de 0,2\% a 21\%, e
+a 12 bits o laço colapsa e perde para o alfa-beta em todas as sementes. Oito
+estágios de CORDIC custam cerca de 0,1\% em relação a dezesseis.
 
 \subsection{Taxa de chave e sincronismo em laço fechado}
 
 \begin{table}[ht]
 \centering
-\caption{Ator de taxa de chave em laço fechado no ORION-Q: 20 episódios novos de
+\caption{Ator de taxa de chave em laço fechado no OrionQ: 20 episódios novos de
 240~s por vão (Mbit/s). O oráculo lê o canal verdadeiro e é só referência.}
 \label{tab:taxa_lf}
 \small
@@ -1808,7 +1914,7 @@ Em sementes novas, o ator supera a configuração de comissionamento de 25 a
 65~km, com ganho de 13,6\% a 20,8\% e vitória em 17 ou 18 de 20 episódios,
 fechando de 75\% a 81\% da distância até o oráculo (Tabela~\ref{tab:taxa_lf}).
 A 80~km a vantagem média (8,2\%) não se distingue de zero, e a lacuna fechada
-cai para 21\%, o que concorda com os 19\% da Tabela~\ref{tab:taxa}. O
+cai para 21\%, o que concorda com os 19\% do ambiente de origem. O
 comportamento aprendido é o descrito na Seção~\ref{sec:taxa}: nos vãos curtos a
 isca termina no piso ($\nu\approx0{,}011$) e a fração de pulsos de sinal sobe;
 a 80~km a isca sobe a $\nu\approx0{,}27$. Em 24.000 períodos, todas as
@@ -1826,6 +1932,7 @@ rastreamento em si: sem correção, a chave fica 72\% a 90\% abaixo com detector
 silencioso e vai a zero com detector ruidoso.
 
 \subsection{Alocação e roteamento em laço fechado}
+\label{sec:aloc_rot_lf}
 
 \begin{table}[ht]
 \centering
@@ -1915,6 +2022,46 @@ quádruplo ($p$ de Holm 0,004). Neste, as duas políticas seguem a mesma trajet�
 em 892 das 1.000 requisições; nas que diferem, a heurística entrega em 13 e o
 agente em nenhuma. O empate do prazo longo é, portanto, um resultado do gêmeo.
 
+\subsection{Blocagem de chave no laço}
+\label{sec:bloc_lf}
+
+\begin{table}[ht]
+\centering
+\caption{Blocagem de chave no laço supervisionado do OrionQ: chave média (bit/s)
+em 20 sementes novas. Razão: controlador sobre o melhor temporizador, com IC 95\%.}
+\label{tab:bloc_lf}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcrrc}
+\toprule
+Ponto & Compensador & QBER & Melhor temporizador & Controlador & Razão \\
+\midrule
+Calibrado & persistência & 0,122 & 393 (0,1~s) & 4.294 & \textbf{10,9} (9,7--12,5) \\
+ & Ridge & 0,013 & 66.067 (20~s) & 65.933 & 0,998 (0,996--0,999) \\
+ & MLP & 0,013 & 65.668 (20~s) & 65.511 & 0,998 (0,995--1,000) \\
+ & alfa-beta & 0,044 & 35.840 (20~s) & 35.113 & 0,980 (0,973--0,986) \\
+Desenvolv. & persistência & 0,128 & 599 (0,1~s) & 4.714 & \textbf{7,9} (7,1--8,9) \\
+ & Ridge & 0,008 & 72.742 (20~s) & 72.698 & 0,999 (0,997--1,002) \\
+ & MLP & 0,007 & 73.249 (20~s) & 73.268 & 1,000 (0,998--1,002) \\
+ & alfa-beta & 0,036 & 42.456 (20~s) & 41.748 & 0,983 (0,976--0,991) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O laço do OrionQ regenerou as 432 linhas da tabela de blocagem do autor com erro
+relativo de $6\times10^{-16}$, e o laço do autor, a de estresse com erro zero. No
+enlace compensado por persistência, com QBER média acima do limiar de 11\%,
+temporizadores de 5~s ou mais não produzem chave nos dois pontos, e o controlador
+entrega 10,9 vezes (calibrado) e 7,9 vezes (desenvolvimento) o melhor temporizador,
+em todas as 20 sementes ($p$ de Holm $2\times10^{-6}$), com 94\% a 95\% do seu
+oráculo (Tabela~\ref{tab:bloc_lf}). Com os compensadores aprendidos, o melhor
+bloco é a execução inteira, e o controlador fica a no máximo 0,25\% dele, não
+inferior com margem de 1\% nos quatro casos ($p$ de Holm $\leq 5\times10^{-5}$).
+Com o alfa-beta, cuja QBER fica perto de 4\%, o controlador perde cerca de 2\%
+em 19 e 16 das 20 sementes: com QBER moderada, o ruído das estimativas o faz
+fechar ou pular segmentos que valiam a pena. O resultado do autor vale, portanto,
+nos dois pontos e no laço supervisionado, com esse custo explícito.
+
 \subsection{Detector em sessões novas}
 
 \begin{table}[ht]
@@ -1963,77 +2110,40 @@ diferença central. A perda, de 0,15 e 0,21 ponto, é detectável ($p$ de Holm 0
 período a mais de atraso. O resultado vale, portanto, para um monitor implantado;
 retreinar com a diferença unilateral fica como trabalho futuro.
 
-\subsection{Compensador em ponto fixo}
-\label{sec:quant}
+\subsection{Controle de redes executadas pelo SeQUeNCe}
+\label{sec:sequence}
 
-\begin{table}[ht]
-\centering
-\caption{Compensador em ponto fixo no laço do ORION-Q: QBER média em ponto fixo
-dividida pela do ponto flutuante, 20 sementes novas. Entre parênteses, IC 95\%.}
-\label{tab:quant}
-\small
-\begin{tabular}{llcccc}
-\toprule
-Ponto & Modelo & 16 bits, CORDIC 8 & 16 bits, CORDIC 16 & 14 bits & 12 bits \\
-\midrule
-Calibrado & Ridge & 1,001 (0,995--1,007) & 1,000 & 1,136 & 9,0 \\
- & MLP & 0,999 (0,994--1,005) & 0,999 & 1,143 & 8,1 \\
-Desenvolv. & Ridge & 1,010 (0,994--1,028) & 1,009 & 1,208 & 19,3 \\
- & MLP & 1,038 (1,025--1,051) & 1,037 & 1,002 & 23,0 \\
-\bottomrule
-\end{tabular}
-\end{table}
+O OrionQ também controlou redes executadas por um simulador independente, em dois
+níveis. No laço de roteamento da Seção~\ref{sec:aloc_rot_lf}, o SeQUeNCe substituiu
+o gêmeo analítico como planta: as decisões tomadas no OrionQ foram executadas
+pelo simulador. Além disso, a parte terrestre da rede de demonstração foi levada
+a redes nativas do SeQUeNCe~1.2.0, sem alterá-lo, sob protocolo congelado e com
+três sementes. As 13 sessões terrestres foram traduzidas em 67 roteadores virtuais
+e 54 vãos quânticos; o OrionQ fez os pedidos, e reserva, geração, troca e ---
+num cenário de referência --- purificação BBPSSW rodaram nos protocolos do
+SeQUeNCe. As 21 execuções (sete
+cenários em três sementes) cumpriram os critérios funcionais declarados antes da
+execução. O cenário completo entregou 77, 79 e 80 pares, concentrados em cinco
+sessões; as outras oito não entregaram nenhum na janela de 1~s observada. Uma
+reserva concorrente foi recusada, e uma nova entregou depois da liberação;
+durante a queda de um roteador nenhum par chegou, e novos pares chegaram após a
+recuperação; com detector de eficiência zero, nenhum par foi fabricado. Na camada
+global, o plano de controle do OrionQ escolheu as rotas e, a partir de 2.220
+recibos clássicos nativos, administrou sucessos, perdas e esgotamentos de prazo
+injetados, novas tentativas e o isolamento e a restauração de um satélite,
+cumprindo os 16 critérios em cada semente. Em outro ensaio, dez nós nativos do
+SeQUeNCe, com fótons, canais e detectores do simulador, obtiveram e liberaram
+reservas do controlador do OrionQ por uma API autenticada, sem protocolo de
+emaranhamento.
 
-A réplica regenerou a varredura do autor com erro relativo de $3\times10^{-16}$, e
-o compensador reconstruído dos \textit{arrays} coincidiu com a réplica do ORION-Q e
-com as campanhas em laço fechado. Nos dois pontos e em sementes novas, 16 bits
-bastam (Tabela~\ref{tab:quant}): com a configuração do RTL, o ponto fixo fica a
-menos de 1\% do ponto flutuante no ponto calibrado e a até 3,8\% no de
-desenvolvimento, não inferior com margem de 5\% nos quatro casos ($p$ de Holm
-$\leq 0{,}046$), e vence o alfa-beta em todas as sementes. O degrau que o autor
-encontrou entre 12 e 14 bits se repete: a 14 bits o custo vai de 0,2\% a 21\%, e
-a 12 bits o laço colapsa e perde para o alfa-beta em todas as sementes. Oito
-estágios de CORDIC custam cerca de 0,1\% em relação a dezesseis.
-
-\subsection{Blocagem de chave no laço}
-\label{sec:bloc_lf}
-
-\begin{table}[ht]
-\centering
-\caption{Blocagem de chave no laço supervisionado do ORION-Q: chave média (bit/s)
-em 20 sementes novas. Razão: controlador sobre o melhor temporizador, com IC 95\%.}
-\label{tab:bloc_lf}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llcrrc}
-\toprule
-Ponto & Compensador & QBER & Melhor temporizador & Controlador & Razão \\
-\midrule
-Calibrado & persistência & 0,122 & 393 (0,1~s) & 4.294 & \textbf{10,9} (9,7--12,5) \\
- & Ridge & 0,013 & 66.067 (20~s) & 65.933 & 0,998 (0,996--0,999) \\
- & MLP & 0,013 & 65.668 (20~s) & 65.511 & 0,998 (0,995--1,000) \\
- & alfa-beta & 0,044 & 35.840 (20~s) & 35.113 & 0,980 (0,973--0,986) \\
-Desenvolv. & persistência & 0,128 & 599 (0,1~s) & 4.714 & \textbf{7,9} (7,1--8,9) \\
- & Ridge & 0,008 & 72.742 (20~s) & 72.698 & 0,999 (0,997--1,002) \\
- & MLP & 0,007 & 73.249 (20~s) & 73.268 & 1,000 (0,998--1,002) \\
- & alfa-beta & 0,036 & 42.456 (20~s) & 41.748 & 0,983 (0,976--0,991) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-O laço do ORION-Q regenerou as 432 linhas da tabela de blocagem do autor com erro
-relativo de $6\times10^{-16}$, e o laço do autor, a de estresse com erro zero. No
-enlace compensado por persistência, com QBER média acima do limiar de 11\%,
-temporizadores de 5~s ou mais não produzem chave nos dois pontos, e o controlador
-entrega 10,9 vezes (calibrado) e 7,9 vezes (desenvolvimento) o melhor temporizador,
-em todas as 20 sementes ($p$ de Holm $2\times10^{-6}$), com 94\% a 95\% do seu
-oráculo (Tabela~\ref{tab:bloc_lf}). Com os compensadores aprendidos, o melhor
-bloco é a execução inteira, e o controlador fica a no máximo 0,25\% dele, não
-inferior com margem de 1\% nos quatro casos ($p$ de Holm $\leq 5\times10^{-5}$).
-Com o alfa-beta, cuja QBER fica perto de 4\%, o controlador perde cerca de 2\%
-em 19 e 16 das 20 sementes: com QBER moderada, o ruído das estimativas o faz
-fechar ou pular segmentos que valiam a pena. O resultado do autor vale, portanto,
-nos dois pontos e no laço supervisionado, com esse custo explícito.
+Esses ensaios mostram o OrionQ controlando, no nível funcional, redes quânticas
+simuladas por um simulador independente. O próprio relatório da campanha a
+classifica como verificação parcial: os critérios são funcionais, sem teste
+estatístico; a campanha usou vetores de estado, porque o modo de matriz
+densidade falha no SeQUeNCe fixado; a fidelidade das entregas vem dos metadados
+do simulador, e não de tomografia, e a correção de Pauli não foi confirmada nas
+duas pontas; e campo gêmeo, satélites e enlaces entre satélites não têm modelo
+nativo no SeQUeNCe.
 
 \subsection{Verilog do autor em simulador HDL}
 \label{sec:rtl}
@@ -2070,11 +2180,44 @@ A ROM do sincronizador não é o modelo exportado quantizado: difere dele em at�
 detector, a versão em FPGA é outro modelo --- podado a 5 rodadas e quantizado ---,
 e não substitui o detector completo.
 
+\subsection{Desempenho e maturidade}
+\label{sec:desempenho}
+
+O desempenho é hoje o ponto mais fraco da plataforma. O ciclo de controle
+isolado leva 62,8~ms, contra uma meta exploratória de 10~ms, e, com a rede
+completa de demonstração, todos os passos de rede passaram de 1~s; o último levou
+4,8 e 5,7~s em duas medições. A maior parte do tempo do ciclo está na
+persistência do diário, e o planejamento de rotas interrompe os episódios ao
+gastar 120~ms, de modo que, sob carga, um plano não se reproduz exatamente a
+partir da semente. A maturidade foi avaliada com protocolos próprios inspirados
+na NASA NPR~7123.1D \cite{nasa7123} e no ECSS-E-HB-11A \cite{ecss2017}: o pacote de
+software de nível~4 está completo para revisão, mas o nível não foi atribuído,
+porque falta a revisão independente; o nível~5 não foi demonstrado, porque o
+portão de desempenho falha e os outros seis não foram cobertos. Nenhum desses
+números entra nas afirmações científicas do trabalho.
+
 % =====================================================================
 \section{Discussão e Limitações}
 \label{sec:discussao}
 
-Os resultados mostram por que a comparação obrigatória com \textit{baselines}
+Os resultados respondem à pergunta de pesquisa em três partes. A primeira é que a
+integração é fiel: antes de pontuar, cada campanha regenerou pela réplica do
+OrionQ os resultados que o autor publicou ou exportou, as onze configurações
+reproduziram suas saídas de referência, e as doze campanhas deram as mesmas
+conclusões no Windows e no Linux. A segunda é que o controle funciona em
+simulação, nas plantas de treino e em redes executadas pelo SeQUeNCe, mas o valor
+de cada controlador aprendido depende da função: três trazem ganho claro, o
+sincronizador traz ganho pequeno, o roteamento não supera a heurística e o
+detector depende mais da taxa de decisão que do modelo. A plataforma torna essas
+diferenças visíveis porque obriga cada modelo a enfrentar um \textit{baseline}
+ressintonizado sob protocolo congelado. A terceira é que as tecnologias além das
+plantas do autor --- campo gêmeo, BBM92, satélites e enlaces entre satélites ---
+foram verificadas contra referências analíticas, contra o código de terceiros e,
+nos componentes de repetidor, contra o SeQUeNCe, mas não contra dados medidos.
+Seu papel é exercitar o plano de controle sobre uma rede heterogênea, e não
+sustentar afirmações físicas.
+
+Os resultados também mostram por que a comparação obrigatória com \textit{baselines}
 é necessária. No estudo preliminar, o modelo com menor MAE foi o de pior
 utilidade. No compensador, a persistência foi pior que não compensar, e o
 \textit{baseline} que importa é um filtro clássico ressintonizado. No roteamento,
@@ -2086,8 +2229,8 @@ modelo. Nos quatro casos, uma avaliação que só olhasse para o modelo em seu
 próprio ambiente teria chegado a uma conclusão errada.
 
 O mesmo vale para a integração. No ambiente de origem, o MLP do compensador
-empata com o Ridge; nas campanhas \textit{shadow} do ORION-Q, perdeu em todas as
-sementes. O produtor artificial do ORION-Q usa vibração de cerca de 0,003~rad
+empata com o Ridge; nas campanhas \textit{shadow} do OrionQ, perdeu em todas as
+sementes. O produtor artificial do OrionQ usa vibração de cerca de 0,003~rad
 RMS e não inclui ruído de contagem de fótons, enquanto a banda acústica nominal
 do ponto de desenvolvimento tem 0,3~rad RMS e as estimativas de rotação vêm de
 contagens binomiais. O Ridge, linear, degradou-se menos fora do domínio; o MLP,
@@ -2101,8 +2244,8 @@ alimentam tanto os laços fechados quanto os painéis \textit{shadow}. A mesma
 lição vale para a leitura dos números do autor: com as plantas no laço, a
 maioria dos resultados se confirmou em sementes novas, mas dois foram
 refinados --- o ganho do ator de taxa de chave não é significativo a 80~km e o
-empate do roteamento só vale no prazo longo do gêmeo analítico. É o mesmo fenômeno da
-Tabela~\ref{tab:comp_cal}, em que pesos transplantados entre pontos de operação
+empate do roteamento só vale no prazo longo do gêmeo analítico. É o mesmo fenômeno do
+compensador (Seção~\ref{sec:compensador}), em que pesos transplantados entre pontos de operação
 ficaram piores que não compensar. O contrato, porém, compara declarações: ele
 impede o uso fora do ponto declarado, mas não detecta sozinho uma fibra real que
 mude de tom.
@@ -2150,8 +2293,9 @@ As limitações são explícitas.
         representa uma rede real. As campanhas \textit{shadow} de 23 a 26/09
         usaram os produtores artificiais anteriores e seus critérios são
         descritivos; hashes comprovam identidade de arquivos, não validade
-        científica; e a aprovação no fluxo de ativação não autentica o
-        operador. O atuador limitado é o modelo simulado do autor, não um
+        científica; a aprovação no fluxo de ativação não autentica o operador; e
+        a camada de segurança foi testada localmente, sem certificação nem
+        provedor institucional de identidade. O atuador limitado é o modelo simulado do autor, não um
         dispositivo caracterizado, e os pesos do compensador foram treinados
         com atuador ideal.
   \item \textbf{\textit{Hardware}.} O Verilog foi simulado e sintetizado, mas
@@ -2159,20 +2303,42 @@ As limitações são explícitas.
         multiplicador-acumulador e o CORDIC existem em RTL. A latência de
         inferência da LSTM em CPU inviabiliza decisões por par em memórias com
         $T_2$ de dezenas de microssegundos.
+  \item \textbf{Tecnologias da rede.} A física de referência dos enlaces de
+        satélite e de campo gêmeo e a bancada emulada foram escritas na
+        plataforma e não têm validação externa nem protocolo estatístico; só os
+        componentes de transmissão, memória, troca, purificação e atraso foram
+        conferidos contra o SeQUeNCe, e o NetSquid \cite{coopmans2021} não foi
+        executado. O controle de redes no SeQUeNCe é uma verificação funcional
+        e parcial, em vetores de estado, com fidelidade tirada dos metadados e
+        oito das 13 sessões terrestres sem entregas. As observações do motor
+        --- de 0,5 a 2,9 falsos alarmes por
+        fibra-hora, que mudam rotas, e ataques de cegamento não detectados até
+        cerca de 50~km --- são descritivas, sem protocolo congelado. O detector
+        age fora do contrato em toda fibra simulada, e o agente de roteamento na
+        topologia metropolitana; o ciclo de controle não cumpre a meta de 10~ms
+        nem, com a rede completa, o passo de 1~s.
 \end{itemize}
-Por fim, a hipótese de que a telemetria WDM prevê um alvo quântico físico futuro
-continua sem teste, por falta de dados pareados.
 
 % =====================================================================
 \section{Conclusão e Trabalhos Futuros}
 
-Este trabalho desenvolveu controladores aprendidos para decisões de controle de
-redes quânticas, mediu cada um contra a melhor alternativa simples disponível e
-os integrou ao ORION-Q, uma plataforma que os trata como componentes opcionais,
-verificados e reversíveis. Os controladores de rede foram construídos sobre uma
-camada de física conferida contra o SeQUeNCe até $2{,}5\times10^{-12}$.
+Este trabalho apresentou o OrionQ, uma plataforma que simula redes quânticas
+heterogêneas e as controla de forma auditável. O OrionQ reúne um plano de
+controle supervisionado, contratos explícitos, trilhas de evidência separadas,
+diário de auditoria, um motor de rede ao vivo e um serviço autenticado, e está
+preparado para seis famílias de tecnologias --- enlaces de fibra com QKD de
+estados-isca, repetidores, QKD de campo gêmeo, QKD por emaranhamento com entrega
+de chaves, enlaces de satélite e entre satélites, e canais clássicos e telemetria
+de satélite ---, cada uma com modelo, parâmetros e estado de validação
+declarados. A física de rede do autor foi conferida contra o SeQUeNCe até
+$2{,}5\times10^{-12}$, e os componentes de repetidor da física de referência da
+plataforma, em 22 casos, até $4{,}4\times10^{-16}$. Em simulação, o OrionQ
+controla essas redes: em laço fechado e sob protocolo congelado nos enlaces de
+fibra e de repetidores, nas plantas de treino dos controladores integrados e com
+o SeQUeNCe como planta e executor da parte terrestre; nos enlaces de campo gêmeo
+e de satélite, decide a admissão e a disponibilidade.
 
-Três controladores entregam vantagem clara em simulação. O compensador de
+Entre os controladores integrados, três entregam vantagem clara em simulação. O compensador de
 polarização fica 3,5 vezes abaixo do filtro clássico ressintonizado em fibra
 aérea calibrada por estatísticas de campo, desde que o atuador seja rápido o
 bastante, cabe em 16 bits de ponto fixo e não se transfere entre pontos de
@@ -2180,7 +2346,7 @@ operação. O alocador entrega 2,7 vezes a vazão clássica da admissão estáti
 serviço de chave igualado, com o ganho vindo da lei de controle. O ator de taxa
 de chave eleva a chave provável entre 8,8\% e 18,9\% sem tocar no
 \textit{hardware}, com vantagem confirmada em sementes novas até 65~km. O controlador de blocagem é o resultado mais forte em
-contabilidade de chave, confirmado no laço do ORION-Q nos dois pontos, ainda sem
+contabilidade de chave, confirmado no laço do OrionQ nos dois pontos, ainda sem
 prova de segurança. O detector de ataques
 distingue ataques que o limiar de QBER não vê, e mostra que a precisão sob prior
 realista depende sobretudo da taxa de decisão. O agente de roteamento não supera
@@ -2195,7 +2361,14 @@ A plataforma admite os seis componentes (onze configurações) com identidade
 fixada e leitura segura --- inclusive o detector, entregue só como
 \textit{pickle}, por uma exportação provada idêntica a ele sem desserializá-lo ---,
 reproduz suas saídas de referência, avalia-os em modo
-\textit{shadow} e oferece um fluxo de ativação auditável e reversível. O estudo
+\textit{shadow} e oferece um fluxo de ativação auditável e reversível no plano de
+controle. Uma rede de demonstração ao vivo mostra esses componentes operando em
+conjunto sobre entrada simulada, ao lado de enlaces conduzidos por física de
+referência da própria plataforma, que não sustentam afirmações. Levada ao
+SeQUeNCe, a parte terrestre dessa rede rodou sob o controle do OrionQ em
+simulações nativas, com reservas, entregas, falhas e recuperação administradas
+pela plataforma e todos os critérios funcionais declarados cumpridos, ainda como
+verificação parcial. O estudo
 preliminar com telemetria WDM e as campanhas \textit{shadow} reforçam a mesma
 lição: menor erro de previsão não garante melhores decisões, e um modelo só
 pode ser julgado no domínio em que foi treinado e contra \textit{baselines}
@@ -2217,7 +2390,7 @@ agente fica ligeiramente abaixo da heurística. Quando um modelo
 falhou de propósito, o supervisor impediu que a falha chegasse à planta e
 devolveu o controle ao controlador de reserva. O detector, em sessões de fluxos
 aleatórios que o autor não usou, confirmou a afirmação central do autor --- vê de
-84\% a 89\% dos períodos de ataque, contra 7\% a 14\% do limiar de QBER ---,
+84\% a 89\% dos períodos com evento, contra 7\% a 14\% do limiar de QBER ---,
 com o \textit{intercept-and-resend} como classe fraca. E o Verilog do autor,
 que nunca havia passado por um simulador, é exato ao bit em relação às suas
 referências em ponto fixo, com dois defeitos localizados fora do caminho de dados
@@ -2227,24 +2400,30 @@ Como trabalhos futuros, destacam-se: treinar o agente de roteamento no próprio
 SeQUeNCe e em topologias com requisições concorrentes;
 retreinar o compensador com o atuador limitado no laço, para descer o
 cruzamento de velocidade; estender o ativador auditável aos demais alvos de
-controle; modelar a sinalização da blocagem entre as pontas e
+controle e ao motor da rede de demonstração; validar a física de referência dos
+enlaces de satélite e de campo gêmeo contra um segundo simulador e dados medidos,
+e levar a bancada emulada a um etiquetador de tempo real; obter a revisão
+independente da qualificação de software e reduzir a latência do ciclo; modelar a sinalização da blocagem entre as pontas e
 buscar uma prova de segurança para blocos não contíguos; recalibrar o gerador de
 sessões de QKD com os dados de longo prazo do Rio de Janeiro \cite{tezzin2026},
 retreinar o detector com a taxa de temperatura unilateral e
 testar o termômetro contra a série temporal de Cambridge; posicionar, rotear e
-medir em placa o RTL já simulado, e escrever em Verilog o logaritmo e a
-exponencial de SO(3) completos; e buscar um
-conjunto de dados que combine telemetria WDM e alvo quântico medidos no mesmo
-enlace.
+medir em placa o RTL já simulado; e escrever em Verilog o logaritmo e a
+exponencial de SO(3) completos.
 
 \subsection*{Disponibilidade}
 
-O ORION-Q, o estudo preliminar e as duas versões do qnet\_autopilot estão no
-repositório \url{https://github.com/nakka1/NISQ-Predictive-Twin}, com testes
-automatizados e o registro de reivindicações verificável. Os controladores estão
+O OrionQ, o estudo preliminar e as duas versões do qnet\_autopilot estão no
+repositório privado \url{https://github.com/nakka1/Orion-Q}, fechado pela
+possibilidade de exploração comercial, com testes automatizados e o registro de
+reivindicações verificável. O acesso de leitura é concedido à banca e ao
+orientador mediante solicitação, e este texto corresponde à etiqueta
+\texttt{v6.0.0-prebanca}. O estudo preliminar também está público em
+\url{https://github.com/nakka1/NISQ-Predictive-Twin}. Os controladores estão
 em \texttt{src/qnet\_network} e \texttt{src/qnet\_qkd}; os \textit{scripts}, testes
 e registros de resultado do autor, em \texttt{external/}, com o manifesto
-\texttt{external/VENDORED.json}, que liga cada arquivo ao original. Cada campanha
+\texttt{external/VENDORED.json}, que liga cada arquivo ao original, e o
+\textit{patch} de compatibilidade documentado em \texttt{external/patches/}. Cada campanha
 em laço fechado tem protocolo congelado em \texttt{configs/optional\_models/},
 resumo em \texttt{docs/results/} e um comando de reprodução em \texttt{tools/}.
 

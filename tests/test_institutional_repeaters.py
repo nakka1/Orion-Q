@@ -48,6 +48,7 @@ def test_legacy_demo_upgrade_preserves_edits_records_before_and_runs_once(tmp_pa
     from quantum_autopilot.quantum_protocols.topology import GLOBAL_EVENT
     from quantum_autopilot.quantum_protocols.satellite_bridges import BRIDGE_EVENT
     from quantum_autopilot.quantum_protocols.global_geo import GEO_EVENT
+    from quantum_autopilot.quantum_protocols.hybrid_upgrade import UPGRADE_EVENT as HYBRID_EVENT
     from quantum_autopilot.network_engine.global_operations_topology import GLOBAL_OPERATIONS_EVENT, institutional_ids
     store = SimulatedTopologyStore(tmp_path / 'legacy.sqlite')
     old = brazil_institutions(repeaters=False)
@@ -60,9 +61,9 @@ def test_legacy_demo_upgrade_preserves_edits_records_before_and_runs_once(tmp_pa
     old = replace(old, links=tuple(links), nodes=(*old.nodes, extra), topology_version=7)
     store.initialize(old)
     upgraded, created = ensure_institutional_workspace(store)
-    # Repeater, global technology, Atlantic bridge, GEO and global-operation
+    # Repeater, global technology, Atlantic bridge, GEO, global-operation and hybrid
     # migrations are separate recorded revisions preserving operator edits.
-    migration_kinds=(UPGRADE_EVENT,GLOBAL_EVENT,BRIDGE_EVENT,GEO_EVENT,GLOBAL_OPERATIONS_EVENT)
+    migration_kinds=(UPGRADE_EVENT,GLOBAL_EVENT,BRIDGE_EVENT,GEO_EVENT,GLOBAL_OPERATIONS_EVENT,HYBRID_EVENT)
     assert not created and upgraded.topology_version == old.topology_version+len(migration_kinds)
     migrations={event['event_kind']:event for event in store.list_events(old.topology_id,100)
         if event['event_kind'] in migration_kinds}

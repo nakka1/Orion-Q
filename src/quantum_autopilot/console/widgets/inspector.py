@@ -18,6 +18,7 @@ from ..contract import (
     DEMAND_STATUS_TONE, HEALTH_TONE, LINK_STATUS_TONE, NODE_STATUS_TONE, SEVERITY_TONE,
 )
 from ..geodata import geodesic_km
+from ..processing_labels import link_processing_labels
 from ..theme import C, button_font, faded, family, mono, text_tone, tone
 from .network_views import NetModel, STYLE_TONE, format_km, format_lat, format_lon
 from .prims import (
@@ -148,7 +149,10 @@ class KVList(QWidget):
             for key, value, tone_name in rows:
                 row = previous.pop(key, None)
                 if row is None:
-                    row = KVRow(key, value, tone_name=tone_name, size=self.size, wrap=self.wrap)
+                    # Build in the final owner: late parenting re-polishes the
+                    # wrapped labels and repeats their layout on every new row.
+                    row = KVRow(key, value, tone_name=tone_name, size=self.size,
+                                wrap=self.wrap, parent=self)
                 elif self._values.get(key) != (value, str(text_tone(tone_name))):
                     row.set_value(value, tone_name)
                 if row.value_label.toolTip() != value:
@@ -403,7 +407,7 @@ class _NodePanel(QWidget):
             set_color(name, text_tone(STYLE_TONE.get(link.style, "ink")))
             state.setText(link.state_text.lower())
             value.setText(f"F {link.fidelity}")
-            row.setToolTip(f"{link.key} · {node.id} ↔ {other} · {link.state_text} · {format_km(link.distance_km)}")
+            row.setToolTip(f"{link.key} · {node.id} ↔ {other} · {link.state_text} · {format_km(link.distance_km)}\n{link.processing_detail}")
         self.isolate.setText("Restore" if node.isolated else "Isolate")
         self.status.set_status(*status.for_subject("node", node.id))
 
@@ -503,7 +507,13 @@ class _LinkPanel(QWidget):
         else:
             source = next((item for item in snap.topology.links if item.id == link.id and item.a == link.a), None)
             rows.append(("Provenance", getattr(source, "provenance", "—"), "dim"))
+        processing = link_processing_labels(live_link, getattr(live, "technologies", None))
+        rows += [("Data origin", processing.data_source, "dim"),
+                 ("Processing", processing.badge, "amber" if processing.fallback else "violet" if "MODEL" in processing.badge else "dim"),
+                 ("Physics / protocol", processing.physics, "dim"),
+                 ("Acting controllers", processing.controls, "dim")]
         self.kv.set_rows(rows)
+        self.kv.rows["Processing"].setToolTip(processing.detail)
         reasons = "; ".join(live_link.status_reasons) if live_link is not None else ""
         self.reasons.setText(reasons)
         self.reasons.setVisible(bool(reasons))
@@ -886,9 +896,11 @@ class Inspector(Frame):
         links.addWidget(self.links_actions)
         self.links_up = Label("—")
         links.addWidget(self.links_up)
-        self.link_table = RecordTable(["LINK", "F", "QBER", "SKR", "STATE"])
+        self.link_table = RecordTable(["LINK", "F", "QBER", "SKR", "STATE", "PROCESSING / DATA"])
         self.link_table.setFont(mono(12))
         header = self.link_table.horizontalHeader()
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
+        self.link_table.setColumnWidth(5, 175)
         header.setStyleSheet(table_header_style())
         header.setMinimumSectionSize(40)
         for column in (1, 2, 3, 4):

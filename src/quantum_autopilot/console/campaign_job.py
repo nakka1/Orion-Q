@@ -99,6 +99,12 @@ class CampaignJob(QObject):
             return SourceCapabilities()
         return self._presentation_capabilities
 
+    def invalidate_presentation_capabilities(self):
+        """Withdraw UI affordances without issuing or cancelling an operation."""
+        self._presentation_capabilities = SourceCapabilities()
+        self._source_presentation = None
+        self.changed.emit()
+
     def refresh_source(self, snapshot=None):
         context = self._context()
         if snapshot is None:

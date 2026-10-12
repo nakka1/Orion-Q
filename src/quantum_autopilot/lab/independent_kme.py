@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import base64
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timezone
 import http.client
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -31,7 +31,7 @@ from .kms import (KeyDeliveryError, _authorize_certificate, _reject_constant, _s
                   _strict_object, client_context, create_test_pki, request_kme)
 from .persistent_keys import KeyLedger, validate_delivery_token, validate_enc_request
 from .qkd import run_bb84
-from quantum_autopilot.security.key_requirements import check_kme_security, required_kme_identities
+from quantum_autopilot.security.key_requirements import check_kme_security, required_kme_identities as required_kme_identities
 
 
 @contextmanager
@@ -65,14 +65,16 @@ def _worker(control, path, wrapping_key, pki, identity, provenance, initial_pair
             runtime = None
             if security_configuration is not None:
                 from quantum_autopilot.security.runtime import SecurityRuntime
-                runtime = SecurityRuntime(**security_configuration, bootstrap=False)
+                runtime = SecurityRuntime.from_worker_configuration(security_configuration)
             if pki.get("_profile") != "emulation":
                 raise ValueError("emulated ledger cannot be exposed as operational key delivery")
-            ledger = KeyLedger(path, wrapping_key, identity=identity, security_runtime=runtime, **provenance)
-            if initial_pairs is not None:
-                ledger.provision(initial_pairs)
-            initial_pairs = None
-            ledger.recover()
+            initialization_scope = runtime.identity_scope(runtime.principal(identity)) if runtime is not None else nullcontext()
+            with initialization_scope:
+                ledger = KeyLedger(path, wrapping_key, identity=identity, security_runtime=runtime, **provenance)
+                if initial_pairs is not None:
+                    ledger.provision(initial_pairs)
+                initial_pairs = None
+                ledger.recover()
             state = {"peer_port": None, "fault": None, "paused_phase": None, "delay_s": 0.0,
                      "acquisition_blocked": False}
             state_lock = threading.Lock()
@@ -323,8 +325,10 @@ def _worker(control, path, wrapping_key, pki, identity, provenance, initial_pair
                         state[operation] = message["value"]
                     control.send({"accepted": True})
                 elif operation == "summary":
-                    control.send({**ledger.summary(), "pid": os.getpid(), "paused_phase": state["paused_phase"],
-                                  "acquisition_blocked": state["acquisition_blocked"]})
+                    scope = runtime.identity_scope(runtime.principal(identity)) if runtime is not None else nullcontext()
+                    with scope:
+                        control.send({**ledger.summary(), "pid": os.getpid(), "paused_phase": state["paused_phase"],
+                                      "acquisition_blocked": state["acquisition_blocked"]})
                 elif operation == "reconcile":
                     try:
                         reconcile_invalidations()
@@ -352,8 +356,7 @@ def _worker(control, path, wrapping_key, pki, identity, provenance, initial_pair
 class IndependentKme:
     def __init__(self, path, wrapping_key, pki, identity, provenance, *, pairs=None, security_runtime=None):
         self.args = (str(path), wrapping_key, pki, identity, provenance)
-        self.security_configuration = ({"root": str(security_runtime.root), "profile": security_runtime.profile}
-                                       if security_runtime is not None else None)
+        self.security_configuration = security_runtime.worker_configuration() if security_runtime is not None else None
         self.context = multiprocessing.get_context("spawn")
         self.process = None
         self.port = None

@@ -317,6 +317,15 @@ def validate_context_receipt(repository_root, destination, *, native_quiet=False
     topology, _ = service.topology_store.initialize(default_simulated_topology())
     provider = SwitchableProvider(ServiceProvider(service, state_root=destination))
     provider.running = True
+    # Inspection accepts only a committed authenticated frame. A direct refresh
+    # prepares it without starting continuous network ticks in this read-only proof.
+    try:
+        principal = service.security.current_identity()
+        with service.security.identity_scope(principal):
+            provider.active.refresh()
+    except BaseException:
+        provider.stop()
+        raise
     view = PolicyContextInspection()
     view.attach(provider)
     if native_quiet:
@@ -376,7 +385,7 @@ def validate_context_receipt(repository_root, destination, *, native_quiet=False
         view.close()
         wait()
         view.deleteLater()
-        provider.running = False
+        provider.stop()
         run_event_loop(20)
 
 

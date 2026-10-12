@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Protocol, runtime_checkable
 
 SCHEMA = 'orion.quantum-technology.v1'
-TECHNOLOGIES = ('entanglement_swapping', 'tf_qkd', 'purification', 'satellite_doppler', 'quantum_memory', 'satellite_isl')
+TECHNOLOGIES = ('entanglement_swapping', 'tf_qkd', 'purification', 'satellite_doppler', 'quantum_memory', 'satellite_isl', 'orbital_relay')
 OPERATIONS = ('generate', 'bsm', 'purify', 'readout', 'tf_block', 'satellite_block', 'isl_block')
 
 

@@ -80,6 +80,7 @@ class ConsoleWindow(QMainWindow):
         self._signal_brand = False
         self._loading_source = False
         self._loading_reason = "startup"
+        self._source_return_screen = None
         if self._security is not None:
             from .login_session import NativeLoginController
             from pathlib import Path
@@ -508,6 +509,9 @@ class ConsoleWindow(QMainWindow):
         return Path(self.input_state_root or default_state_root()) / "inputs" / uuid4().hex
 
     def switch_input(self, factory):
+        # Keep only navigation context. Source data and selection are cleared
+        # by _on_source_changed before the replacement frame is admitted.
+        self._source_return_screen = self._current if self._current in self.screens else "topology"
         self._loading_reason = "source"
         self._loading_source = True
         self.splash.start("Preparing the selected input source…")
@@ -602,10 +606,12 @@ class ConsoleWindow(QMainWindow):
         if self._loading_reason == "login":
             return
         if self._loading_source:
+            destination = self._source_return_screen or "topology"
+            self._source_return_screen = None
             self._loading_source = False
             self._loading_reason = ""
             if self._login_verified or self._security is None or self._skip_auth:
-                self._enter()
+                self._enter(destination)
             else:
                 self.show_screen("boot")
             return
@@ -615,11 +621,14 @@ class ConsoleWindow(QMainWindow):
         else:
             self.show_screen("boot")
 
-    def _enter(self) -> None:
+    def _enter(self, destination: str = "topology") -> None:
         if self._loading_source:
             return
+        if not isinstance(destination, str) or destination not in self.screens:
+            destination = "topology"
         active = self.provider.active
         if getattr(active, "ready", True) is False:
+            self._source_return_screen = destination
             self._loading_source = True
             self._loading_reason = "source"
             progress = getattr(active, "loading_state", {})
@@ -634,7 +643,8 @@ class ConsoleWindow(QMainWindow):
                 elif not self.provider.running:
                     self.provider.start()
             return
-        self.show_screen("topology")
+        self._source_return_screen = None
+        self.show_screen(destination)
 
     def _back_to_login_from_loading(self):
         if self._signal_brand:
@@ -696,7 +706,12 @@ class ConsoleWindow(QMainWindow):
         self.splash.back_button.setText("Unplug from E.V.A." if self._signal_brand else "Back to sign in")
         exit_name = "Unplug from E.V.A." if self._signal_brand else "Sign out"
         self.rail.sign_out.setAccessibleName(exit_name)
-        self.rail.sign_out.setToolTip(exit_name)
+        exit_description = (
+            "End the cosmetic E.V.A. mode and return to the standard sign-in screen."
+            if self._signal_brand else
+            "End the current operator session and return to the sign-in screen."
+        )
+        self.rail.sign_out.setToolTip(f"{exit_name}\n{exit_description}")
         for widget_type in (BlochQMark, OrionQWordmark, GeoMap):
             # QGraphicsProxyWidget's logical canvas has a separate QObject
             # ownership tree from native dialogs parented to this window.
@@ -771,6 +786,10 @@ class ConsoleWindow(QMainWindow):
             if self._signal_brand and self._current not in ("boot", "splash"):
                 self._show_disconnect_sequence()
                 return
+            self._source_return_screen = None
+            if self._loading_reason == "source":
+                self._loading_source = False
+                self._loading_reason = ""
             self.palette.close_palette()
             if self._snap is not None:
                 self.boot.apply(self._snap)
@@ -917,7 +936,7 @@ class ConsoleWindow(QMainWindow):
         topology = self.screens.get("topology")
         if hasattr(topology, "campaign_runner") and getattr(self, "_campaign_busy", None) != busy:
             self._campaign_busy = busy
-            topology.campaign_runner.refresh()
+            topology.campaign_runner.render_presented()
         for name in ("link_editor", "path_runner"):
             widget = getattr(topology, name, None)
             if widget is not None:

@@ -218,6 +218,10 @@ class KeysScreen(Screen):
                 self.live_panel.set_current(self._fibre)
         return self.live_panel
 
+    def apply_command_capabilities(self):
+        super().apply_command_capabilities()
+        self.laboratory_panel.apply_command_capabilities(busy=getattr(self, "commands_busy", False))
+
     # --------------------------------------------------------------- state
     def refresh(self, snap: Snapshot) -> None:
         self.laboratory_panel.set_snapshot(snap)

@@ -1,0 +1,33 @@
+# Launch from repository root after offline provisioning. No default credentials.
+services:
+  core:
+    image: orionq-core:local
+    build:
+      context: ../..
+      dockerfile: packaging/core/Dockerfile
+      args:
+        PYTHON_IMAGE: ${ORIONQ_PYTHON_IMAGE:-python:3.12-slim-bookworm}
+    init: true
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports:
+      - "${ORIONQ_BIND_ADDRESS:-127.0.0.1}:8765:8765"
+    volumes:
+      - type: bind
+        source: ${ORIONQ_CONFIGURATION_DIRECTORY:?Set a provisioned configuration directory}
+        target: /etc/orionq
+        read_only: true
+      - type: bind
+        source: ${ORIONQ_SECRET_DIRECTORY:?Set a protected secret directory}
+        target: /run/secrets
+        read_only: true
+      - type: bind
+        source: ${ORIONQ_STATE_DIRECTORY:?Set a durable state directory owned by UID 10001}
+        target: /var/lib/orionq
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=64m,mode=1777
+    pids_limit: 128
+    stop_grace_period: 30s
+    restart: "no"

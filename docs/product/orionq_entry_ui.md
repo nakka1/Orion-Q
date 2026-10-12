@@ -1,6 +1,6 @@
 # OrionQ: entrada, confirmação de identidade e carregamento
 
-As fontes **5.60.0** acrescentam um som original ao desligamento **Unplug from E.V.A.**, introduzido em 5.59.0, mar vermelho e uma cruz vetorial na GEO durante o modo local. O gatilho visual usa **S. Ikari** e a senha exata **thirdpilot**. O fluxo conserva a confirmação de identidade Windows e o carregamento por trabalho concluído. A marca inicial corresponde à última versão aceita do executável: “Orion” em Inter, na cor de texto do tema, seguido do Q laranja com esfera de Bloch e satélite.
+As fontes **5.60.1** refinam a cruz vetorial da GEO: forma mais alongada, base mais estreita, brilho interior quente e discreto, e uma referência geográfica comum ao Mapa e ao Globo. Permanecem o som original de **Unplug from E.V.A.**, introduzido em 5.60.0, e o gatilho visual **S. Ikari** com a senha exata **thirdpilot**. O fluxo conserva a confirmação de identidade Windows e o carregamento por trabalho concluído. A marca inicial corresponde à última versão aceita do executável: “Orion” em Inter, na cor de texto do tema, seguido do Q laranja com esfera de Bloch e satélite.
 
 ## Entrada com a identidade existente
 
@@ -22,7 +22,7 @@ O áudio é [emergency-interface.wav](../../src/quantum_autopilot/console/assets
 
 Ao acionar a sequência, o Q assume vermelho `#E53935`. Sua cauda parte de uma base larga junto à esfera e afina para fora seguindo a diagonal do Q; a terminação em cruz tem braços com pontas afiladas e substitui o satélite. A esfera de Bloch e as letras Inter são preservadas. A variante acompanha as marcas da janela, as superfícies nativas filhas e seu ícone em memória enquanto o modo E.V.A. permanece ativo, inclusive após reconstrução por troca de tema. Desligar esse modo ou iniciar uma nova execução restaura a marca laranja e o satélite. A variante não grava uma preferência nem modifica os ícones empacotados. Consulte também o [guia de marca](orionq_branding.md).
 
-Em 5.60.0, a apresentação GEO acompanha o mesmo estado visual: o mar fica vermelho e uma grande cruz vetorial vermelha, com opacidade de 25%, aparece no topo central do Mapa ou com sua base no norte da esfera no Globo. Os ícones dos satélites e pontos terrestres, enlaces, destaques e áreas de clique mantêm seus estilos e funções. Desligar recupera a aparência normal. Esse estado compartilhado não modifica os cadastros, as posições orbitais, a seleção ou os estados de transmissão publicados pelo backend.
+Em 5.60.1, a apresentação GEO conserva o mar vermelho e projeta a base da cruz em **longitude 0° e latitude 55° N** nos dois modos. No Mapa, sua posição acompanha a transformação geográfica e sua altura acompanha o zoom. No Globo, a base deriva do vetor ECEF da mesma referência e fica oculta no hemisfério posterior. Uma escala visual de 2.548.400 m controla a altura; o piso de 54 pixels no globo mantém a decoração legível ao afastar. Nenhum desses valores representa um dispositivo ou estrutura física. A forma usa largura/altura de 0,72 e base de 10% da largura. Um gradiente de núcleo quente `#FF8B78` sobre `#F02D40` produz o brilho exclusivamente dentro da silhueta, mantendo 25% de opacidade, sem halo ou animação adicional. Os ícones dos satélites e pontos terrestres, enlaces, destaques e áreas de clique mantêm seus estilos e funções. Desligar recupera a aparência normal. Esse estado compartilhado não modifica os cadastros, as posições orbitais, a seleção ou os estados de transmissão publicados pelo backend.
 
 ## Desligamento do modo E.V.A. em 5.60.0
 
@@ -46,11 +46,19 @@ O carregamento de serviço e demonstração usa **sete marcos**: serviço prepar
 
 Uma falha preserva o último progresso recebido e apresenta **Retry loading** e **Back to sign in** no modo normal. A tentativa seguinte reinicia a preparação ou solicita nova leitura ao provider existente. **Back to sign in** limpa a navegação automática do carregamento; no modo E.V.A., esse controle mostra **Unplug from E.V.A.** e segue a sequência de desligamento antes de retornar à entrada. Ao confirmar novamente o login para a mesma origem que falhou, a interface reinicia a preparação e continua aguardando prontidão, sem abrir uma tela vazia. A retomada após voltar à entrada exige confirmação do login. Parar a preparação invalida sua geração, solicita cancelamento sem esperar o worker e descarta resultados tardios. Os indicadores param ao ocultar, concluir, abortar ou remover a superfície; as sequências visuais também são descartadas no fechamento da janela.
 
-## Evidência atual: 5.60.0
+## Evidência atual: 5.60.1
+
+A [validação da manutenção GEO](../results/orionq_geo_anchor_20261009.md) registra **311 regressões únicas aprovadas** nesta rodada, incluindo **43 testes GEO**, em 7,61 s, sobre a revisão final com brilho quente, proporção 0,72 e piso de 54 pixels no Globo. Esses testes verificam ancoragem comum, pan/zoom, ocultação, culling, transparência, brilho, restauração e ciclo de vida dos renderizadores. O diagnóstico de fonte com **Qt Windows** aprovou 28 casos GEO e produziu 38 PNGs por `QWidget.grab` de componentes lógicos 1280×720/3440×1440, DPR 1, em host 960×640; não captura o console completo nem executa o binário congelado. A [entrada nativa atual](../../outputs/orionq_build_5_60_1_20261009/native-entry/entry-visuals.json) aprovou quatro casos, com fixture de interface, sem autenticação ou estado do operador. Testes de versões ou revisões anteriores permanecem separados; não são somados como novos resultados. Capturas prévias com Qt offscreen permanecem históricas e não qualificam esta revisão Windows.
+
+A [rodada 5.60.1-native-20261009-061920](../../release/windows/5.60.1-native-20261009-061920/) produziu o [executável](../../release/windows/5.60.1-native-20261009-061920/OrionQ/OrionQ.exe) e o [ZIP portátil](../../release/windows/5.60.1-native-20261009-061920/OrionQ-5.60.1-native-windows-x64.zip), aprovados em **20 de 20 gates automáticos locais**, sem erros, no [consolidado final](../../outputs/orionq_build_5_60_1_20261009/frozen-release-final.json). A [aceitação nativa](../../release/windows/5.60.1-native-20261009-061920/native-acceptance/acceptance-report.json) confirma `automatic_passed: true`; o [manifesto do pacote](../../release/windows/5.60.1-native-20261009-061920/portable-package.json) registra os hashes do EXE e ZIP e o CRC verificado. Os autotestes do binário aprovam 39 critérios com Qt **offscreen**; os quatro casos de entrada acima continuam sendo testes de fonte com fixture e Qt **Windows**.
+
+A revisão manual, outra máquina, mouse físico, som audível e integração física permanecem pendentes. O runtime do roadmap excedeu 10 ms nas 20 amostras; a aprovação funcional não qualifica desempenho sem pausas. Os documentos deste checkout receberam a conclusão após a qualificação: o ZIP conserva seu snapshot documental anterior, sem reempacotamento. O [guia de distribuição e marca](orionq_branding.md) apresenta os hashes e os limites dos gates.
+
+## Evidência anterior: 5.60.0
 
 A [validação de áudio e variante GEO](../results/orionq_signal_audio_geo_20261008.md) registra **31 testes de fonte do desligamento aprovados** e um diagnóstico Windows com **15 critérios aprovados**, dois ciclos naturais e reinício/cancelamento. O diagnóstico observou `Ready`, início e fim de reprodução Qt e continuidade do heartbeat: p95 de **37,514 ms** e intervalo máximo de **189,765 ms**. Essa evidência não certifica o volume percebido pelo usuário; `audibility_verified` permanece `false`. A validação específica da GEO e da nova combinação de gatilho é registrada separadamente, sem inferi-la a partir do áudio.
 
-O build usa a [pasta 5.60.0-native-20261008-233510](../../release/windows/5.60.0-native-20261008-233510/), com destinos `OrionQ/OrionQ.exe` e `OrionQ-5.60.0-native-windows-x64.zip`. Quando os relatórios dessa rodada estiverem disponíveis, consulte `native-acceptance/acceptance-report.json`, exigindo `automatic_passed: true`, e `portable-package.json` para os hashes. Os resultados de fonte ou a existência de um arquivo não substituem a qualificação do executável. O [guia de distribuição e marca](orionq_branding.md) descreve os gates e o empacotamento.
+Os resultados e artefatos dessa rodada permanecem no [registro de 5.60.0](../results/orionq_signal_audio_geo_20261008.md). A nova ancoragem geográfica e o refinamento da cruz pertencem à manutenção 5.60.1.
 
 ## Evidência anterior: 5.59.0
 
@@ -72,6 +80,7 @@ Os comandos abaixo reproduzem testes de fonte e capturas de interface. A qualifi
 python -m pytest tests\test_native_login.py tests\test_prepared_source.py
 python -m pytest tests\test_console_emergency_signal.py tests\test_console_login_flow.py tests\test_console_loading_progress.py tests\test_console_node_incremental.py tests\test_console_node_window_layout.py
 python -m pytest tests\test_console_disconnect_signal.py tests\test_console_login_flow.py
+python -m pytest tests\test_console_signal_geo.py tests\test_console_geo_modes.py tests\test_console_geo_update_cadence.py
 python tools\generate_disconnect_sound.py
 ```
 

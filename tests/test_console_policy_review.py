@@ -28,7 +28,7 @@ def wait(app, predicate, timeout=8):
     deadline = time.monotonic() + timeout
     while not predicate() and time.monotonic() < deadline:
         app.processEvents()
-        QTest.qWait(20)
+        time.sleep(.02)  # Let authenticated Python workers run between Qt polls.
     assert predicate()
 
 
@@ -44,6 +44,7 @@ def panel(provider, app):
     provider.service.topology_store.initialize(default_simulated_topology())
     wrapper = SwitchableProvider(provider)
     wrapper.running = True
+    provider.refresh()  # Commit the authenticated UI frame before opening its panel.
     view = ui.PolicyReview()
     view.attach(wrapper)
     view.show()
@@ -301,7 +302,8 @@ def test_initialized_service_capability_and_native_entry(provider, app):
     window = ConsoleWindow(provider, skip_auth=True)
     window.provider.running = True
     edge = window.screens['fpga']
-    edge.apply(provider.build())
+    provider.refresh()
+    edge.apply(provider._snap)
     assert edge.policy_review.provider is window.provider and edge.policy_review_button.isEnabled()
     assert not edge.ml.isEnabled() and not edge.deterministic.isEnabled()
     click(edge.policy_review_button)

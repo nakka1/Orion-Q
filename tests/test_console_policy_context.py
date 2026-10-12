@@ -61,6 +61,7 @@ def panel(provider, app, monkeypatch):
     )
     wrapper = SwitchableProvider(provider)
     wrapper.running = True
+    provider.refresh()
     view = ui.PolicyContextInspection()
     view.attach(wrapper)
     view.show()
@@ -262,7 +263,10 @@ def test_topology_change_and_idle_expiry_clear_receipts(panel, app):
     view = panel[0]
     observe(panel, app)
     version = view.context["record"]["context"]["topology_version"]
-    view._snapshot(SimpleNamespace(topology=SimpleNamespace(persisted=True, version=version + 1)))
+    view._snapshot(SimpleNamespace(
+        topology=SimpleNamespace(persisted=True, version=version + 1),
+        capabilities=panel[1].capabilities,
+    ))
     assert view.context is None and view.observation is None
     observe(panel, app)
     view.deadline = time.monotonic() - 1

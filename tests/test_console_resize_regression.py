@@ -74,6 +74,7 @@ def test_continuous_edge_drag_releases_mouse_and_keeps_console_usable(window, ap
     grip = window.window_controls.grips[index]
     before = QRect(window.geometry())
     initial_links = window.screens["topology"].geo.drawn_link_keys()
+    initial_ids = {node.id for node in window.snapshot.topology.nodes}
     start = grip.mapToGlobal(grip.rect().center())
     ticks = []
     timer = QTimer(); timer.setInterval(5); timer.timeout.connect(lambda: ticks.append(True)); timer.start()
@@ -108,7 +109,7 @@ def test_continuous_edge_drag_releases_mouse_and_keeps_console_usable(window, ap
         assert window.current_screen == "topology" and topology.ml_control.switch.isEnabled()
         net=topology._net
         expected_ids = {node.id for node in window.snapshot.topology.nodes}
-        assert len(expected_ids) == 71  # Full current global preset, including all nine satellites.
+        assert expected_ids == initial_ids  # Preserve the complete registered preset, including hybrid additions.
         assert {node.id for node in net.nodes} == expected_ids
         # Resizing and navigation must preserve the actual registered scene.
         # Availability/traffic is checked separately by the satellite pipeline

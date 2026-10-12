@@ -99,11 +99,11 @@ def test_purification_succeeds_well_above_chance_for_good_pairs():
 
 
 def test_t1_t2_physical_constraint_enforced_in_physics_config():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="T2 must be <= 2\\*T1"):
         PhysicsConfig(T1=10e-6, T2=25e-6)  # T2 > 2*T1 -- unphysical
 
 
 def test_t1_t2_physical_constraint_enforced_in_repeater_node():
     from quantum_twin.simulation.network import QuantumRepeaterNode
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="T2 must be <= 2\\*T1"):
         QuantumRepeaterNode(T1=10e-6, T2=25e-6)

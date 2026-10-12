@@ -273,7 +273,9 @@ def _materialized_ground_fixture():
     engine = NS(id="link-1", status="ok", distance_km=5., fidelity=.95, qber=.02, skr_bps=100.,
         sync_residual_ps=2., polarisation_residual_mrad=3., stability=.8, wave=(.98, .96), wave_rate_hz=20.,
         detector=NS(alarm=False, label="nominal", state="ready"), provenance={}, controllers=(), status_reasons=())
-    link = NS(id="link-1", key="link-1", a="CIMATEC", b="PEER")
+    link = NS(id="link-1", key="link-1", a="CIMATEC", b="PEER",
+              processing_label="UNREPORTED", data_source="simulated",
+              processing_physics="declared reference physics")
     live_node = NS(role=node.role, kind=node.kind, status=node.status, located=node.located, latitude=node.latitude,
         longitude=node.longitude, place=node.place, address=None, port=None, links=(link.key,), memory_state="empty",
         pairs=(), temperature_c=20., calibration_count=0, routes_through=(), calibration=None)

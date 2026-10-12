@@ -1,10 +1,11 @@
 """Prepare pure service state off Qt, then attach a provider on its owner thread."""
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import CancelledError, ThreadPoolExecutor
 from contextlib import nullcontext
 from contextvars import copy_context
 from dataclasses import replace
+import threading
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
@@ -68,6 +69,13 @@ class DeferredProvider(DataProvider):
         self._executor = self._future = self._context = None
         self._preparing_identity = None
         self.running = self.busy = False
+        self._retired_delegates = []
+        self._preparation_drains = []
+        self._prepared_service = None
+        self._retire_timer = QTimer(self)
+        self._retire_timer.setSingleShot(True)
+        self._retire_timer.setInterval(20)
+        self._retire_timer.timeout.connect(self._collect_retired)
         self._timer = QTimer(self)
         self._timer.setInterval(20)
         self._timer.timeout.connect(self._poll_preparation)
@@ -76,6 +84,17 @@ class DeferredProvider(DataProvider):
     @property
     def delegate(self):
         return self._delegate
+
+    @property
+    def stopping(self):
+        return (any(getattr(delegate, "stopping", False) for delegate in self._retired_delegates)
+                or any(not drain["complete"].is_set() for drain in self._preparation_drains))
+
+    @property
+    def shutdown_error(self):
+        return next((error for error in (
+            *(getattr(delegate, "shutdown_error", None) for delegate in self._retired_delegates),
+            *(drain["error"] for drain in self._preparation_drains)) if error is not None), None)
 
     @property
     def ready(self):
@@ -160,6 +179,11 @@ class DeferredProvider(DataProvider):
     def start(self):
         if self.running:
             return
+        if self.stopping:
+            raise RuntimeError("Source is still releasing its previous session")
+        if self.shutdown_error is not None:
+            raise RuntimeError("Previous source resource release failed; recover it before restarting")
+        self._collect_retired()
         self._generation += 1
         generation = self._generation
         self.running = True
@@ -199,6 +223,7 @@ class DeferredProvider(DataProvider):
         candidate = None
         try:
             prepared = future.result()
+            self._prepared_service = prepared
             self._loading(1, "Source service prepared; attaching its provider…")
             if generation != self._generation or not self.running:
                 return
@@ -214,9 +239,9 @@ class DeferredProvider(DataProvider):
                 raise TypeError("create must return a fresh DataProvider")
             if candidate.thread() != self.thread():
                 raise TypeError("created provider must belong to the owner Qt thread")
+            self._prepared_service = None  # The valid Qt provider now owns its service.
             if generation != self._generation or not self.running:
-                candidate.stop()
-                candidate.deleteLater()
+                self._retire_delegate(candidate)
                 return
             if candidate.parent() is None:
                 candidate.setParent(self)
@@ -229,8 +254,7 @@ class DeferredProvider(DataProvider):
         except Exception as exc:
             if generation == self._generation:
                 if candidate is not None and self._delegate is not candidate and isinstance(candidate, DataProvider):
-                    candidate.stop()
-                    candidate.deleteLater()
+                    self._retire_delegate(candidate)
                 self._fail(type(exc).__name__)
         finally:
             if generation == self._generation:
@@ -291,6 +315,9 @@ class DeferredProvider(DataProvider):
         self.running = False
         self._ready = False
         self._context = None
+        prepared, self._prepared_service = self._prepared_service, None
+        if prepared is not None:
+            self._drain_preparation(prepared=prepared, principal=self._preparing_identity)
         self._detach_delegate()
         self._delegate_busy = False
         self._snap = self._pending_snapshot("Source preparation failed.")
@@ -311,6 +338,10 @@ class DeferredProvider(DataProvider):
             future.cancel()
         if executor is not None:
             executor.shutdown(wait=False, cancel_futures=True)
+        prepared, self._prepared_service = self._prepared_service, None
+        if future is not None or executor is not None or prepared is not None:
+            self._drain_preparation(future=future, executor=executor, prepared=prepared,
+                                    principal=self._preparing_identity)
         self._context = None
         self._detach_delegate()
         self._delegate_busy = False
@@ -323,8 +354,73 @@ class DeferredProvider(DataProvider):
         self._connections.clear()
         delegate, self._delegate = self._delegate, None
         if delegate is not None:
-            delegate.stop()
+            self._retire_delegate(delegate)
+
+    def _retire_delegate(self, delegate):
+        delegate.stop()
+        if getattr(delegate, "stopping", False) or getattr(delegate, "shutdown_error", None) is not None:
+            if not any(item is delegate for item in self._retired_delegates):
+                self._retired_delegates.append(delegate)
+            self._retire_timer.start()
+        else:
             delegate.deleteLater()
+
+    def _collect_retired(self):
+        for delegate in tuple(self._retired_delegates):
+            if not getattr(delegate, "stopping", False) and getattr(delegate, "shutdown_error", None) is None:
+                self._retired_delegates.remove(delegate)
+                delegate.deleteLater()
+        self._preparation_drains = [drain for drain in self._preparation_drains
+            if not drain["complete"].is_set() or drain["error"] is not None]
+        if self.stopping:
+            self._retire_timer.start()
+
+    def _drain_preparation(self, *, future=None, executor=None, prepared=None, principal=None):
+        drain = {"complete": threading.Event(), "error": None}
+        self._preparation_drains.append(drain)
+
+        def finish():
+            try:
+                if executor is not None:
+                    executor.shutdown(wait=True)
+                service = prepared
+                if future is not None:
+                    try:
+                        service = future.result()
+                    except CancelledError:
+                        return
+                    except Exception:
+                        return  # Preparation failed without returning ownership.
+                invalidate = getattr(service, "invalidate_policy_preparation", None)
+                if callable(invalidate):
+                    try:
+                        with self._identity_scope(principal):
+                            invalidate()
+                    except PermissionError:
+                        pass
+                engine = getattr(service, "_network_engine", None)
+                fpga = getattr(engine, "fpga", None)
+                if fpga is not None and callable(getattr(fpga, "close", None)):
+                    fpga.close()
+                receivers = getattr(engine, "close_satellite_receivers", None)
+                if not callable(receivers):
+                    receivers = getattr(engine, "close_ogs", None)
+                if callable(receivers):
+                    receivers()
+                release = getattr(service, "_release_controller_io_resources", None)
+                if callable(release):
+                    release()
+            except Exception as exc:
+                drain["error"] = exc
+                try:
+                    self.error.emit(f"Prepared source resource release failed: {type(exc).__name__}")
+                except RuntimeError:
+                    pass
+            finally:
+                drain["complete"].set()
+
+        threading.Thread(target=finish, name="console-preparation-drain", daemon=True).start()
+        self._retire_timer.start()
 
     def _call_delegate(self, name, *args):
         if self._delegate is None or not self.running or not self._ready:

@@ -48,6 +48,7 @@ import torch
 
 from legacy.dataset import QuantumNetworkDataset
 from quantum_twin.simulation.network import QuantumRepeaterNode
+from quantum_twin.core.validation import finite_real, integer
 
 
 class QuantumRepeaterChain:
@@ -56,7 +57,11 @@ class QuantumRepeaterChain:
     def __init__(self, n_hops: int, distances_km: list, qn_cfg: dict, threshold: float = 0.65,
                  window_size: int = 20, test_size: float = 0.2, n_steps_per_hop: int = 1200,
                  seed: int = 42):
-        assert len(distances_km) == n_hops, "distances_km deve ter um valor por salto"
+        integer("n_hops", n_hops, minimum=1)
+        if len(distances_km) != n_hops:
+            raise ValueError("distances_km deve ter um valor por salto")
+        for distance_km in distances_km:
+            finite_real("distances_km (km)", distance_km, minimum=0.0)
         self.n_hops = n_hops
         self.threshold = threshold
         self.window_size = window_size
@@ -283,7 +288,8 @@ class MultiPathRouter:
     def __init__(self, paths: list):
         """paths: list of already-constructed QuantumRepeaterChain instances,
         one per alternative physical route between the same two endpoints."""
-        assert len(paths) >= 1, "MultiPathRouter needs at least one path"
+        if not paths:
+            raise ValueError("MultiPathRouter needs at least one path")
         self.paths = paths
         for path in self.paths:
             if not hasattr(path, "_hop_cursor"):

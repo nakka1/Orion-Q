@@ -1,4 +1,5 @@
 """Release version and compatibility boundaries during the OrionQ rename."""
+import importlib.metadata
 from importlib.metadata import PackageNotFoundError
 
 import pytest
@@ -21,13 +22,13 @@ def test_source_version_follows_pyproject_without_stale_editable_metadata(monkey
     (tmp_path / "pyproject.toml").write_text('[project]\nname = "quantum-twin"\n' + version_line + '\n', encoding="utf-8")
     monkeypatch.setattr(product, "__file__", str(fake_module))
     monkeypatch.setattr(product.sys, "frozen", False, raising=False)
-    monkeypatch.setattr(product, "version", lambda _: "old-editable-version")
+    monkeypatch.setattr(importlib.metadata, "version", lambda _: "old-editable-version")
     assert product.product_version() == "9.8.7"
 
 
 def test_frozen_version_uses_bundled_metadata_instead_of_checkout(monkeypatch):
     monkeypatch.setattr(product.sys, "frozen", True, raising=False)
-    monkeypatch.setattr(product, "version", lambda name: "7.6.5" if name == "quantum-twin" else None)
+    monkeypatch.setattr(importlib.metadata, "version", lambda name: "7.6.5" if name == "quantum-twin" else None)
     assert product.product_version() == "7.6.5"
 
 
@@ -35,7 +36,7 @@ def test_frozen_release_missing_metadata_is_not_silently_mislabelled(monkeypatch
     monkeypatch.setattr(product.sys, "frozen", True, raising=False)
     def missing(_):
         raise PackageNotFoundError("quantum-twin")
-    monkeypatch.setattr(product, "version", missing)
+    monkeypatch.setattr(importlib.metadata, "version", missing)
     with pytest.raises(RuntimeError, match="release version metadata is missing"):
         product.product_version()
 

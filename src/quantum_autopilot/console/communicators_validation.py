@@ -1,6 +1,88 @@
 """Bundled UI registration, backend admission and orbital rendering diagnostic."""
 import json
+import math
 from pathlib import Path
+
+
+ACTIVATION_STAGE_ORDER = (
+    'acquisition_requested', 'acquired', 'validated', 'synchronized',
+    'quantum_transmission_observed', 'protocol_intake_deferred',
+    'classical_transmitted', 'classical_received', 'protocol_proposal_prepared',
+    'postprocessing_classical_transmitted', 'postprocessing_classical_received',
+    'protocol_processed', 'metrics_computed',
+)
+
+
+def _activation_receipt_summary(activation, session_id='CHECK-TF'):
+    """Admit finite SNS completion only after every causal public exchange."""
+    from ..quantum_protocols.contracts import digest
+
+    by_command = {}
+    for event in activation:
+        by_command.setdefault(event.get('command_id'), []).append(event)
+    completed = []
+    command_summaries = []
+    for command_id, trace in by_command.items():
+        if not command_id or any(event.get('session_id') != session_id for event in trace):
+            continue
+        stages = [event.get('event') for event in trace]
+        if not all(stage in stages for stage in ACTIVATION_STAGE_ORDER):
+            continue
+        positions = [stages.index(stage) for stage in ACTIVATION_STAGE_ORDER]
+        if positions != sorted(positions) or 'operation_error' in stages:
+            continue
+        try:
+            times = [float(event['at_s']) for event in trace]
+            if not all(math.isfinite(value) for value in times) or times != sorted(times):
+                continue
+            command = trace[stages.index('acquisition_requested')]['detail']['command']
+            deadline = float(command['deadline_s'])
+            if (command['command_id'] != command_id or command['session_id'] != session_id
+                    or not math.isfinite(deadline) or times[-1] > deadline):
+                continue
+            sent = [(index, event) for index, event in enumerate(trace)
+                    if event['event'] == 'postprocessing_classical_transmitted']
+            received = [(index, event) for index, event in enumerate(trace)
+                        if event['event'] == 'postprocessing_classical_received']
+            processed_index = stages.index('protocol_processed')
+            proposal_index = stages.index('protocol_proposal_prepared')
+            if (not sent or len(sent) != len(received)
+                    or trace[processed_index]['detail'].get('classical_exchanges_received') != len(sent)):
+                continue
+            valid = True
+            previous_receive = proposal_index
+            for sequence, ((sent_index, transmission), (received_index, reception)) in enumerate(
+                    zip(sent, received), start=1):
+                message = transmission['detail']
+                unsigned = {key: value for key, value in message.items() if key != 'receipt_sha256'}
+                if (not previous_receive < sent_index < received_index < processed_index
+                        or message != reception['detail']
+                        or message['command_id'] != command_id or message['session_id'] != session_id
+                        or message['sequence'] != sequence
+                        or message['message_id'] != f'{command_id}:public:{sequence}'
+                        or message['classical_channel_ids'] != command['classical_channel_ids']
+                        or message['associated_quantum_ids'] != command['quantum_channel_ids']
+                        or not message['classical_channel_ids'] or not message['associated_quantum_ids']
+                        or message['receipt_sha256'] != digest(unsigned)
+                        or transmission['at_s'] != message['transmitted_at_s']
+                        or reception['at_s'] != message['received_at_s']
+                        or not message['transmitted_at_s'] < message['received_at_s'] <= deadline):
+                    valid = False
+                    break
+                previous_receive = received_index
+            if not valid:
+                continue
+        except (KeyError, TypeError, ValueError):
+            continue
+        completed.append(command_id)
+        command_summaries.append({'command_id': command_id, 'public_exchanges_received': len(received),
+                                  'metrics_at_s': trace[stages.index('metrics_computed')]['at_s'],
+                                  'deadline_s': deadline})
+    return {'session_id': session_id, 'completed_command_ids': completed,
+            'required_stage_order': list(ACTIVATION_STAGE_ORDER), 'events': len(activation),
+            'completed_commands': command_summaries,
+            'source': 'persisted technology_events; UI preview is bounded',
+            'scope': 'finite SNS causal simulated transport; not authenticated physical communication'}
 
 
 def validate_communicators_geo(destination,repository_root):
@@ -58,22 +140,8 @@ def validate_communicators_geo(destination,repository_root):
             rows=conn.execute('SELECT payload_json FROM technology_events WHERE topology_id=? AND session_id=? ORDER BY sequence',
                               (runtime.topology_id,'CHECK-TF')).fetchall()
         activation=[json.loads(row[0]) for row in rows]
-        by_command={}
-        for event in activation:
-            by_command.setdefault(event['command_id'],[]).append(event)
-        required=('acquisition_requested','acquired','validated','synchronized',
-                  'quantum_transmission_observed','protocol_processed',
-                  'classical_transmitted','classical_received','metrics_computed')
-        completed=[]
-        for command_id,trace in by_command.items():
-            stages=[event['event'] for event in trace]
-            if command_id and all(stage in stages for stage in required) and \
-                    [stages.index(stage) for stage in required]==sorted(stages.index(stage) for stage in required):
-                completed.append(command_id)
-        checks['activation_runs_causal_pipeline']=bool(completed)
-        report['activation_receipts']={'session_id':'CHECK-TF','completed_command_ids':completed,
-            'required_stage_order':list(required),'events':len(activation),
-            'source':'persisted technology_events; UI preview is bounded'}
+        report['activation_receipts'] = _activation_receipt_summary(activation)
+        checks['activation_runs_causal_pipeline'] = bool(report['activation_receipts']['completed_command_ids'])
         (out/'activation-receipts.json').write_text(json.dumps(activation,indent=2),encoding='utf-8')
         screen.grab().save(str(out/'connection-form.png'))
         screen.load_record(state.communicators['SAT-RIO-SATELLITE']);screen.tabs.setCurrentIndex(0)

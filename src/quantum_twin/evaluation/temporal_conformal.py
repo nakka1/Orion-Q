@@ -77,7 +77,8 @@ class AdaptiveConformalPredictor:
         self._calibration_residuals = residuals
 
     def _current_qhat(self) -> float:
-        assert self._calibration_residuals is not None
+        if self._calibration_residuals is None:
+            raise RuntimeError("Call set_calibration_residuals() before computing conformal intervals.")
         q_level = float(np.clip(1.0 - self.alpha_t, 0.0, 1.0))
         return float(np.quantile(self._calibration_residuals, q_level))
 

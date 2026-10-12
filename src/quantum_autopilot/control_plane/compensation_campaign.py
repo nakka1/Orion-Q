@@ -11,7 +11,7 @@ import numpy as np
 
 from .compensation_temporal import TemporalCompensationEvaluation, angular_error, export_compensation_temporal_report
 from .optional_compensation import MODEL_IDS, REGIMES, TELEMETRY_KEY, evaluate_optional_compensation
-from ..console.synthetic_compensation import SyntheticCompensationStream
+from .synthetic_compensation import SyntheticCompensationStream
 from ..model_intake.artifacts import PINS
 from ..model_intake.compensation import _exp_map, _log_map
 from ..model_intake.sync_session import _constant, _unique
@@ -173,7 +173,7 @@ def run_campaign(archive, protocol_path, output, *, progress=None):
     root = Path(__file__).resolve().parents[3]
     paths = ["src/quantum_autopilot/" + path for path in (
         "control_plane/compensation_campaign.py", "control_plane/compensation_temporal.py",
-        "control_plane/optional_compensation.py", "console/synthetic_compensation.py",
+        "control_plane/optional_compensation.py", "control_plane/synthetic_compensation.py",
         "model_intake/compensation_session.py", "model_intake/compensation.py",
         "model_intake/compensation_evaluation.py", "model_intake/artifacts.py",
         "control_plane/optional_sync.py", "control_plane/contracts.py", "core/contracts.py", "core/__init__.py",

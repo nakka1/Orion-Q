@@ -11,6 +11,7 @@ import pytest
 from quantum_autopilot.control_plane.campaign_attempts import begin_attempt, finish_attempt, read_attempt, export_attempt_snapshot
 from quantum_autopilot.control_plane.temporal_campaign import read_temporal_campaign
 from quantum_autopilot.control_plane.topology import SimulatedTopologyStore
+from quantum_autopilot.security.identity import AuthenticationError, AuthorizationError
 from tests import test_console_temporal_campaign as shared
 from tests.test_temporal_campaign import request
 
@@ -106,6 +107,75 @@ def test_export_requires_export_capability_in_addition_to_history(setup, app, tm
     with pytest.raises(ValueError, match='unavailable'):
         job.export_attempt(0, tmp_path / 'forbidden.json')
     assert not (tmp_path / 'forbidden.json').exists()
+
+
+@pytest.mark.parametrize('error_type', [AuthenticationError, AuthorizationError])
+def test_explicit_refresh_with_rejected_identity_withdraws_export_controls(
+        setup, app, tmp_path, monkeypatch, error_type):
+    service, provider, job, dialog, _ = setup
+    begin_attempt(service.topology_store, request())
+    job.browse_attempts()
+    settle(app, lambda: not job.active)
+    dialog.attempt_table.selectRow(0)
+    selected = job.attempts
+    assert dialog.attempt_export.isEnabled() and dialog.attempt_page_export.isEnabled()
+    path = tmp_path / 'identity-rejected.json'
+
+    def reject_identity(_):
+        raise error_type('current identity rejected')
+
+    with monkeypatch.context() as patch:
+        patch.setattr(type(provider.active), 'capabilities', property(reject_identity))
+        with pytest.raises(error_type, match='current identity rejected'):
+            dialog.refresh()
+        assert not job.presentation_capabilities.operations
+        assert not dialog.attempt_export.isEnabled()
+        assert not dialog.attempt_page_export.isEnabled()
+        assert not dialog.history_refresh.isEnabled() and not dialog.load_button.isEnabled()
+        assert job.attempts is selected and not job.active
+        with pytest.raises(error_type, match='current identity rejected'):
+            job.export_attempt(0, path)
+        assert not path.exists()
+
+    dialog.refresh()
+    assert dialog.attempt_export.isEnabled() and job.attempts is selected
+
+
+def test_presentation_callbacks_do_not_refresh_backend_authority(setup, app, monkeypatch):
+    service, provider, job, dialog, _ = setup
+    begin_attempt(service.topology_store, request())
+    job.browse_attempts()
+    settle(app, lambda: not job.active)
+    dialog.attempt_table.selectRow(0)
+    assert dialog.attempt_export.isEnabled()
+
+    def unexpected_authority_read(_):
+        pytest.fail('a presentation callback read live backend capabilities')
+
+    with monkeypatch.context() as patch:
+        patch.setattr(type(provider.active), 'capabilities', property(unexpected_authority_read))
+        dialog.render_presented()
+        job.changed.emit()
+        dialog.history_filter.setText('unapplied')
+        dialog.history_filter.clear()
+        dialog.attempt_filter.setText('unapplied')
+        assert not dialog.attempt_export.isEnabled()
+        dialog.attempt_filter.clear()
+        dialog.attempt_status.setCurrentIndex(dialog.attempt_status.findData('OPEN'))
+        assert not dialog.attempt_export.isEnabled()
+        dialog.attempt_status.setCurrentIndex(dialog.attempt_status.findData(''))
+        for field in (dialog.attempt_from, dialog.attempt_before_date):
+            field.setText('2026-10-09')
+            assert not dialog.attempt_export.isEnabled()
+            field.clear()
+        dialog.attempt_table.clearSelection()
+        dialog.attempt_table.setCurrentIndex(dialog.attempt_table.model().index(-1, -1))
+        dialog.render_presented()
+        assert not dialog.attempt_export.isEnabled()
+        dialog.attempt_table.selectRow(0)
+        dialog.reviewed.setChecked(True)
+        dialog.reviewed.setChecked(False)
+        assert dialog.attempt_export.isEnabled() and not dialog.run_button.isEnabled()
 
 
 def test_source_change_during_file_dialog_refuses_selection(setup, app, tmp_path, monkeypatch):

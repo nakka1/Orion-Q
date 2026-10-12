@@ -111,13 +111,13 @@ def test_get_history_matches_number_of_steps_taken():
 def test_invalid_action_raises():
     env = QuantumRepeaterEnvironment(config=PhysicsConfig(SEED=8), max_rounds=5)
     env.reset()
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="Unknown action"):
         env.step("NOT_A_REAL_ACTION")
 
 
 def test_observe_before_reset_raises():
     env = QuantumRepeaterEnvironment(config=PhysicsConfig(SEED=9), max_rounds=5)
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match="Call reset"):
         env.observe()
 
 
@@ -154,14 +154,14 @@ def test_begin_wait_hold_rejects_zero_fidelity():
     accepted and shown 'decohering' upward toward the mixed-state floor."""
     env = QuantumRepeaterEnvironment(config=PhysicsConfig(SEED=1), max_rounds=10)
     env.reset()
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="f_before must be positive"):
         env.begin_wait_hold(f_before=0.0, depol_prob=0.01)
 
 
 def test_wait_tick_and_reobserve_requires_begin_wait_hold_first():
     env = QuantumRepeaterEnvironment(config=PhysicsConfig(SEED=2), max_rounds=10)
     env.reset()
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match="Call begin_wait_hold"):
         env.wait_tick_and_reobserve()
 
 

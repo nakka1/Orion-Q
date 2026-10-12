@@ -407,14 +407,15 @@ def test_login_source_selection_calls_the_right_factory_and_opens_topology(app, 
         assert snap.capabilities.adapter_id == "assurance-demo-service"
         assert "input origin is identified in each live frame" in snap.capabilities.note
         assert snap.live.source_kind == "simulated"
-        # Includes the additive GEO constellation and global operations installed
-        # by the current demonstration backend (see test_global_geo_constellation).
-        assert len(snap.topology.nodes) == 71 and len(snap.topology.links) == 131
+        # Includes GEO/global operations and the dedicated finite-SNS/orbital banks.
+        assert len(snap.topology.nodes) == 76 and len(snap.topology.links) == 136
         current_ids = {node.id for node in snap.topology.nodes}
         assert "UNIJORGE" not in current_ids
         assert {"CIMATEC", "CBPF", "IME-USP", "USP", "UNICAMP", "CIQUANTA",
                 "PUC-RIO", "UFRJ", "IME-RIO", "IBM-WATSON", "IQMP",
                 "GOOGLE-QAI", "BSC", "MS-QUANTUM", "IQC", "XANADU"} <= current_ids
+        assert {"TF-RIO-FINITE-CENTER", "ORBITAL-OGS-CBPF", "ORBITAL-GEO-W",
+                "ORBITAL-GEO-E", "ORBITAL-OGS-BSC"} <= current_ids
         assert snap.live.policy["ml_control_enabled"] is False
         assert window.topbar.source_button.text() == "Demonstration ▾"
         window.show_screen("boot")

@@ -659,6 +659,8 @@ class NetworkEngine:
             fidelity = None
             distance = link.distance_km
             segment = metrics.get("segments", {}).get(f"{link.left_node_id}|{link.right_node_id}")
+            if segment is None and 'orbital_relay' in link.technology['technologies']:
+                segment=metrics.get('segments',{}).get(f'{link.right_node_id}|{link.left_node_id}')
             if segment:
                 fidelity = segment.get("fidelity_estimate")
             status = "no_input" if "last_observed_at_s" not in metrics else "up"
@@ -677,13 +679,28 @@ class NetworkEngine:
             if status in ("down", "disabled", "no_input"):
                 fidelity = None
             geometry = metrics.get('geometry', ())
-            if geometry:
+            if geometry and 'orbital_relay' not in link.technology['technologies']:
                 endpoints = session['config']['endpoints']
                 ground = next((n for n in endpoints if n in (link.left_node_id,link.right_node_id)),None)
                 if ground is not None:
                     distance = geometry[endpoints.index(ground)]['range_km']
                 if status == 'up': fidelity = metrics.get('fidelity')
             reasons=[] if controls_available else ['session, node or paired channel unavailable']
+            if 'orbital_relay' in link.technology['technologies']:
+                config=session.get('config',{});clock=self.technologies.clock_s
+                fresh=bool(segment) and 0<=clock-segment.get('at_s',-1e12)<=config.get('parameters',{}).get('block_s',.5)+config.get('parameters',{}).get('timeout_s',3.)
+                geo=(segment or {}).get('geometry',[])
+                geo=geo[0] if geo else {}
+                if geo.get('range_km') is not None:distance=geo['range_km']
+                if not controls_available or not link.active:
+                    status='down' if link.active else 'disabled'
+                elif not fresh:
+                    status='no_input';reasons.append('fresh command-bound orbital memory observation required')
+                elif not geo.get('visible') or geo.get('channel_transmission',0)<=0:
+                    status='down';reasons.extend(geo.get('block_reasons') or ['optical memory-capture segment unavailable'])
+                else:
+                    status='up' if segment.get('heralds',0)>0 else 'degraded'
+                    if status!='up':reasons.append('optical terminal available; no heralded pair in latest block')
             if 'satellite_isl' in link.technology['technologies']:
                 fidelity=None
                 config=session.get('config',{});clock=self.technologies.clock_s
@@ -781,6 +798,46 @@ class NetworkEngine:
                 fresh=0<=clock-metrics.get('last_observed_at_s',-1e12)<=session.config.parameters.get('block_s',2.)+session.config.parameters.get('timeout_s',4.)
                 try:source_origin=self.technologies._source_for(session).origin
                 except ValueError:source_origin='unavailable'
+                if 'orbital_relay' in session.config.technologies:
+                    # Each memory span has its own acquisition and telemetry.
+                    # No BBM92 click or another span's geometry attests it.
+                    bridges=[]
+                    for link in topology.links:
+                        if link.link_id not in session.config.link_ids or node.node_id not in (link.left_node_id,link.right_node_id):continue
+                        segment=metrics.get('segments',{}).get(f'{link.left_node_id}|{link.right_node_id}',{})
+                        if not segment:
+                            segment=metrics.get('segments',{}).get(f'{link.right_node_id}|{link.left_node_id}',{})
+                        peer=link.right_node_id if link.left_node_id==node.node_id else link.left_node_id
+                        hk=segment.get('satellite_housekeeping',{}).get(node.node_id,{})
+                        geo=segment.get('geometry',[]);geo=geo[0] if geo else {}
+                        valid=bool(hk) and clock<=hk.get('valid_until_s',-1) and 0<=clock-segment.get('at_s',-1e12)<=session.config.parameters.get('timeout_s',3.)+session.config.parameters.get('block_s',.5)
+                        available=self.technologies._available(session) and link.active
+                        peer_kind='satellite' if topology.node(peer).telemetry.get('communicator',{}).get('physical_type')=='satellite' else 'ground_station'
+                        status='stored_pairs' if valid and available and segment.get('heralds',0)>0 else 'waiting' if not valid else 'blocked'
+                        entry={'link_id':link.link_id,'session_id':session.config.session_id,'peer_id':peer,
+                            'station_id':peer,'endpoint_kind':peer_kind,'geometry':geo,'status':status,
+                            'metrics':dict(metrics),'origin':source_origin,'technologies':['orbital_relay','quantum_memory','entanglement_swapping'],
+                            'resource_scope':'heralded unmeasured memory pairs; Werner state and logical Bell frame approximation',
+                            'last_observed_at_s':segment.get('at_s'),'reason':session.reason,
+                            'photon_sender':geo.get('photon_sender',link.left_node_id),
+                            'photon_receiver':geo.get('photon_receiver',link.right_node_id)}
+                        bridges.append(entry)
+                        if peer_kind=='satellite':state['isl_links'].append(entry)
+                        else:state['stations'][peer]=geo
+                        if valid and available and geo.get('visible') and segment.get('emission_attempts',0)>0 and geo.get('photon_sender')==node.node_id:
+                            state['transmitting_links'].append({'link_id':link.link_id,'peer_id':peer,'station_id':peer,
+                                'endpoint_kind':peer_kind,'source_origin':source_origin,'observed_at_s':segment['at_s'],
+                                'scope':'source-reported optical memory-capture block; simulated origin'})
+                        if valid and hk.get('at_s',-1)>=latest_housekeeping_at:
+                            from ..quantum_protocols.orbits import ecef_geodetic
+                            latest_housekeeping_at=hk['at_s'];state['housekeeping']=dict(hk)
+                            state.update(housekeeping_valid=True,awaiting_received_telemetry=False,
+                                position_scope='received orbital-memory engineering observation',
+                                ecef_km=hk['ecef_km'],velocity_ecef_km_s=hk['velocity_ecef_km_s'],
+                                **ecef_geodetic(hk['ecef_km']),at_network_s=hk['at_s'],origin=source_origin,
+                                ephemeris_source=hk.get('source'),model='received ECEF observations',observation_age_s=clock-hk['at_s'])
+                    state['bridges'].extend(bridges)
+                    continue
                 is_isl='satellite_isl' in session.config.technologies
                 hk=(metrics.get('satellite_housekeeping',{}).get(node.node_id,{}) if is_isl else metrics.get('housekeeping',{}))
                 association=[]
@@ -1206,7 +1263,12 @@ class NetworkEngine:
                       f"Stored pair lost after memory reset or removal of node {', '.join(invalid)}.")
             updated = dict(pair, status="invalidated", invalidated_nodes=invalid, invalidation_reason=reason,
                            invalidated_at_tick=tick, invalidated_at_utc=at_utc)
-            self.demands.set_pair(demand.demand_id, updated)
+            try:
+                self.demands.set_pair(demand.demand_id, updated, expected_pair=pair, expected_demand=demand)
+            except rt.PairConflict:
+                # Another process already changed this stock. Reconciliation
+                # must not resurrect it or publish a transition it did not win.
+                continue
             events.append(self._event(tick, at_utc, "pair_invalidated", demand.demand_id, reason, "warning"))
         return events
 
@@ -1268,6 +1330,7 @@ class NetworkEngine:
         demand = self._demand(payload)
         self._refresh_pair_state()
         generations = self._memory_generations(demand)
+        previous_pair = self.demands.pair(demand.demand_id)
         at_utc = _utc_now()
         plan, ran = self._pair_episode(demand, "pair")
         if ran is None:
@@ -1279,7 +1342,8 @@ class NetworkEngine:
             return self._result("request_pair", "no_route" if plan is None else plan.status, state, (),
                                 [demand.demand_id], reason=reason, pair=None)
         result, config, request, controller_id, seed = ran
-        pair = {"status": "delivered" if result.delivered else "failed", "fidelity": result.fidelity,
+        pair = {"pair_id": uuid4().hex,
+                "status": "delivered" if result.delivered else "failed", "fidelity": result.fidelity,
                 "min_fidelity": demand.min_fidelity, "route": list(plan.route), "route_links": list(plan.route_links),
                 "hops": result.hops, "swaps_at": list(result.swaps_at), "purifications_in_episode": result.purifications,
                 "rounds": 0, "copies_consumed": 1 if result.delivered else 0,
@@ -1289,7 +1353,8 @@ class NetworkEngine:
                 "state": None if result.state is None else list(result.state), "controller_id": controller_id,
                 "in_contract": plan.in_contract, "requested_at_tick": self.tick, "requested_at_utc": at_utc,
                 "seed": seed, "physical_action_performed": False, "memory_generations": generations}
-        self.demands.set_pair(demand.demand_id, pair, memory_generations=generations)
+        self.demands.set_pair(demand.demand_id, pair, memory_generations=generations,
+                              expected_pair=previous_pair, expected_demand=demand)
         if result.delivered:
             message = (f"{demand.demand_id} {demand.a}<->{demand.b}: pair delivered over {_arrow(plan.route)}, "
                        f"fidelity {result.fidelity:.3f}, swaps at {', '.join(result.swaps_at) or 'none'}, memory "
@@ -1319,9 +1384,14 @@ class NetworkEngine:
         if not result.delivered:
             event = self._event(self.tick, at_utc, "purification_refused", demand.demand_id,
                                 f"{demand.demand_id}: no second copy was delivered ({result.outcome}); the stored "
-                                "pair is unchanged", "warning")
+                                "pair was not modified by this attempt", "warning")
             state, _, _ = self._refresh("pair purification", tick_events=[event], replan=False)
-            return self._result("purify_pair", "no_second_copy", state, (), [demand.demand_id], pair=pair,
+            # Another engine may have consumed/replaced the first copy while
+            # this acquisition was running. Report the published durable state,
+            # rather than the pre-episode pair that is no longer consumable.
+            published_pair = next((item.pair for item in state.demands
+                                   if item.demand_id == demand.demand_id), None)
+            return self._result("purify_pair", "no_second_copy", state, (), [demand.demand_id], pair=published_pair,
                                 reason=f"the second episode ended without a pair ({result.outcome})")
         outcome = rt.purify(pair["state"], result.state, config, np.random.default_rng(seed))
         before = pair["fidelity"]
@@ -1340,7 +1410,8 @@ class NetworkEngine:
             updated.update(status="purification_failed", fidelity=None, state=None)
             message = (f"{demand.demand_id}: {outcome['protocol']} round {updated['rounds']} failed "
                        f"(p = {outcome['success_probability']:.2f}); both copies are lost")
-        self.demands.set_pair(demand.demand_id, updated, memory_generations=pair["memory_generations"])
+        self.demands.set_pair(demand.demand_id, updated, memory_generations=pair["memory_generations"],
+                              expected_pair=pair, expected_demand=demand)
         event = self._event(self.tick, at_utc, "pair_purified" if outcome["succeeded"] else "purification_failed",
                             demand.demand_id, message, "info" if outcome["succeeded"] else "warning")
         state, _, _ = self._refresh("pair purification", tick_events=[event], replan=False)
@@ -1356,7 +1427,8 @@ class NetworkEngine:
         updated = dict(pair, status="consumed", consumed_at_tick=self.tick, consumed_at_utc=at_utc)
         if any(node_id in self.calibration.nodes() for node_id in (demand.a, demand.b)):
             raise ValueError("endpoint recalibration is running; wait before consuming the stored pair")
-        self.demands.set_pair(demand.demand_id, updated, memory_generations=pair["memory_generations"])
+        self.demands.set_pair(demand.demand_id, updated, memory_generations=pair["memory_generations"],
+                              expected_pair=pair, expected_demand=demand)
         event = self._event(self.tick, at_utc, "pair_consumed", demand.demand_id,
                             f"{demand.demand_id}: pair (fidelity {pair['fidelity']:.3f}) consumed by the application")
         state, _, _ = self._refresh("pair consumed", tick_events=[event], replan=False)

@@ -171,7 +171,7 @@ class TechnologyDialog(AdaptiveDialog):
         for row, ident in enumerate(ids):
             session = sessions[ident]; metrics = session['metrics']
             abbreviations={'entanglement_swapping':'Swap','quantum_memory':'Mem','purification':'Purif',
-                           'tf_qkd':'TF-QKD','satellite_doppler':'Sat/Doppler','satellite_isl':'ISL'}
+                           'tf_qkd':'TF-QKD','satellite_doppler':'Sat/Doppler','satellite_isl':'ISL','orbital_relay':'Relay orbital'}
             generated = metrics.get('pair_rate_hz',0) if {'satellite_doppler','satellite_isl'}.intersection(session['config']['technologies']) else metrics.get('generation_pair_rate_hz',0)
             values = (ident, ' · '.join(abbreviations.get(x,x) for x in session['config']['technologies']), session['status'],
                       f"{generated:.2g}/{metrics.get('delivered_pair_rate_hz',0):.2g}",

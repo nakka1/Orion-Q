@@ -292,6 +292,7 @@ def test_first_frame_source_reset_does_not_reenter_backend_from_cleared_jobs(app
         "policy_review": PolicyReview,
     }
     source = SwitchableProvider(MockProvider())
+    source.start()  # A committed capability frame is usable only for a running source.
     view = classes[widget]()
     view.attach(source)
     generations = view.job.generation, view.export_job.generation
@@ -311,6 +312,43 @@ def test_first_frame_source_reset_does_not_reenter_backend_from_cleared_jobs(app
         assert (view.job.generation, view.export_job.generation) == tuple(value + 1 for value in generations)
         assert view.job.result is None and view.export_job.result is None
     finally:
+        source.stop()
+        view.deleteLater()
+
+
+@pytest.mark.parametrize("widget", ["policy_context", "policy_review"])
+def test_ready_frame_cannot_enable_policy_actions_while_source_is_stopped(app, monkeypatch, widget):
+    from dataclasses import replace
+    from quantum_autopilot.console.capabilities import SourceCapabilities
+    from quantum_autopilot.console.providers import MockProvider
+    from quantum_autopilot.console.source_switch import SwitchableProvider
+    from quantum_autopilot.console.widgets.policy_context import PolicyContextInspection
+    from quantum_autopilot.console.widgets.policy_review import PolicyReview
+
+    source = SwitchableProvider(MockProvider())
+    view = {"policy_context": PolicyContextInspection, "policy_review": PolicyReview}[widget]()
+    view.attach(source)
+    view.show()
+    app.processEvents()
+
+    def unexpected_read(_):
+        pytest.fail("presenting a stopped source must not query backend capabilities")
+
+    monkeypatch.setattr(SwitchableProvider, "capabilities", property(unexpected_read))
+    capabilities = SourceCapabilities(
+        adapter_id="stopped-test-frame", mode="simulation", health="ready",
+        operations=("observe_policy_context", "review_policy_preparation"),
+    )
+    snapshot = replace(MockProvider().snapshot(), capabilities=capabilities)
+    try:
+        view._snapshot(snapshot)
+        assert not source.running and view._source[2] is False
+        assert not view.load_button.isEnabled()
+        assert view.job.result is None and view.export_job.result is None
+        assert view.binding is None and view.context is None
+    finally:
+        view.close()
+        source.stop()
         view.deleteLater()
 
 

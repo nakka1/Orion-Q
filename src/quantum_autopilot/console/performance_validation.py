@@ -24,6 +24,107 @@ WORKLOAD_REVISION = "actual-qt-actions-v3"
 NORMAL_PAINT_SCOPE = "existing-python-paintEvent:stage+geo-renderers-v1"
 
 
+class _WorkspaceEntryGate:
+    """Bound diagnostic entry through the ordinary authenticated UI controls.
+
+    A request is dispatched once, then the product owns authentication and
+    source preparation. No credentials or authentication flags are changed.
+    """
+    def __init__(self, shown, *, deadline_s=90., warmup_s=2.):
+        self.shown = shown
+        self.deadline_s = deadline_s
+        self.warmup_s = warmup_s
+        self.requested_at = self.opened_at = None
+        self.method = None
+        self.state = "waiting_snapshot"
+        self.screen = None
+        self.error = None
+        self.tick_baseline = self.last_tick = self.tick_source = None
+        self.tick_advances = self.tick_resets = 0
+        self.tick_observations = []
+        self.last_tick_received_at = None
+
+    def observe_tick(self, tick, received_at, *, workspace_visible, source_kind=None):
+        """Retain only actual snapshot receipts, never inferred intermediate ticks."""
+        if self.error is not None or self.state == "ready" or not workspace_visible or self.opened_at is None:
+            return False
+        if type(tick) is not int or tick < 0 or type(received_at) not in (int, float):
+            return False
+        if not math.isfinite(received_at) or received_at < self.opened_at:
+            return False
+        if self.last_tick_received_at is not None and received_at < self.last_tick_received_at:
+            return False
+        reset = self.last_tick is not None and (tick < self.last_tick or source_kind != self.tick_source)
+        if self.last_tick is None or reset:
+            self.tick_resets += int(reset)
+            self.tick_baseline = tick
+            self.tick_advances = 0
+            self.tick_observations = []
+        elif tick == self.last_tick:
+            return False
+        else:
+            # A jump from 1 to 8 is one observed advance. It is not evidence
+            # that intermediate snapshots were received or accepted by Qt.
+            self.tick_advances += 1
+        self.last_tick, self.tick_source, self.last_tick_received_at = tick, source_kind, received_at
+        if len(self.tick_observations) < 4:
+            self.tick_observations.append({"tick": tick, "received_after_show_s": received_at - self.shown,
+                                           "source_kind": source_kind})
+        return True
+
+    def poll(self, window, now, *, snapshot_ready):
+        self.screen = window.current_screen
+        if self.error is not None:
+            return "failed", None
+        if now - self.shown >= self.deadline_s:
+            self.error = (f"Diagnostic workspace entry deadline ({self.deadline_s:g}s) exceeded: "
+                          f"screen={self.screen}, state={self.state}, "
+                          f"authentication_method={self.method or 'unavailable'}; "
+                          "steady-state workload did not start")
+            self.state = "failed"
+            return "failed", None
+        if not snapshot_ready:
+            self.state = "waiting_snapshot"
+            return self.state, None
+        if self.screen == "boot":
+            self.state = "waiting_authentication"
+            if self.requested_at is not None:
+                return self.state, None
+            boot = window.boot
+            # A UI-only fixture must not stand in for authenticated entry.
+            if getattr(boot, "_fixture_entry", False):
+                return self.state, None
+            button = getattr(boot, "os_session_button", None)
+            method = "current_windows_session"
+            if button is None or not button.isVisible() or not button.isEnabled():
+                return self.state, None
+            self.requested_at = now
+            self.method = method
+            self.state = "authentication_requested"
+            return "request", button
+        if self.screen not in window.screens:
+            self.state = "waiting_workspace"
+            return self.state, None
+        if self.opened_at is None:
+            self.opened_at = now
+        if self.tick_advances < 3 or now - self.opened_at < self.warmup_s:
+            self.state = "warming_workspace"
+            return self.state, None
+        self.state = "ready"
+        return self.state, None
+
+    def evidence(self):
+        return {"state": self.state, "screen": self.screen, "method": self.method,
+                "request_count": int(self.requested_at is not None), "deadline_s": self.deadline_s,
+                "request_after_show_s": self.requested_at - self.shown if self.requested_at is not None else None,
+                "workspace_after_show_s": self.opened_at - self.shown if self.opened_at is not None else None,
+                "tick_readiness_scope": "three distinct monotonic received advances after workspace opened",
+                "tick_baseline": self.tick_baseline, "tick_advances": self.tick_advances,
+                "tick_resets": self.tick_resets, "tick_observations": self.tick_observations,
+                "error": self.error, "credentials_supplied_by_harness": False,
+                "authentication_bypassed": False}
+
+
 def _normal_paint_target(receiver, stage_viewport, visual_types):
     return receiver is stage_viewport or isinstance(receiver, visual_types)
 
@@ -127,7 +228,8 @@ def _node_widget_content(opened):
         "calibration_links": opened.calibration_links.texts(), "routes": opened.routes.texts(),
         "legend": opened.legend_labels(), "cards": opened.connection_texts(),
         "status": opened.status.text()}
-    if hasattr(opened, 'protocols'):contents['protocols'] = opened.protocols.texts()
+    if hasattr(opened, 'protocols'):
+        contents['protocols'] = opened.protocols.texts()
     return contents
 
 
@@ -170,6 +272,8 @@ def _connection_expected(node_id, link, live_link):
             "Stability": number(live_link.stability, ".3f"), "Detector": f"{dash(detector.label)} · {alarm}"})
     notes = [f"{item.role}: {item.controller_id}" + (f" ({item.model_state})" if item.model_state else "")
              for item in live_link.controllers]
+    notes.append(f"processing: {link.processing_label}; data: {link.data_source}")
+    notes.append("physics: " + link.processing_physics)
     if technology:
         notes += ["technology: " + " + ".join(technology["technologies"]),
                   "session: " + live_link.provenance.get("session_status", "configured"),
@@ -327,13 +431,16 @@ def _ground_widget_checks(opened, snap, net):
         protocol = link.id in managed_links
         if protocol:
             note = 'métricas de protocolo na tabela da sessão'
-            if engine is not None:note += ' · ' + engine.status.replace('_', ' ')
-        else:note = NO_WAVE_SOURCE if engine is None else ""
+            if engine is not None:
+                note += ' · ' + engine.status.replace('_', ' ')
+        else:
+            note = NO_WAVE_SOURCE if engine is None else ""
         if not protocol and engine is not None and not engine.wave:
             note = "no trace · " + engine.status.replace("_", " ")
             if engine.status_reasons:
                 note += " (" + "; ".join(engine.status_reasons) + ")"
-        if not protocol:expected_notes.append(note)
+        if not protocol:
+            expected_notes.append(note)
         shown_note = note or engine.status.replace("_", " ")
         metric = ('sessão ' + str(engine.provenance.get('session_status', 'não publicada'))
                   if engine is not None else 'sessão não publicada') if protocol else (
@@ -747,7 +854,23 @@ def _action_plan(duration, soak, ground_ids, satellite_ids, pages):
         result[phase] = commands
     return {"revision": WORKLOAD_REVISION, "phases": result, "ground_ids": ground, "satellite_ids": satellites,
             "pages": list(pages), "minimum_phase_duration_s": duration, "soak_minutes": soak,
-            "production_zoom_thresholds_modified": False}
+             "production_zoom_thresholds_modified": False}
+
+
+def _details_action_plan(targets, ground_ids):
+    """A focused reproduction uses the ordinary driver and completion deadline."""
+    if len(targets) != 2 or len(set(targets)) != 2 or any(not item for item in targets):
+        raise ValueError('details diagnosis requires two distinct node IDs')
+    missing = set(targets) - set(ground_ids)
+    if missing:
+        raise ValueError('details diagnosis targets unavailable: ' + ', '.join(sorted(missing)))
+    commands = [{'index': index, 'due_s': .25 + .5 * index,
+                 'action': 'map-node-hover-click', 'target': target, 'expected_mode': 'map'}
+                for index, target in enumerate(targets)]
+    return {'revision': WORKLOAD_REVISION, 'scope': 'focused-details-diagnostic',
+            'phases': {'map': commands}, 'ground_ids': list(targets), 'satellite_ids': [],
+            'pages': ['topology'], 'minimum_phase_duration_s': 1., 'soak_minutes': 0.,
+            'production_zoom_thresholds_modified': False}
 
 def _collector_accounting(monitor, *, deep=False):
     """Record containers only; never Qt/provider state and never an RSS claim."""
@@ -878,8 +1001,7 @@ def _profile_hooks(monitor):
         original = getattr(owner, name, None)
         if not callable(original):
             return
-        @wraps(original)
-        def call(*args, **kwargs):
+        def measured(args, kwargs):
             started = time.perf_counter()
             cpu_started = time.thread_time()
             try:
@@ -889,6 +1011,17 @@ def _profile_hooks(monitor):
                     "thread": threading.current_thread().name, "phase": monitor.phase,
                     "elapsed_s": started - monitor.created, "duration_ms": (time.perf_counter() - started) * 1000,
                     "thread_cpu_ms": (time.thread_time() - cpu_started) * 1000})
+        # Qt trims clicked(bool) when the original bound slot has no arguments.
+        # A variadic profiling wrapper would expose that bool to the original
+        # function, producing TypeError and invalidating the diagnostic pass.
+        if name == "apply_command_capabilities":
+            @wraps(original)
+            def call(instance):
+                return measured((instance,), {})
+        else:
+            @wraps(original)
+            def call(*args, **kwargs):
+                return measured(args, kwargs)
         setattr(owner, name, call)
 
     for owner, names in (
@@ -956,6 +1089,8 @@ def _run_ui(args):
             self.component_samples, self.actions, self.errors, self.snapshots = [], [], [], []
             self.method_samples, self.pending_actions, self.phase_records = [], [], []
             self.native_events = []
+            self.detail_events = []
+            self.detail_events_dropped = 0
             self.collector_phase_samples = []
             self.stage_viewport = None
             self.paints_seen = self.paints_retained = self.paints_skipped = 0
@@ -969,6 +1104,8 @@ def _run_ui(args):
             self.phases = [(name, args.duration) for name in ("map", "globe", "tabs", "swaps")]
             if args.soak > 0:
                 self.phases.append(("soak", args.soak * 60))
+            if getattr(args, 'details_diagnostic', None):
+                self.phases = [('map', 1.)]
             self.phase_index = -1
             self._driving = False
             self.action_plan = None
@@ -977,6 +1114,7 @@ def _run_ui(args):
             self.app, self.window = app, window
             self.stage_viewport = window.centralWidget().viewport()
             self.shown = time.perf_counter()
+            self.workspace_entry = _WorkspaceEntryGate(self.shown)
             self.phase = "startup"
             self.phase_start = self.shown
             window.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
@@ -991,6 +1129,10 @@ def _run_ui(args):
                 "duration_ms": (time.perf_counter() - geometry_setup_started) * 1000})
             window.provider.snapshot_changed.connect(self.snapshot)
             window.provider.error.connect(self.errors.append)
+            if getattr(args, 'details_diagnostic', None):
+                registry = window.screens['topology'].node_windows
+                registry.set_diagnostic_observer(self.observe_detail)
+                registry.set_presentation_interval_ms(args.presentation_interval_ms)
             self.heartbeat = QTimer(window)
             self.heartbeat.setTimerType(Qt.TimerType.PreciseTimer)
             self.heartbeat.setInterval(10)
@@ -1004,11 +1146,23 @@ def _run_ui(args):
         def active(self):
             return getattr(self.window.provider, "active", self.window.provider)
 
+        def observe_detail(self, record):
+            if len(self.detail_events) >= 4096:
+                self.detail_events_dropped += 1
+                return
+            row = dict(record)
+            row['elapsed_s'] = row.pop('at_perf_counter') - self.created
+            row['phase'] = self.phase
+            self.detail_events.append(row)
+
         def snapshot(self, snap):
             now = time.perf_counter()
             if self.first_snapshot is None:
                 self.first_snapshot = now
             live = snap.live
+            self.workspace_entry.observe_tick(live.tick if live else None, now,
+                workspace_visible=self.window.current_screen in self.window.screens,
+                source_kind=live.source_kind if live else None)
             self.snapshots.append({"elapsed_s": now - self.created, "phase": self.phase,
                 "tick": live.tick if live else None, "nodes": len(snap.topology.nodes), "links": len(snap.topology.links),
                 "satellites": len(live.satellites or {}) if live else 0,
@@ -1245,10 +1399,12 @@ def _run_ui(args):
                     (snap.live.technologies.get("sessions", {}) if snap.live else {}).items()},
                 "optional_models": [{"id": model.id, "state": model.state} for model in snap.live.models]
                     if snap.live else [], "physical_action_performed": False})
-            self.action_plan = _action_plan(args.duration, args.soak,
-                [node.id for node in self.window.screens["topology"]._net.nodes if node.located and
-                 node.physical_type != "satellite" and node.network_role in ("endpoint", "core")],
-                list(snap.live.satellites or {}), list(self.window.screens))
+            ground_ids = [node.id for node in self.window.screens['topology']._net.nodes if node.located and
+                          node.physical_type != 'satellite' and node.network_role in ('endpoint', 'core')]
+            targets = getattr(args, 'details_diagnostic', None)
+            self.action_plan = (_details_action_plan(targets, ground_ids) if targets else
+                                _action_plan(args.duration, args.soak, ground_ids,
+                                             list(snap.live.satellites or {}), list(self.window.screens)))
             plan_path = Path(args.output) / "action-plan.json"
             _write_json(plan_path, self.action_plan)
             self.action_plan_sha = hashlib.sha256(plan_path.read_bytes()).hexdigest()
@@ -1266,7 +1422,6 @@ def _run_ui(args):
             self.phase, seconds = self.phases[self.phase_index]
             self.phase_start, self.action_index = now, 0
             self.phase_records.append({"phase": self.phase, "start_s": now - self.created, "duration_requested_s": seconds})
-            topo = self.window.screens["topology"]
             if self.phase in ("map", "globe", "swaps", "soak"):
                 if self.window.current_screen != "topology":
                     self.action("navigate-topology", lambda: self.click(self.window.rail.buttons["topology"]))
@@ -1291,18 +1446,18 @@ def _run_ui(args):
                     item.pop("started")
                     self.pending_actions.remove(item)
             if not self.started_phases:
-                if self.first_snapshot is None:
-                    if now - self.shown > 90:
-                        self.errors.append("No snapshot within 90 seconds")
-                        self.finish()
+                state, button = self.workspace_entry.poll(self.window, now,
+                    snapshot_ready=self.first_snapshot is not None)
+                if state == "failed":
+                    self.errors.append(self.workspace_entry.error)
+                    self.finish()
                     return
-                active = self.active()
-                if self.window.current_screen == "boot":
-                    self.action("open-workspace", lambda: self.click(self.window.boot.open_button))
-                    self.warmup_at = now
+                if state == "request":
                     self.phase = "warmup"
+                    self.action("open-workspace", lambda: self.click(button))
+                    self.actions[-1]["authentication_method"] = self.workspace_entry.method
                     return
-                if getattr(active, "steps_taken", 0) < 3 or now - getattr(self, "warmup_at", now) < 2:
+                if state != "ready":
                     return
                 self.save_net_model()
                 self.started_phases = True
@@ -1458,6 +1613,11 @@ def _run_ui(args):
          tuple(monitor.component_samples[0]) if monitor.component_samples else ("elapsed_s", "phase"))
     _write_json(out / "actions.json", monitor.actions)
     _write_json(out / "snapshots.json", monitor.snapshots)
+    if getattr(args, 'details_diagnostic', None):
+        _write_json(out / 'close-events.json', [row for row in monitor.detail_events
+                                               if row['event'] in ('close_request', 'registry_close', 'stale_close_ignored',
+                                                                   'input_escape', 'input_close_button')])
+        _write_json(out / 'presentation-events.json', monitor.detail_events)
     if args.profile or local_profile:
         _csv(out / "methods.csv", monitor.method_samples, ("method", "thread", "phase", "elapsed_s", "end_elapsed_s",
             "duration_ms", "thread_cpu_ms", "thread_cpu_begin_s", "thread_cpu_end_s",
@@ -1514,7 +1674,8 @@ def _run_ui(args):
     screen_geometry = screen.geometry() if screen is not None else None
     workarea = screen.availableGeometry() if screen is not None else None
     frame_geometry = monitor.window.frameGeometry()
-    report = {"schema": "orion.console-performance.v1", "mode": "profile" if args.profile else
+    report = {"schema": "orion.console-performance.v1", "mode": "details-diagnostic" if getattr(args, 'details_diagnostic', None) else
+        "profile" if args.profile else
         "local-profile" if local_profile else "measurement",
         "exit_code": code, "errors": monitor.errors, "phases": phases, "phase_windows": monitor.phase_records,
         "platform": app.platformName(), "qt_version": pyside_version,
@@ -1534,6 +1695,7 @@ def _run_ui(args):
         "external_watchdog": getattr(args, "external_watchdog", None),
         "time_origin_unix": monitor.wall_origin,
         "first_snapshot_after_show_s": monitor.first_snapshot - monitor.shown if monitor.first_snapshot else None,
+        "workspace_entry": monitor.workspace_entry.evidence(),
         "first_stage_paint_after_show_s": monitor.first_paint - monitor.shown if monitor.first_paint else None,
         "construction_to_attach_s": monitor.shown - monitor.created,
         "component_counts": monitor.snapshots[-1] if monitor.snapshots else None,
@@ -1541,6 +1703,16 @@ def _run_ui(args):
         "authenticated_audit": audit, "provider_step_period_s": getattr(active, "step_period_s", None),
         "presentation_stats": dict(getattr(latest, "presentation_stats", {}) if latest else {}),
         "physical_action_performed": False,
+        "presentation_configuration": {
+            'interval_ms': getattr(monitor.window.screens['topology'].node_windows, '_presentation_interval_ms', None),
+            'work_budget_ms': 6. if hasattr(monitor.window.screens['topology'].node_windows, '_presentation_interval_ms') else None,
+            'new_cards_per_turn': 1 if hasattr(monitor.window.screens['topology'].node_windows, '_presentation_interval_ms') else None,
+            'scientific_processing_modified': False},
+        "details_diagnostic": {'enabled': bool(getattr(args, 'details_diagnostic', None)),
+                               'scope': 'focused source UI diagnosis; not a complete performance campaign',
+                               'events_retained': len(monitor.detail_events),
+                               'presentation_interval_ms': getattr(args, 'presentation_interval_ms', None),
+                               'events_dropped': monitor.detail_events_dropped},
         **_details_latency_summary(monitor.actions),
         "functional_effect_checks": {
             "selections": sum("functional_effect" in item for item in monitor.actions),
@@ -1677,3 +1849,49 @@ def run_performance_test(desktop_args):
     configuration["frozen"] = bool(getattr(sys, "frozen", False))
     _write_json(config_path, configuration)
     return _run_ui(args)
+
+
+def run_details_diagnostic(output, *, targets=('CIMATEC', 'CBPF'), size='3440x1440', repository_root=None,
+                           presentation_interval_ms=None):
+    """Short source-only diagnosis with ordinary OS-session authentication."""
+    args = performance_options(output, duration=1., soak=0., size=size, repository_root=repository_root)
+    _details_action_plan(targets, targets)  # Validate before creating any state or Qt object.
+    if presentation_interval_ms is None:
+        from quantum_autopilot.console.widgets.node_window import PRESENTATION_INTERVAL_MS
+        presentation_interval_ms = PRESENTATION_INTERVAL_MS
+    if type(presentation_interval_ms) is not int or presentation_interval_ms not in (8, 20):
+        raise ValueError('presentation interval must be 8 or 20 milliseconds')
+    if args.output.exists():
+        raise ValueError('details diagnostic output must be a new isolated directory')
+    args.output.mkdir(parents=True, exist_ok=False)
+    args.details_diagnostic = tuple(targets)
+    args.presentation_interval_ms = presentation_interval_ms
+    args.external_watchdog = None
+    args.source_hashes_start = _source_hashes(args.repository_root)
+    _write_json(args.output / 'configuration.json', {
+        'schema': 'orion.console-details-diagnostic.v1', 'targets': list(targets),
+        'size': [args.width, args.height], 'provider': 'demo', 'authentication': 'current_windows_session',
+        'readback_deadline_s': 5., 'workspace_entry_deadline_s': 90.,
+        'presentation_interval_ms': presentation_interval_ms,
+        'presentation_work_budget_ms': 6., 'new_cards_per_turn': 1,
+        'source_hashes_start': args.source_hashes_start, 'physical_action_performed': False,
+        'scope': 'source UI diagnosis; no frozen or performance qualification claim'})
+    return _run_ui(args)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Focused native node-details diagnosis')
+    parser.add_argument('--output-dir', required=True)
+    parser.add_argument('--details-diagnostic', default='CIMATEC,CBPF', metavar='FIRST,SECOND')
+    parser.add_argument('--size', default='3440x1440')
+    parser.add_argument('--presentation-interval-ms', type=int, choices=(8, 20), default=None)
+    parser.add_argument('--repository-root', type=Path)
+    options = parser.parse_args()
+    try:
+        code = run_details_diagnostic(options.output_dir,
+            targets=tuple(part.strip() for part in options.details_diagnostic.split(',')),
+            size=options.size, repository_root=options.repository_root,
+            presentation_interval_ms=options.presentation_interval_ms)
+    except ValueError as error:
+        parser.error(str(error))
+    raise SystemExit(code)

@@ -30,7 +30,7 @@ def test_physics_config_defaults_are_physically_valid():
 
 
 def test_physics_config_rejects_invalid_t1_t2():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="T2 must be <= 2\\*T1"):
         PhysicsConfig(T1=10e-6, T2=30e-6)
 
 

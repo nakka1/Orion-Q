@@ -59,6 +59,7 @@ import math
 import numpy as np
 
 from quantum_twin.core.config import PhysicsConfig
+from quantum_twin.core.validation import finite_real, integer, probability
 from quantum_twin.quantum.channel import QuantumChannel
 from quantum_twin.quantum.memory import QuantumMemory
 from quantum_twin.quantum.purification import DensityMatrixBBPSSW
@@ -79,6 +80,12 @@ class QuantumRepeaterEnvironment:
         self.transmission_exposure_time = (transmission_exposure_time if transmission_exposure_time is not None
                                             else self.config.TRANSMISSION_EXPOSURE_TIME)
         self.max_rounds = max_rounds
+
+        self.config.validate()
+        finite_real("storage_time (s)", self.storage_time, minimum=0.0)
+        finite_real("transmission_exposure_time (s)", self.transmission_exposure_time, minimum=0.0)
+        if max_rounds is not None:
+            integer("max_rounds", max_rounds, minimum=1)
 
         self.rng = np.random.default_rng(self.config.SEED)
         # IMPORTANT: the channel gets its OWN independent copy of the config
@@ -191,7 +198,8 @@ class QuantumRepeaterEnvironment:
     def observe(self) -> dict:
         """Returns the current round's telemetry -- the observation a
         controller/predictor would receive."""
-        assert self._current_telemetry is not None, "Call reset() before observe()."
+        if self._current_telemetry is None:
+            raise RuntimeError("Call reset() before observe().")
         return dict(self._current_telemetry)
 
     def step(self, action: str) -> dict:
@@ -202,7 +210,10 @@ class QuantumRepeaterEnvironment:
         Returns a dict with the outcome of THIS round (F_before, F_after if
         purified, success info) plus next_observation and done.
         """
-        assert action in ("HALT", "WAIT", "PURIFY"), f"Unknown action '{action}'"
+        if action not in ("HALT", "WAIT", "PURIFY"):
+            raise ValueError(f"Unknown action '{action}'; expected HALT, WAIT or PURIFY")
+        if self._current_telemetry is None:
+            raise RuntimeError("Call reset() before step().")
         telemetry = self._current_telemetry
         f_before = telemetry["F_t"]
         available = telemetry["channel_available"] == 1.0
@@ -275,10 +286,8 @@ class QuantumRepeaterEnvironment:
         silently show fidelity INCREASING toward the 0.25 maximally-mixed
         equilibrium as "decoherence," a real pitfall found while
         validating this method -- guarded against here defensively)."""
-        assert f_before > 0.0, (
-            "begin_wait_hold() requires a real available pair's fidelity (f_before > 0), "
-            "not an unavailable round's F_t=0 -- there is no pair to hold in that case."
-        )
+        finite_real("f_before", f_before, positive=True, maximum=1.0)
+        probability("depol_prob", depol_prob)
         if not self.memory.is_occupied:
             self.memory.store(initial_fidelity=f_before, depol_prob=depol_prob, sim_time=0.0)
             self._wait_elapsed_time = 0.0
@@ -293,7 +302,8 @@ class QuantumRepeaterEnvironment:
         whether that pair is still meaningfully viable -- so a controller
         can genuinely re-predict and re-decide (continue WAITing, HALT, or
         PURIFY) rather than only receiving a single closed-form estimate."""
-        assert self.memory.is_occupied, "Call begin_wait_hold() before wait_tick_and_reobserve()."
+        if not self.memory.is_occupied:
+            raise RuntimeError("Call begin_wait_hold() before wait_tick_and_reobserve().")
         self._wait_elapsed_time += self.storage_time
         held_fidelity = self.memory.current_fidelity(sim_time=self._wait_elapsed_time)
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import math
 
 from .contracts import ProtocolError, number
-from .physics import C_KM_S
+from .physics import C_KM_S, gaussian_aperture_budget, pointing_sigma
 from .orbits import position, validate_orbit
 
 ISL_SCHEMA = 'orion.inter-satellite-observation.v1'
@@ -20,12 +20,18 @@ def terminal_parameters(parameters, node_id):
     return {**parameters, **parameters.get('device_parameters', {}).get(node_id, {})}
 
 
-def terminal_compatibility(a, b):
+def terminal_compatibility(a, b, *, allowed_encodings=('polarization_BBM92',)):
+    """Admit only encodings explicitly supported by the calling protocol.
+
+    The measured BBM92 adapter keeps its default restriction. A separate memory
+    relay may request its own encoding without making the BBM92 adapter accept
+    stored pairs or mismatched terminals.
+    """
     reasons=[]
     if abs(a.get('wavelength_nm',850.)-b.get('wavelength_nm',850.))>.1:
         reasons.append('incompatible_wavelength')
     encoding=a.get('quantum_encoding','polarization_BBM92')
-    if encoding!='polarization_BBM92' or b.get('quantum_encoding','polarization_BBM92')!=encoding:
+    if encoding not in allowed_encodings or b.get('quantum_encoding','polarization_BBM92')!=encoding:
         reasons.append('incompatible_quantum_encoding')
     for terminal in (a,b):
         if terminal.get('optical_duplex','dedicated_quantum_and_classical')!='dedicated_quantum_and_classical':
@@ -73,15 +79,17 @@ def inter_satellite_geometry(left, right, parameters=None):
         'geometry_scope':'WGS84 ellipsoid LOS + configured limb margin; Sun/attitude constraints not implemented'}
 
 
-def isl_optics(geometry, transmitter, receiver):
+def isl_optics(geometry, transmitter, receiver, *, allowed_encodings=('polarization_BBM92',)):
     """Gaussian far-field budget, finite aperture, jitter/FOV and Doppler.
 
     No atmospheric gain or attenuation is applied to a clear vacuum ISL.
     Divergence cannot be smaller than lambda/(pi*waist) for the configured
     ideal Gaussian transmitter aperture. Truncation/misalignment are hypotheses.
     """
-    g=dict(geometry);reasons=list(terminal_compatibility(transmitter,receiver))
-    if g['earth_obstructed']:reasons.append('earth_obstruction')
+    g=dict(geometry)
+    reasons=list(terminal_compatibility(transmitter,receiver,allowed_encodings=allowed_encodings))
+    if g['earth_obstructed']:
+        reasons.append('earth_obstruction')
     if g['range_km']>min(transmitter.get('max_range_km',90000.),receiver.get('max_range_km',90000.)):
         reasons.append('terminal_range_limit')
     if not transmitter.get('pointing_enabled',True) or not receiver.get('pointing_enabled',True):
@@ -90,20 +98,25 @@ def isl_optics(geometry, transmitter, receiver):
     diameter=transmitter.get('transmitter_diameter_m',.5)
     floor=wavelength/(math.pi*diameter/2.)
     divergence=max(transmitter.get('divergence_urad',3.)*1e-6,floor)
-    spot=max(.001,g['range_km']*1000.*divergence)
     radius=receiver.get('receiver_diameter_m',.5)/2.
-    geometric=-math.expm1(-2*radius*radius/(spot*spot))
     tracking=g['angular_tracking_rate_rad_s']*transmitter.get('tracking_latency_s',.001)
-    pointing=math.hypot(transmitter.get('pointing_jitter_urad',.3)*1e-6,tracking)
+    sigma,convention=pointing_sigma(transmitter,.3)
     advance=g['point_ahead_urad']*1e-6
     advance_correction=advance if transmitter.get('point_ahead_compensation',True) else 0.
     advance_residual=advance-advance_correction+transmitter.get('point_ahead_calibration_error_urad',0.)*1e-6
-    pointing=math.hypot(pointing,advance_residual)
     residual=receiver.get('receiver_alignment_error_urad',0.)*1e-6
+    deterministic=math.hypot(tracking,advance_residual,residual)
+    pointing=math.hypot(sigma,deterministic)
     fov=receiver.get('terminal_fov_urad',20.)*1e-6
-    if residual+pointing>=fov:reasons.append('receiver_field_of_view')
-    pointing_efficiency=math.exp(-min(700.,2*(pointing/divergence)**2))
-    if pointing_efficiency<1e-12:reasons.append('pointing_loss')
+    fov_margin=receiver.get('pointing_fov_sigma_margin',1.)
+    if deterministic+fov_margin*sigma>=fov:
+        reasons.append('receiver_field_of_view')
+    aperture=gaussian_aperture_budget(g['range_km']*1000.,wavelength,divergence,radius,sigma,deterministic,
+                                     legacy=convention=='legacy_offset_surrogate')
+    geometric=aperture['geometric_efficiency']
+    pointing_efficiency=aperture['pointing_efficiency']
+    if pointing_efficiency<1e-12:
+        reasons.append('pointing_loss')
     shift=-g['radial_velocity_km_s']/C_KM_S*(299792458./wavelength)
     limit=receiver.get('doppler_tuning_limit_hz',1e11)
     correction=max(-limit,min(limit,-shift)) if receiver.get('doppler_compensation',True) else 0.
@@ -113,11 +126,17 @@ def isl_optics(geometry, transmitter, receiver):
     insertion=transmitter.get('insertion_loss_db',2.)+receiver.get('insertion_loss_db',2.)+transmitter.get('extra_loss_db',0.)+receiver.get('extra_loss_db',0.)
     optical=geometric*pointing_efficiency*efficiency*10**(-insertion/10.)*spectral
     visible=not reasons
-    loss=lambda x:-10*math.log10(max(1e-300,x))
-    return {**g,'visible':visible,'block_reasons':list(dict.fromkeys(reasons)),
+    def loss(value):
+        return -10*math.log10(max(1e-300,value))
+    return {**g,**aperture,'visible':visible,'block_reasons':list(dict.fromkeys(reasons)),
         'channel_transmission':optical if visible else 0.,
         'potential_channel_transmission':optical,'geometric_efficiency':geometric,
         'pointing_efficiency':pointing_efficiency,'pointing_error_urad':pointing*1e6,
+        'pointing_error_semantics':'hypot(per-axis sigma, deterministic mean offset); see radial RMS separately',
+        'pointing_jitter_convention':convention,'tracking_offset_urad':tracking*1e6,
+        'receiver_alignment_error_urad':residual*1e6,
+        'fov_admission_policy':'configured conservative |mean| + N*sigma < FOV; not a hard bound on Gaussian tails',
+        'pointing_fov_sigma_margin':fov_margin,
         'point_ahead_correction_urad':advance_correction*1e6,
         'point_ahead_residual_urad':advance_residual*1e6,
         'configured_divergence_urad':transmitter.get('divergence_urad',3.),
@@ -127,7 +146,7 @@ def isl_optics(geometry, transmitter, receiver):
         'link_budget_db':{'geometric':loss(geometric),'pointing':loss(pointing_efficiency),
             'optical':loss(efficiency),'insertion':insertion,'spectral_filter':loss(spectral),
             'total':loss(optical) if visible else None},
-        'model_scope':'hypothetical Gaussian vacuum ISL; diffraction floor; no validated mission/attitude calibration'}
+        'model_scope':'hypothetical finite-waist Gaussian vacuum ISL; 2D per-axis pointing convolution; scalar APT offsets; diffraction floor; no validated mission/attitude calibration'}
 
 
 def geometry_at(parameters, endpoints, network_time_s):

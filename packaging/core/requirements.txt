@@ -1,0 +1,13 @@
+# Runtime profile for the headless service; ML and Qt remain optional.
+# This is a compatibility envelope, not a release lock. Record pip freeze and
+# pin the image digest before institutional qualification.
+cryptography>=43,<51
+networkx>=3.0,<4
+numpy>=1.26,<3
+pandas>=2.1,<4
+PyYAML>=6,<7
+qiskit>=1.0,<3
+qiskit-aer>=0.14,<1
+scipy>=1.11,<2
+sgp4>=2.25,<3
+websockets>=15,<18

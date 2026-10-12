@@ -1,0 +1,38 @@
+{
+  "schema": "orionq.sequence-network-protocol.v1",
+  "protocol_id": "SEQ-NETWORK-20261010-v1",
+  "revision": 1,
+  "seeds": [2026101001, 2026101002, 2026101003],
+  "sequence_commit": "3133c66d80a898c6c3cc9af9eec3fa94fdbe2233",
+  "native_duration_s": 1.1,
+  "native_demand_start_s": 0.05,
+  "native_active_duration_s": 1.0,
+  "native_request_memories": 2,
+  "native_formalism": "ket_vector",
+  "network_deadline_s": 1800,
+  "worker_deadline_s": 30,
+  "nominal_ticks": 10,
+  "loss_ticks": 10,
+  "timeout_ticks": 12,
+  "recovery_ticks": 16,
+  "isolation_ticks": 8,
+  "restore_ticks": 8,
+  "expected_inventory": {
+    "nodes": 71, "links": 131, "communicators": 71,
+    "institutional_endpoints": 20, "sessions": 36,
+    "global_demand_templates": 76, "fpga_devices": 3
+  },
+  "native_time_absolute_tolerance_ps": 2,
+  "acceptance": {
+    "census": "Every registered physical node, communicator, link, session, dedicated bank and demand represented; unsupported physics explicitly identified.",
+    "native": "Actual RouterNetTopo, RSVP, resource rules, generation, swapping, measured delivery and causal classical receipts; reference failure and recovery invariants.",
+    "orion": "Every institutional ring endpoint receives end-to-end control through native SeQUeNCe classical hop source and unchanged OrionQ backend; replay/binding/persistence chains and faults.",
+    "no_blanket_pass": "Passing covered invariants does not validate the complete hybrid quantum network, certify keys or assign TRL."
+  },
+  "parameter_mapping": {
+    "banks": "Virtual native router per physical node and dedicated protocol session; no accidental shared geographic memory pool.",
+    "generation": "Native Barrett-Kok is an alternate experiment to OrionQ batched pair generation; rates and fidelity are not asserted equivalent.",
+    "classical": "Native hop uses supplied propagation, serialization and sampled jitter; loss/timeout injected explicitly after native reception.",
+    "unsupported": "TF-QKD, satellite quantum optical payload and ISL physics are retained in census, not substituted by fibre."
+  }
+}

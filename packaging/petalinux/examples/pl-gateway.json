@@ -1,0 +1,14 @@
+{
+  "schema": "orion.pl-gateway.v1",
+  "socket_path": "/run/orionq-pl/worker.sock",
+  "state_directory": "/var/lib/orionq-pl",
+  "backend": {
+    "backend_id": "emulated-pl-reference-v1",
+    "mode": "emulated-pl-external",
+    "generation": 1,
+    "image_sha256": "REPLACE_WITH_IMAGE_SHA256_FROM_INSTALLED_DESCRIBE",
+    "max_events": 256
+  },
+  "allowed_uid": null,
+  "request_timeout_s": 2
+}

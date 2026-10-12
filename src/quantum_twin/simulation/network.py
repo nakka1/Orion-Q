@@ -83,6 +83,8 @@ from qiskit import QuantumCircuit, transpile
 from qiskit_aer import AerSimulator
 from qiskit_aer.noise import NoiseModel, depolarizing_error, thermal_relaxation_error
 
+from quantum_twin.core.validation import finite_real, integer, probability, relaxation_times
+
 
 class QuantumRepeaterNode:
     """
@@ -94,7 +96,14 @@ class QuantumRepeaterNode:
     def __init__(self, T1: float = 50e-6, T2: float = 30e-6,
                  depol_prob: float = 0.01, shots: int = 512, seed: int = 7,
                  history_maxlen: int = 500):
-        assert T2 <= 2 * T1, "Restrição física: T2 deve ser <= 2*T1"
+        relaxation_times(T1, T2)
+        probability("depol_prob", depol_prob)
+        # This gate model applies 2*p to the two-qubit depolarizing channel,
+        # whose completely-positive bound is 4**2/(4**2-1), rather than 1.
+        finite_real("depol_prob for the two-qubit gate model", depol_prob, maximum=8.0 / 15.0)
+        integer("shots", shots, minimum=1)
+        integer("history_maxlen", history_maxlen, minimum=1)
+        integer("seed", seed)
         self.T1 = T1
         self.T2 = T2
         self.depol_prob = depol_prob
@@ -147,7 +156,7 @@ class QuantumRepeaterNode:
 
     def apply_latency_decay(self, latency: float) -> AerSimulator:
         """Relógio lógico de latência: canal de relaxamento térmico e^{-latency/T2}."""
-        latency = max(latency, 0.0)
+        finite_real("latency (s)", latency, minimum=0.0)
         aging_error = thermal_relaxation_error(self.T1, self.T2, latency) if latency > 0.0 else None
         aged_noise_model = self._build_noise_model(extra_relax_error=aging_error)
         return AerSimulator(noise_model=aged_noise_model, seed_simulator=self.seed)

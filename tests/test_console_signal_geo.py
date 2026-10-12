@@ -20,7 +20,8 @@ from quantum_autopilot.console.widgets.geo_map import GeoMap, MapRenderer
 from quantum_autopilot.console.widgets.network_views import build_net_model
 from quantum_autopilot.console.widgets.orbit_globe import OrbitGlobe
 from quantum_autopilot.console.widgets.signal_geography import (
-    SIGNAL_CROSS_OPACITY, globe_cross_rect, map_cross_rect, paint_signal_cross, signal_cross_path, signal_map_ocean,
+    SIGNAL_CROSS_LONLAT, SIGNAL_CROSS_OPACITY, globe_cross_rect, map_cross_rect, paint_signal_cross,
+    signal_cross_path, signal_cross_vector, signal_map_ocean,
 )
 
 
@@ -74,7 +75,7 @@ def color_at(image, point):
     return image.pixelColor(round(point.x() * ratio), round(point.y() * ratio))
 
 
-def test_cross_vector_has_transparent_ground_tapered_tips_and_flared_base(app):
+def test_cross_vector_has_transparency_thin_base_tapered_tips_and_inner_glow(app):
     image = QImage(160, 180, QImage.Format.Format_ARGB32_Premultiplied)
     image.fill(Qt.GlobalColor.transparent)
     painter = QPainter(image)
@@ -86,24 +87,31 @@ def test_cross_vector_has_transparent_ground_tapered_tips_and_flared_base(app):
     centre_alpha = image.pixelColor(80, 110).alpha()
     assert centre_alpha == pytest.approx(255 * SIGNAL_CROSS_OPACITY * 0.8, abs=1)
     path = signal_cross_path(QRectF(0, 0, 100, 100))
-    assert path.contains(QPointF(38, 99)) and path.contains(QPointF(62, 99))
+    assert path.contains(QPointF(46, 99)) and path.contains(QPointF(54, 99))
+    assert not path.contains(QPointF(38, 99)) and not path.contains(QPointF(62, 99))
     assert not path.contains(QPointF(38, 50))
     assert path.contains(QPointF(50, 2)) and not path.contains(QPointF(45, 2))
     assert path.contains(QPointF(2, 29)) and not path.contains(QPointF(2, 25))
+    inner = image.pixelColor(80, 56)
+    outer = image.pixelColor(32, 56)
+    assert inner.alpha() == pytest.approx(outer.alpha(), abs=1)
+    assert inner.green() > outer.green() + 20
+    assert image.pixelColor(90, 110).alpha() == 0  # no glow outside the silhouette
 
 
-def test_cross_anchors_follow_view_size_and_globe_north_without_camera_rotation(app):
-    small = map_cross_rect(800, 500)
-    wide = map_cross_rect(1600, 1000)
-    assert small.height() == pytest.approx(500 * 0.28)
+def test_cross_scales_with_geographic_zoom_and_keeps_its_base_on_the_anchor(app):
+    anchor = QPointF(400, 300)
+    small = map_cross_rect(anchor, 1 / 50_000)
+    wide = map_cross_rect(anchor, 1 / 25_000)
     assert wide.height() == small.height() * 2
-    assert small.center().x() == 400 and wide.center().x() == 800
-    north = globe_cross_rect(QPointF(400, 300), 150)
-    larger = globe_cross_rect(QPointF(800, 600), 300)
-    assert north.center().x() == 400 and larger.center().x() == 800
-    assert north.bottom() == pytest.approx(300 - 150 + 2.7)
-    assert larger.bottom() == pytest.approx(600 - 300 + 3.0)
+    assert small.center().x() == wide.center().x() == anchor.x()
+    assert small.bottom() == wide.bottom() == anchor.y()
+    north = globe_cross_rect(anchor, 150)
+    larger = globe_cross_rect(anchor, 300)
+    assert north.center().x() == larger.center().x() == anchor.x()
+    assert north.bottom() == larger.bottom() == anchor.y()
     assert larger.height() == north.height() * 2
+    assert globe_cross_rect(anchor, 20).height() >= 54  # retain visibility with distant GEO orbits
 
 
 @pytest.mark.parametrize("mode", ["dark", "light"])
@@ -115,6 +123,7 @@ def test_map_ocean_and_cross_restore_exact_normal_raster_without_model_changes(a
     net = model()
     before = deepcopy(net)
     renderer.set_model(net)
+    renderer.set_view_state((0, 55, 1 / 20_000))
     renderer._resize_settle.stop()
     try:
         transform = renderer.transform()
@@ -126,7 +135,7 @@ def test_map_ocean_and_cross_restore_exact_normal_raster_without_model_changes(a
         sample = QPointF(20, 250)
         assert color_at(red, sample) == theme.qc(signal_map_ocean())
         assert color_at(red, sample) != color_at(normal, sample)
-        cross = map_cross_rect(800, 500)
+        cross = map_cross_rect(QPointF(*transform.to_px(*SIGNAL_CROSS_LONLAT)), transform.px_per_m)
         assert color_at(red, QPointF(cross.center().x(), cross.top() + cross.height() * 0.65)) != color_at(red, sample)
         key = renderer._base.cacheKey()
         renderer.set_signal_mode(True)
@@ -162,7 +171,9 @@ def test_globe_restores_ocean_palette_and_retains_orbits_positions_and_overlay(a
         radius = globe.radius()
         sample = QPointF(globe.width() / 2 + radius * 0.7, globe.height() / 2)
         assert color_at(red, sample) != color_at(normal, sample)
-        cross = globe_cross_rect(QPointF(400, 300), radius)
+        anchor, depth = globe.project(signal_cross_vector())
+        assert depth > 0
+        cross = globe_cross_rect(anchor, radius)
         cross_point = QPointF(cross.center().x(), cross.top() + cross.height() * 0.65)
         assert color_at(red, cross_point) != color_at(normal, cross_point)
         assert globe.camera_state() == camera
@@ -177,6 +188,92 @@ def test_globe_restores_ocean_palette_and_retains_orbits_positions_and_overlay(a
         assert globe.earth_builds == builds
         globe.set_signal_mode(False)
         assert globe._earth().toImage() == normal
+    finally:
+        retire(globe, app)
+
+
+def test_map_cross_stays_on_one_geographic_point_after_drag_zoom_resize_and_pan_out(app, monkeypatch):
+    import quantum_autopilot.console.widgets.geo_map as map_module
+
+    painted = []
+    draw = map_module.paint_signal_cross
+    monkeypatch.setattr(map_module, "paint_signal_cross", lambda p, r: (painted.append(QRectF(r)), draw(p, r)))
+    renderer = MapRenderer(basemap=basemap())
+    renderer.resize(800, 500)
+    net = model()
+    before = deepcopy(net)
+    renderer.set_model(net)
+    renderer.set_view_state((0, 55, 1 / 35_000))
+    renderer.set_signal_mode(True)
+    renderer.show()
+    settle(app)
+
+    def geographic_base():
+        renderer._base_layer(renderer.transform())
+        cross = painted[-1]
+        point = QPointF(cross.center().x(), cross.bottom())
+        assert renderer.transform().to_lonlat(point.x(), point.y()) == pytest.approx(SIGNAL_CROSS_LONLAT)
+        return cross, point
+
+    try:
+        original, first = geographic_base()
+        QTest.mousePress(renderer, Qt.MouseButton.LeftButton, pos=QPointF(650, 320).toPoint())
+        QTest.mouseMove(renderer, QPointF(730, 355).toPoint())
+        QTest.mouseRelease(renderer, Qt.MouseButton.LeftButton, pos=QPointF(730, 355).toPoint())
+        moved, second = geographic_base()
+        assert second != first and moved.height() == pytest.approx(original.height())
+        renderer.zoom_by(1.5)
+        zoomed, third = geographic_base()
+        assert zoomed.height() == pytest.approx(moved.height() * 1.5)
+        renderer.resize(1024, 640)
+        resized, fourth = geographic_base()
+        assert fourth != third and resized.height() == pytest.approx(zoomed.height())
+        renderer.set_view_state((-120, -45, 1 / 5_000))
+        painted.clear()
+        renderer._base_layer(renderer.transform())
+        assert not painted  # off-screen scenery is culled, not pinned to the window
+        assert net == before and renderer.net is net
+    finally:
+        retire(renderer, app)
+
+
+def test_globe_cross_tracks_one_surface_point_and_is_hidden_on_the_far_side(app, monkeypatch):
+    import quantum_autopilot.console.widgets.orbit_globe as globe_module
+
+    painted = []
+    draw = globe_module.paint_signal_cross
+    monkeypatch.setattr(globe_module, "paint_signal_cross", lambda p, r: (painted.append(QRectF(r)), draw(p, r)))
+    globe = OrbitGlobe()
+    globe.resize(800, 600)
+    net = model()
+    before = deepcopy(net)
+    globe.set_model(net)
+    globe.set_signal_mode(True)
+
+    def geographic_base():
+        globe._earth()
+        cross = painted[-1]
+        point = QPointF(cross.center().x(), cross.bottom())
+        assert globe.lonlat_at(point) == pytest.approx(SIGNAL_CROSS_LONLAT, abs=1e-8)
+        return cross, point
+
+    try:
+        globe.set_camera(0, 0, 1)
+        original, first = geographic_base()
+        globe.set_camera(20, 30, 1)
+        moved, second = geographic_base()
+        assert second != first and moved.height() == pytest.approx(original.height())
+        globe.zoom_by(2)
+        zoomed, third = geographic_base()
+        assert third != second and zoomed.height() == pytest.approx(moved.height() * 2)
+        globe.resize(1024, 768)
+        resized, fourth = geographic_base()
+        assert fourth != third and resized.height() > zoomed.height()
+        globe.set_camera(180, -55, 1)
+        painted.clear()
+        globe._earth()
+        assert not painted  # the Earth occludes this fixed geographic anchor
+        assert net == before and globe.net is net
     finally:
         retire(globe, app)
 

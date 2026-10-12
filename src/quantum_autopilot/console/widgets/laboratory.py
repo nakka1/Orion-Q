@@ -35,35 +35,61 @@ class LaboratoryPanel(QWidget):
             self.buttons[experiment] = button
         layout.addWidget(controls)
         self.configure_button = Btn("CONFIGURAR EXPERIMENTO")
+        self.configure_button.setProperty("operation", "configure_laboratory")
         self.configure_button.setToolTip("Validar e salvar adaptador e parâmetros da bancada simulada.")
         self.configure_button.clicked.connect(self._configure)
         self.configure_button.setEnabled(False)
         layout.addWidget(self.configure_button)
         self._configuration = None
+        self._snapshot = None
+        self._source_context = None
+        self._configuration_generation = 0
+        self._draft_context = None
         self.evidence = EvidenceText()
         self.evidence.setMinimumHeight(180)
         layout.addWidget(self.evidence)
         self._text = None
 
     def _configure(self):
-        if self._configuration is None:
+        if (self._configuration is None or self._snapshot is None or
+                not self.configure_button.isEnabled() or
+                not self._snapshot.capabilities.allows("configure_laboratory")):
             return
         from .laboratory_configuration import LaboratoryConfigurationDialog
-        dialog = LaboratoryConfigurationDialog(self._configuration, self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.command.emit("configure_laboratory", json.dumps(dialog.request()))
-        dialog.deleteLater()
+        configuration = self._configuration
+        context, revision = self._source_context, configuration["revision"]
+        generation = self._configuration_generation
+        dialog = LaboratoryConfigurationDialog(configuration, self)
+        try:
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                if (self._configuration is None or self._snapshot is None or
+                        self._source_context != context or
+                        self._configuration_generation != generation or
+                        self._configuration["revision"] != revision or
+                        not self.configure_button.isEnabled() or
+                        not self._snapshot.capabilities.allows("configure_laboratory")):
+                    self.summary.setText("REFUSED · A fonte, configuração ou permissão mudou durante a edição. Abra novamente o formulário.")
+                    return
+                self.command.emit("configure_laboratory", json.dumps(dialog.request()))
+        finally:
+            dialog.deleteLater()
 
-    def set_snapshot(self, snapshot):
-        enabled = snapshot.capabilities.allows("run_lab_experiment")
+    def apply_command_capabilities(self, *, busy=False):
+        """Intersect declared access with experiment availability, without backend IO."""
+        snapshot = self._snapshot
+        if snapshot is None:
+            for button in (*self.buttons.values(), self.configure_button):
+                button.setEnabled(False)
+            return
+        enabled = (snapshot.capabilities.allows("run_lab_experiment") and not busy and
+                   self._configuration is not None)
         laboratory = snapshot.laboratory or {}
-        self._configuration = laboratory.get("configuration")
         availability = (laboratory.get("capabilities") or {}).get("availability", {})
         if not availability:
             availability = (self._configuration or {}).get("availability", {})
         for name, button in self.buttons.items():
             experiment = availability.get("experiments", {}).get(name, {})
-            button.setEnabled(enabled and experiment.get("available", True))
+            button.setEnabled(enabled and experiment.get("available") is True)
             missing = experiment.get("missing_dependencies", [])
             key_security = experiment.get("security", {})
             identity_missing = key_security.get("missing_identities", []) + key_security.get("incompatible_identities", [])
@@ -71,8 +97,25 @@ class LaboratoryPanel(QWidget):
                               "Identidades SAE/KME não provisionadas ou incompatíveis: " + ", ".join(identity_missing)
                               if identity_missing else
                               "Executa o pipeline local de emulação e guarda recibos verificáveis.")
-        self.configure_button.setEnabled(snapshot.capabilities.allows("configure_laboratory") and
+        self.configure_button.setEnabled(not busy and snapshot.capabilities.allows("configure_laboratory") and
                                          self._configuration is not None)
+
+    def set_snapshot(self, snapshot):
+        self._snapshot = snapshot
+        self._source_context = (snapshot.input_kind, snapshot.campaign, snapshot.capabilities.adapter_id,
+                                snapshot.topology.id,
+                                snapshot.live.engine_session_id if snapshot.live is not None else None)
+        self._configuration = (snapshot.laboratory or {}).get("configuration")
+        draft_context = (self._source_context,
+                         self._configuration.get("revision") if self._configuration is not None else None,
+                         self._configuration is not None,
+                         snapshot.capabilities.allows("configure_laboratory"))
+        if draft_context != self._draft_context:
+            # Clearing/replacing a source or withdrawing access permanently
+            # invalidates an open draft, even if identical IDs later return.
+            self._configuration_generation += 1
+            self._draft_context = draft_context
+        self.apply_command_capabilities()
         runs = (snapshot.laboratory or {}).get("runs", [])
         lines = []
         if runs:

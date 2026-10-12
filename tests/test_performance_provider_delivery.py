@@ -155,6 +155,36 @@ def test_anonymous_selection_never_enters_queue_and_direct_calls_remain_guarded(
     assert provider.security.audit.verify()["valid"]
 
 
+@pytest.mark.parametrize("verb", ("select_node", "reload", "isolate"))
+def test_explicit_anonymous_async_admission_never_reads_vault_or_enqueues(app, tmp_path, monkeypatch, verb):
+    provider, _ = provider_for(tmp_path)
+    with blocked_selection_worker(provider):
+        with monkeypatch.context() as patches:
+            patches.setattr(provider.security.vault, "_read", lambda:
+                            pytest.fail("anonymous presentation admission read the vault on Qt"))
+            with provider.security.identity_scope(None), pytest.raises(AuthenticationError):
+                provider.dispatch(verb, "bob")
+        assert not provider._selection_futures
+        assert provider._future is None
+        assert provider._presentation_stats["selection_jobs_pending"] == 0
+        assert provider._selection_generation == 0
+
+
+def test_async_callback_without_scope_keeps_captured_operator_in_every_audit(app, tmp_path):
+    provider, operator = provider_for(tmp_path, "service:callback-operator")
+    assert not provider.security.has_identity_scope()
+    before = provider.security.audit.verify()["count"]
+    with blocked_selection_worker(provider) as release:
+        assert provider.dispatch("select_node", "bob")
+        release.set()
+        deliver_until(app, lambda: not provider._selection_futures)
+    assert provider._selected_node == "bob"
+    rows = [json.loads(line) for line in provider.security.audit.path.read_text().splitlines()][before:]
+    assert len(rows) >= 5
+    assert all(row["identity"] == operator.subject for row in rows)
+    assert provider.security.audit.verify()["valid"]
+
+
 def test_legacy_service_without_metadata_keyword_remains_supported(app, tmp_path):
     provider, _ = provider_for(tmp_path)
 

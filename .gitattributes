@@ -11,6 +11,7 @@
 /configs/** -text
 /docs/results/** -text
 /src/quantum_autopilot/model_intake/derived/** -text
-
-# Independent source snapshot: retain exact bytes on every checkout.
-* -text
+# Curated validation artifacts are force-added only in release snapshots.
+# Preserve their recorded hashes when another Windows checkout uses autocrlf.
+/outputs/** -text
+/release/** -text

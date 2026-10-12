@@ -235,23 +235,40 @@ def position(orbit,network_time_s,*,earth_time_s=None):
 def state_geometry(state,station,altitude_m=0.):
     lat,lon=map(math.radians,station)
     # Geodetic OGS coordinates use WGS84, not geocentric latitude.
-    e2=6.69437999014e-3;n=6378.137/math.sqrt(1-e2*math.sin(lat)**2);h=altitude_m/1000.
+    e2=6.69437999014e-3
+    n=6378.137/math.sqrt(1-e2*math.sin(lat)**2)
+    h=altitude_m/1000.
     ground=((n+h)*math.cos(lat)*math.cos(lon),(n+h)*math.cos(lat)*math.sin(lon),(n*(1-e2)+h)*math.sin(lat))
-    delta=tuple(a-b for a,b in zip(state['ecef_km'],ground));length=math.sqrt(sum(x*x for x in delta))
-    if length<=0:raise ValueError('satélite coincide com a OGS')
+    delta=tuple(a-b for a,b in zip(state['ecef_km'],ground))
+    length=math.sqrt(sum(x*x for x in delta))
+    if length<=0:
+        raise ValueError('satélite coincide com a OGS')
     unit=tuple(x/length for x in delta)
     up=(math.cos(lat)*math.cos(lon),math.cos(lat)*math.sin(lon),math.sin(lat))
     east=(-math.sin(lon),math.cos(lon),0.)
     north=(-math.sin(lat)*math.cos(lon),-math.sin(lat)*math.sin(lon),math.cos(lat))
     elevation=math.degrees(math.asin(max(-1.,min(1.,sum(a*b for a,b in zip(unit,up))))))
     azimuth=math.degrees(math.atan2(sum(a*b for a,b in zip(unit,east)),sum(a*b for a,b in zip(unit,north))))%360.
-    velocity=state['velocity_ecef_km_s'];radial=sum(a*b for a,b in zip(unit,velocity))
-    transverse=math.sqrt(max(0.,sum(x*x for x in velocity)-radial**2))
+    velocity=state['velocity_ecef_km_s']
+    radial=sum(a*b for a,b in zip(unit,velocity))
+    ecef_transverse=math.sqrt(max(0.,sum(x*x for x in velocity)-radial**2))
+    # The ground station is stationary in ECEF, but both endpoints rotate in
+    # inertial space. For a common-epoch relative position delta, restore
+    # v_rel,ECI = v_rel,ECEF + Omega x delta. The rotation term is transverse,
+    # so range rate/Doppler stay unchanged. GEO therefore still needs optical
+    # point-ahead; zero ECEF velocity does not imply zero retarded-beacon offset.
+    inertial=(velocity[0]-OMEGA_EARTH*delta[1],velocity[1]+OMEGA_EARTH*delta[0],velocity[2])
+    transverse=math.sqrt(max(0.,sum(x*x for x in inertial)-radial**2))
     from .physics import C_KM_S
     return {**state,'range_km':length,'elevation_deg':elevation,'azimuth_deg':azimuth,
             'radial_velocity_km_s':radial,'transverse_velocity_km_s':transverse,
+            'ecef_transverse_velocity_km_s':ecef_transverse,
+            'inertial_relative_velocity_km_s':list(inertial),
+            'angular_tracking_rate_rad_s':ecef_transverse/length,
+            'transverse_velocity_reference':'inertial relative velocity; ECEF + Omega cross relative position',
+            'tracking_rate_reference':'geometric line of sight in rotating ECEF; station fixed to Earth',
             'point_ahead_urad':2*transverse/C_KM_S*1e6,
-            'point_ahead_convention':'received beacon t-flight to outgoing aim t+flight (2*v_transverse/c)'}
+            'point_ahead_convention':'received beacon t-flight to outgoing aim t+flight; first-order inertial 2*v_transverse/c'}
 
 
 def geometry(orbit,network_time_s,station,altitude_m=0.):

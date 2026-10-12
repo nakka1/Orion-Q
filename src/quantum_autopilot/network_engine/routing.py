@@ -273,6 +273,13 @@ class Demand:
         return asdict(self)
 
 
+class PairConflict(ValueError):
+    """The stored pair/demand changed after the operation took its snapshot."""
+
+
+_ANY_PAIR = object()
+
+
 class DemandStore:
     """``network_demands`` table of the journal file: the demands of one topology and their pair."""
 
@@ -343,7 +350,15 @@ class DemandStore:
         return {row["demand_id"]: json.loads(row["pair_json"]) for row in rows if row["pair_json"] is not None}
 
     def set_pair(self, demand_id: str, pair: Mapping[str, Any] | None, *,
-                 memory_generations: Mapping[str, int] | None = None) -> None:
+                 memory_generations: Mapping[str, int] | None = None,
+                 expected_pair=_ANY_PAIR, expected_demand: Demand | None = None) -> None:
+        """Compare and replace while holding the same lock as the memory check.
+
+        Engine operations always pass their pair and demand snapshot. This
+        prevents another process from consuming, purifying or replacing a pair
+        between the caller's read and commit. Unconditional writes remain for
+        explicit store import/migration callers, not engine consumption.
+        """
         raw = None if pair is None else json.dumps(pair, sort_keys=True, allow_nan=False)
         with closing(connect(self.path)) as connection, connection:
             connection.execute("BEGIN IMMEDIATE")
@@ -360,6 +375,17 @@ class DemandStore:
                 if any(node_id not in nodes or node_memory_generation(nodes[node_id]) != generation
                        or _isolated(nodes[node_id]) for node_id, generation in memory_generations.items()):
                     raise ValueError("node memory changed during the pair operation; request a new pair")
+            current = connection.execute(
+                "SELECT a,b,min_fidelity,pair_json FROM network_demands WHERE topology_id=? AND demand_id=?",
+                (self.topology_id, demand_id)).fetchone()
+            if current is None:
+                raise ValueError(f"unknown demand {demand_id!r}")
+            stored = None if current["pair_json"] is None else json.loads(current["pair_json"])
+            if (expected_pair is not _ANY_PAIR and stored != expected_pair or
+                    expected_demand is not None and
+                    (current["a"], current["b"], current["min_fidelity"]) !=
+                    (expected_demand.a, expected_demand.b, expected_demand.min_fidelity)):
+                raise PairConflict("pair changed during the operation; read the durable state before retrying")
             cursor = connection.execute("UPDATE network_demands SET pair_json=? WHERE topology_id=? AND demand_id=?",
                                         (raw, self.topology_id, demand_id))
             if cursor.rowcount != 1:
@@ -374,9 +400,9 @@ class DemandStore:
 class RouterConfig:
     """Declared planning limits (none of them is a physical model)."""
 
-    episodes: int = 24                  # episodes per plan, unless the time budget ends first
-    min_episodes: int = 3               # always run this many, whatever the budget
-    time_budget_s: float = 0.12         # wall-clock budget of one plan (episodes stop when it is spent)
+    episodes: int = 24                  # fixed sample count, independent of host scheduling
+    min_episodes: int = 3               # legacy configuration lower bound; all episodes now run
+    time_budget_s: float = 0.12         # legacy soft timing target; never truncates scientific samples
     variant: str = "nominal"            # reviewed routing export variant: nominal | prazo_longo
     max_faults: int = rl.ReplayRouter.__init__.__kwdefaults__["max_faults"]
     replan_period_ticks: int = 30       # every demand is planned again at least this often
@@ -387,8 +413,8 @@ class RouterConfig:
         for name in ("episodes", "min_episodes", "max_faults", "replan_period_ticks"):
             if type(getattr(self, name)) is not int or getattr(self, name) < 1:
                 raise ValueError(f"{name} must be a positive integer")
-        if self.min_episodes > self.episodes or not self.time_budget_s > 0:
-            raise ValueError("min_episodes must not exceed episodes and time_budget_s must be positive")
+        if self.min_episodes > self.episodes or not math.isfinite(self.time_budget_s) or not self.time_budget_s > 0:
+            raise ValueError("min_episodes must not exceed episodes and time_budget_s must be finite and positive")
 
 
 @dataclass(frozen=True)
@@ -681,14 +707,13 @@ class Router:
 
     # -- planning ------------------------------------------------------------------
 
-    def _episodes(self, config, request, policy, seed: int, budget_s: float) -> list:
+    def _episodes(self, config, request, policy, seed: int) -> list:
+        # Wall time remains a performance measurement, never a sample-selection
+        # rule. Otherwise CPU contention changes both statistics and route choice
+        # for identical observations, parameters and seeds.
         env = QuantumNetworkEnv(config, rng=int(seed))
-        started, out = time.perf_counter(), []
-        for index in range(self.config.episodes):
-            if index >= self.config.min_episodes and time.perf_counter() - started >= budget_s:
-                break
-            out.append(run_episode(env, request, policy, int(seed) + index))
-        return out
+        return [run_episode(env, request, policy, int(seed) + index)
+                for index in range(self.config.episodes)]
 
     def plan(self, demand: Demand, graph: nx.Graph, *, seed: int, topology=None,
              link_live: Mapping[str, Any] | None = None) -> RoutePlan:
@@ -697,6 +722,8 @@ class Router:
         ``topology`` (and ``link_live``) are only used to explain a missing route.
         """
         started = time.perf_counter()
+        work_contract = {"mode": "fixed_episodes", "episodes": self.config.episodes,
+                         "max_faults": self.config.max_faults}
         base = {"demand_id": demand.demand_id, "a": demand.a, "b": demand.b, "seed": int(seed),
                 "min_fidelity": float(demand.min_fidelity)}
         rng = np.random.default_rng(int(seed))
@@ -709,7 +736,8 @@ class Router:
                 contract_reasons=("no plant: source and destination are disconnected",),
                 fallback_used=state != "active", reason=explanation["reason"], explanation=explanation,
                 planning_ms=(time.perf_counter() - started) * 1e3,
-                inputs_sha256=canonical_sha256({"edges": [], "demand": demand.to_dict(), "seed": int(seed)}),
+                inputs_sha256=canonical_sha256({"edges": [], "demand": demand.to_dict(), "seed": int(seed),
+                                                 "planning_work": work_contract}),
                 **base), reason)
         try:
             config, request, contract = self.plant(graph, demand)
@@ -722,18 +750,19 @@ class Router:
                 planning_ms=(time.perf_counter() - started) * 1e3,
                 inputs_sha256=canonical_sha256({"edges": sorted(
                     [min(u, v), max(u, v), data["link_id"], data["length"]]
-                    for u, v, data in graph.edges(data=True)), "demand": demand.to_dict(), "seed": int(seed)}),
+                    for u, v, data in graph.edges(data=True)), "demand": demand.to_dict(), "seed": int(seed),
+                                                  "planning_work": work_contract}),
                 **base), reason)
         inputs = canonical_sha256({
             "edges": sorted([min(u, v), max(u, v), data["link_id"], data["length"]]
                             for u, v, data in config.graph.edges(data=True)),
             "demand": demand.to_dict(), "deadline_s": request.deadline_s, "seed": int(seed),
-            "variant": self.config.variant})
+            "variant": self.config.variant, "planning_work": work_contract})
         learned = state == "active"
         if learned and contract and self.registry.enforce_control_contracts:
             policy, controller_id, state, learned = GreedyFidelityPolicy(), mdl.ROUTING_BASELINE_ID, "fallback", False
             reason = "routing contract refused: " + "; ".join(contract) + f"; {mdl.ROUTING_BASELINE_ID} acting"
-        episodes = self._episodes(config, request, policy, seed, self.config.time_budget_s)
+        episodes = self._episodes(config, request, policy, seed)
         faults = sum(episode.faults for episode in episodes)
         steps = sum(episode.steps for episode in episodes)
         fallback = (not learned) or faults > 0
@@ -741,7 +770,7 @@ class Router:
         if learned and not any(episode.delivered for episode in episodes):
             # Plan-level supervision: the agent delivered nothing on a connected graph; the
             # reference heuristic is given the same request before the demand is called blocked.
-            standby = self._episodes(config, request, GreedyFidelityPolicy(), seed, self.config.time_budget_s)
+            standby = self._episodes(config, request, GreedyFidelityPolicy(), seed)
             if any(episode.delivered for episode in standby):
                 note = (f"{controller_id} delivered 0 of {len(episodes)} episodes; "
                         f"{mdl.ROUTING_BASELINE_ID} standby planned the route")

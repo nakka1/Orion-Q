@@ -446,7 +446,7 @@ class TopologyScreen(Screen):
 
         # ---- floating node windows -------------------------------------
         self.node_windows = NodeWindows(self, incremental=True)
-        self.node_windows.changed.connect(self.apply_command_capabilities)
+        self.node_windows.controls_changed.connect(self.apply_command_capabilities)
         self.node_windows.overlay_active = lambda: self.geo.picking
         self.node_windows.overlay_cancel = self.geo.cancel_pick
         self.node_windows.select.connect(self._inspector_select)
@@ -997,12 +997,14 @@ class TopologyScreen(Screen):
                 state = short.get(engine.status, engine.status.upper())
                 rows.append((name, number(engine.fidelity, ".3f"),
                              "—" if engine.qber is None else f"{engine.qber * 100:.2f}%",
-                             compact_rate(engine.skr_bps), colour, C.ink, state))
+                             compact_rate(engine.skr_bps), colour, C.ink, state,
+                             f"{link.processing_label} | {link.data_source.upper()}"))
             else:
                 state = {"ENABLED": "ON", "DISABLED": "OFF", "DEGRADED": "DEGR", "PAIR PATH": "PAIR"}.get(
                     link.state_text, link.state_text)
                 rows.append((name, link.fidelity, "—" if link.qber == "not in this lane" else link.qber,
-                             "—" if link.skr == "not in this lane" else link.skr, colour, C.ink, state))
+                             "—" if link.skr == "not in this lane" else link.skr, colour, C.ink, state,
+                             f"{link.processing_label} | {link.data_source.upper()}"))
             keys.append(link.key)
         self._link_rows = keys
         self._set_links(rows)
@@ -1032,8 +1034,11 @@ class TopologyScreen(Screen):
         for row in rows:
             name, fidelity, qber, skr, name_colour, value_colour = row[:6]
             state = row[6] if len(row) > 6 else ""
-            records.append([(name, name_colour), (fidelity, value_colour), (qber, C.ink), (skr, C.ink),
-                            (state, name_colour)])
+            record = [(name, name_colour), (fidelity, value_colour), (qber, C.ink), (skr, C.ink),
+                      (state, name_colour)]
+            if self.link_table.model().columnCount() > 5:
+                record.append((row[7] if len(row) > 7 else "UNREPORTED", C.ink3))
+            records.append(record)
         self.link_table.set_rows(records)
         metrics = self.link_table.fontMetrics()
         for col in (1, 2, 3, 4):

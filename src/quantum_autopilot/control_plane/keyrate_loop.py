@@ -55,7 +55,10 @@ PERIOD_S = 1.0
 STEPS = 240
 
 
-@lru_cache(maxsize=16)
+# A global scenario has more than 16 distinct spans. Retain immutable settings
+# for the same bounded 512-span working set as the acquisition commissioning
+# cache; eviction must not force the static grid search on every source change.
+@lru_cache(maxsize=512)
 def commissioned(length_km: float) -> DecoySettings:
     """The static operating point an engineer would leave the span at (task5.make_commissioned)."""
     return commissioned_settings(replace(LINK, length_km=float(length_km)), SETTINGS, BUDGET,

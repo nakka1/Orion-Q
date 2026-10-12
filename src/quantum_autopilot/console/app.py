@@ -5,8 +5,8 @@
     python -m quantum_autopilot.console.app --provider mock  # developer UI fixture (artificial values)
     quantum-twin-console                                     # installed script
 
-The console never opens a socket. It calls `AssuranceDashboardService`
-directly, so the loopback server is only needed for the web dashboard.
+The local modes call `AssuranceDashboardService` directly. Remote mode uses an
+explicit mutually authenticated TLS connection to a separately deployed core.
 
 Sources. "Local service" is the operator's workspace (no input feed unless one
 is configured). "Demonstration" is the SAME service class and network engine on
@@ -80,7 +80,7 @@ def build_demo_service(args) -> object:
 
     return apply_model_archives(demo_service(
         args.repository_root or bundled_repository_root(), demo_state_root(args),
-        wdm_model_bundle_path=args.wdm_model_bundle, preset="brazil-institutions-v1",
+        wdm_model_bundle_path=args.wdm_model_bundle, preset=getattr(args, "demo_preset", "brazil-institutions-v1"),
         security=console_security(args)), args)
 
 
@@ -103,11 +103,19 @@ def build_deferred_provider(args, kind):
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="quantum-twin-console",
-        description="Native operator console for the local assurance and control sandbox.",
+        description="Native operator console for a local workspace or an authenticated remote core.",
     )
-    parser.add_argument("--provider", default="service", choices=("service", "demo", "mock", "synthetic", "measured"),
+    parser.add_argument("--demo-preset", choices=("brazil-institutions-v1", "salvador_metro"),
+                        default="brazil-institutions-v1",
+                        help="demonstration topology; salvador_metro is the smaller recording workload")
+    parser.add_argument("--provider", default="service", choices=("service", "demo", "mock", "synthetic", "measured", "remote"),
                         help="service: operator workspace · demo: simulated input, real pipeline · "
-                             "measured: read-only file · synthetic/mock: developer UI fixtures")
+                             "measured: read-only file · remote: mTLS core · synthetic/mock: developer UI fixtures")
+    parser.add_argument("--core-url", help="remote mode: HTTPS origin of the independently deployed core")
+    parser.add_argument("--core-ca", type=Path, help="trusted CA PEM for the remote core")
+    parser.add_argument("--core-cert", type=Path, help="provisioned desktop client certificate PEM")
+    parser.add_argument("--core-key", type=Path, help="protected desktop client private-key PEM; never a password argument")
+    parser.add_argument("--core-timeout-s", type=float, default=15.0)
     parser.add_argument("--telemetry-file", type=Path, default=None)
     parser.add_argument("--synthetic-profile", default="reference", choices=("reference", "load", "faults"))
     parser.add_argument("--seed", type=int, default=1337)
@@ -124,12 +132,24 @@ def build_parser() -> argparse.ArgumentParser:
                         help="snapshot cadence; default 1000 with the live network engine")
     parser.add_argument("--replay-limit", type=int, default=40)
     parser.add_argument("--skip-auth", action="store_true",
-                        help="skip source selection only; OS authentication and backend permissions remain enforced")
+                        help="skip source selection only; authentication and backend permissions remain enforced")
     parser.add_argument("--fullscreen", action="store_true")
     return parser
 
 
 def build_provider(args):
+    if args.provider == "remote":
+        from quantum_autopilot.service.client import CoreClient
+        from .remote_provider import RemoteProvider
+        from .remote_security import core_tls_context
+        if not args.core_url:
+            raise ValueError("remote provider requires --core-url")
+        if any(getattr(args, name, None) is not None for name in ("control_journal", "telemetry_file", "qnet_archive", "qkd_archive",
+                                                                "optical_wdm_csv", "wdm_model_bundle")):
+            raise ValueError("remote mode cannot configure local journals, acquisitions or model archives")
+        context = core_tls_context(ca_file=args.core_ca, certificate_file=args.core_cert, key_file=args.core_key)
+        return RemoteProvider(CoreClient(args.core_url, context, timeout_s=args.core_timeout_s), endpoint=args.core_url,
+                              poll_ms=args.poll_ms or 1000)
     console_security(args).authorize("network.read", "workspace:" + demo_state_root(args).resolve().as_posix())
     if args.provider == "measured":
         from .input_sources import MeasuredFileProvider
@@ -197,9 +217,13 @@ def _run_workspace(args, *, startup_monitor=None, desktop_instance=None, isolate
         provider = build_provider(args)
         def service_factory():
             return build_deferred_provider(args, "service")
-        window = ConsoleWindow(provider, skip_auth=args.skip_auth, service_factory=service_factory,
-                               state_root=args.state_root, demo_factory=lambda: build_deferred_provider(args, "demo"),
-                               security=console_security(args))
+        if args.provider == "remote":
+            from .remote_security import RemoteConsoleWindow
+            window = RemoteConsoleWindow(provider, skip_auth=args.skip_auth, state_root=args.state_root)
+        else:
+            window = ConsoleWindow(provider, skip_auth=args.skip_auth, service_factory=service_factory,
+                                   state_root=args.state_root, demo_factory=lambda: build_deferred_provider(args, "demo"),
+                                   security=console_security(args))
         if isolated_diagnostic:
             from quantum_autopilot.desktop_instance import mark_isolated_diagnostic_window
             mark_isolated_diagnostic_window(window)

@@ -1,5 +1,5 @@
 """One stable UI plug with generation-guarded, mutually exclusive inputs."""
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QTimer, Signal
 from dataclasses import replace
 from .capabilities import SourceCapabilities
 from .providers import DataProvider
@@ -17,6 +17,13 @@ class SwitchableProvider(DataProvider):
         self.active = initial
         self._generation, self._connections = 0, []
         self.busy, self.running = False, False
+        self._retiring_sources = []
+        self._source_stop_errors = {}
+        self._pending_start = None
+        self._retire_timer = QTimer(self)
+        self._retire_timer.setSingleShot(True)
+        self._retire_timer.setInterval(20)
+        self._retire_timer.timeout.connect(self._start_after_drain)
         self._connect()
 
     @property
@@ -79,26 +86,73 @@ class SwitchableProvider(DataProvider):
                 signal.connect(slot)
                 self._connections.append((signal, slot))
 
+    def _collect_retiring_sources(self):
+        self._retiring_sources = [source for source in self._retiring_sources
+            if getattr(source, "stopping", False) or getattr(source, "shutdown_error", None) is not None]
+        if self._source_stop_errors or any(getattr(source, "shutdown_error", None) is not None for source in self._retiring_sources):
+            raise RuntimeError("Previous source could not release its resources; recover it before starting another source")
+        return bool(self._retiring_sources)
+
+    def _start_after_drain(self):
+        pending = self._pending_start
+        if pending is None or pending != (self._generation, self.active):
+            return
+        self._pending_start = None
+        try:
+            self.start()
+        except Exception as exc:
+            self.error.emit(f"Source start failed: {type(exc).__name__}")
+
     def start(self):
         if self.running:
             return
+        if self._collect_retiring_sources():
+            self._pending_start = (self._generation, self.active)
+            self._retire_timer.start()
+            return
+        self._pending_start = None
+        self._retire_timer.stop()
         if not self._connections:
             self._connect()
         self.running = True
+        source, generation = self.active, self._generation
         try:
-            self.active.start()
+            source.start()
         except Exception:
-            self.active.stop()
-            self.running = False
+            if generation == self._generation and source is self.active:
+                self.stop()
+            else:
+                # A listener may already have switched sources during start.
+                # Rolling back the old start must never close its successor.
+                source.stop()
+                if getattr(source, "stopping", False) and not any(item is source for item in self._retiring_sources):
+                    self._retiring_sources.append(source)
             raise
 
     def stop(self):
         self._generation += 1
+        self._pending_start = None
+        self._retire_timer.stop()
         for signal, slot in self._connections:
             signal.disconnect(slot)
         self._connections.clear()
-        self.active.stop()
-        self.running = False
+        source, generation = self.active, self._generation
+        try:
+            source.stop()
+        except Exception as exc:
+            self._source_stop_errors[id(source)] = (source, exc)
+            raise
+        else:
+            self._source_stop_errors.pop(id(source), None)
+        finally:
+            if getattr(source, "stopping", False) or getattr(source, "shutdown_error", None) is not None:
+                if not any(item is source for item in self._retiring_sources):
+                    self._retiring_sources.append(source)
+            if generation == self._generation and source is self.active:
+                self.running = False
+                if self.busy:
+                    self.busy = False
+                    self.busy_changed.emit(False)
 
     def switch(self, factory):
         if self.busy:
@@ -106,8 +160,19 @@ class SwitchableProvider(DataProvider):
         candidate = factory()  # Failed construction leaves the existing input intact.
         if not isinstance(candidate, DataProvider) or candidate is self.active:
             raise TypeError("source factory must create a fresh DataProvider")
-        was_running = self.running
-        self.stop()
+        was_running = self.running or self._pending_start is not None
+        try:
+            self.stop()
+        except Exception:
+            # A failed retirement leaves the old source selected. The fresh,
+            # unstarted candidate must still relinquish any prepared resources.
+            try:
+                candidate.stop()
+            except Exception as exc:
+                self._source_stop_errors[id(candidate)] = (candidate, exc)
+            if getattr(candidate, "stopping", False) or getattr(candidate, "shutdown_error", None) is not None:
+                self._retiring_sources.append(candidate)
+            raise
         self.active = candidate
         kind = "synthetic" if self.is_synthetic else "measured" if self.is_read_only else \
             "demo" if self.is_demo else "service"

@@ -1,0 +1,13 @@
+{
+  "schema": "orion.trl5.reference-catalog.v1",
+  "verified_on": "2026-10-09",
+  "references": [
+    {"id": "db", "title": "NIST SP 811, section 8.7", "url": "https://www.nist.gov/pml/special-publication-811/nist-guide-si-chapter-8", "scope": "Power ratios and decibel definition; does not establish fibre attenuation coefficients."},
+    {"id": "light", "title": "BIPM SI metre definition", "url": "https://www.bipm.org/en/si-base-units/metre", "scope": "Exact vacuum speed of light; fibre group index 1.468 remains a configured assumption."},
+    {"id": "bbpssw", "title": "Bennett et al., Purification of Noisy Entanglement", "url": "https://arxiv.org/abs/quant-ph/9511027", "doi": "10.1103/PhysRevLett.76.722", "scope": "Ideal bilateral CNOT and equal target outcomes on independent Werner inputs; no local gate noise calibration."},
+    {"id": "swapping", "title": "Duer, Briegel, Cirac and Zoller, Quantum repeaters based on entanglement purification", "url": "https://arxiv.org/abs/quant-ph/9808065", "doi": "10.1103/PhysRevA.59.169", "scope": "Ideal entanglement connection of independent Bell-diagonal pairs; reference implements Pauli-label composition, no measured BSM efficiency or noisy operation validation."},
+    {"id": "depolarizing", "title": "Qiskit Aer depolarizing channel definition", "url": "https://qiskit.github.io/qiskit-aer/stubs/qiskit_aer.noise.depolarizing_error.html", "scope": "Isotropic channel towards I/4; exponential rate is a model assumption, not measured T1/T2."},
+    {"id": "orbit", "title": "NASA Basics of Space Flight, Planetary Orbits", "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter5-1/", "scope": "Ideal two-body circular orbit. Spherical Earth radius 6371 km, GM 398600.4418 km^3/s^2 and Earth spin 7.2921159e-5 rad/s are explicit legacy model parameters; no TLE, SGP4 or ephemeris calibration."},
+    {"id": "gavignet", "title": "Gavignet et al., QKD and DWDM co-propagation", "url": "https://arxiv.org/abs/2312.11924", "doi": "10.1109/JLT.2023.3324840", "scope": "Existing six transcribed published means; descriptive integrity check only, no raw observations or uncertainties, no fit to these reduced repeater models."}
+  ]
+}

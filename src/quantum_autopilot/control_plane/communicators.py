@@ -19,7 +19,7 @@ SCHEMA = 'orion.communicator.v1'
 TYPES = ('installation', 'quantum_repeater', 'measurement_station', 'ground_station',
          'satellite', 'quantum_memory', 'purification_service')
 ROLES = ('endpoint', 'core', 'repeater', 'measurement', 'ground_station', 'service', 'intermediate')
-TECHNOLOGIES = ('entanglement_swapping', 'quantum_memory', 'purification', 'tf_qkd', 'satellite_doppler', 'satellite_isl')
+TECHNOLOGIES = ('entanglement_swapping', 'quantum_memory', 'purification', 'tf_qkd', 'satellite_doppler', 'satellite_isl', 'orbital_relay')
 TYPE_TECHNOLOGIES = {
     'installation': (), 'measurement_station': (),
     'quantum_repeater': ('entanglement_swapping', 'quantum_memory'),
@@ -27,13 +27,16 @@ TYPE_TECHNOLOGIES = {
     'satellite': ('satellite_doppler',), 'ground_station': ('satellite_doppler',),
 }
 PROTOCOLS = ('BB84', 'heralded_swap', 'memory_readout', 'BBPSSW', 'SNS-TF', 'BBM92', 'CSP1')
-TECH_PROTOCOL = {**dict(zip(TECHNOLOGIES[:-1], PROTOCOLS[1:])), 'satellite_isl': 'BBM92'}
+TECH_PROTOCOL = {'entanglement_swapping':'heralded_swap','quantum_memory':'memory_readout',
+    'purification':'BBPSSW','tf_qkd':'SNS-TF','satellite_doppler':'BBM92',
+    'satellite_isl':'BBM92','orbital_relay':'heralded_swap'}
 TECH_CAPS = {
     'entanglement_swapping': ('bell_measurement',), 'quantum_memory': ('quantum_memory',),
     'purification': ('bilateral_cnot',), 'tf_qkd': ('coherent_sender', 'phase_reference',
         'interferometer', 'single_photon_detector'),
     'satellite_doppler': ('optical_ground_terminal', 'tracking', 'time_tagger'),
     'satellite_isl': ('optical_space_terminal', 'tracking', 'time_tagger', 'single_photon_detector'),
+    'orbital_relay': ('quantum_memory', 'tracking', 'heralded_photon_capture'),
 }
 CAPABILITIES = tuple(dict.fromkeys(c for v in TECH_CAPS.values() for c in v)) + (
     'satellite_source', 'endpoint_send', 'endpoint_receive', 'classical_forward', 'classical_telemetry')
@@ -89,7 +92,17 @@ FIELDS = {
   'phase_sigma_rad': ('Erro de fase · rad', 'number', .05, 0., 10., True),
   'phase_stabilization': ('Estabilização de fase', 'text', 'simulated reference pulses', None, None, True),
   'ec_efficiency': ('Orçamento de reconciliação · fEC', 'number', 1.16, 1., 3., True),
-  'postprocessing': ('Pós-processamento', 'choice', 'conditional_asymptotic_budget', ('conditional_asymptotic_budget',), None, True),
+  'postprocessing': ('Pós-processamento', 'choice', 'conditional_asymptotic_budget', ('conditional_asymptotic_budget','finite_sns_v2'), None, True),
+  'decoy_strong_mu': ('Chamariz forte · fótons/pulso', 'number', .4, .001, 2., False),
+  'send_probability': ('Probabilidade de enviar em Z · 0–1', 'number', .08, .000001, .5, False),
+  'tf_z_probability': ('Probabilidade de janela Z · 0–1', 'number', .5, .001, .999, False),
+  'tf_vacuum_probability': ('Probabilidade de vácuo em X · 0–1', 'number', .3, .001, .999, False),
+  'tf_weak_probability': ('Probabilidade de chamariz fraco em X · 0–1', 'number', .4, .001, .999, False),
+  'tf_phase_slice_rad': ('Largura total da seleção de fase · rad', 'number', .392699081699, .001, 1.570796326795, False),
+  'statistical_failure': ('Falha de cada intervalo estatístico', 'number', 1e-10, 1e-15, .01, False),
+  'privacy_amplification_error': ('Falha condicional de amplificação', 'number', 1e-10, 1e-15, .01, False),
+  'entropy_smoothing_error': ('Parâmetro condicional de suavização', 'number', 1e-10, 1e-15, .01, False),
+  'tf_max_sifted_bits': ('Limite explícito de bits por bloco', 'int', 50000, 1, 200000, False),
  },
  'purification': {
   'protocol': ('Protocolo implementado', 'choice', 'BBPSSW', ('BBPSSW',), None, True),
@@ -101,6 +114,7 @@ FIELDS = {
   'yield_upper_bound': ('Limite de rendimento · 0–0,5', 'number', .5, 0., .5, True),
  },
  'satellite_doppler': {
+  'pointing_jitter_convention': ('Convenção do jitter angular', 'choice', 'gaussian_per_axis', ('gaussian_per_axis','gaussian_radial_rms','legacy_offset_surrogate'), None, False),
   'min_elevation_deg': ('Elevação mínima · graus', 'number', 20., 0., 90., True),
   'divergence_urad': ('Divergência · µrad', 'number', 10., .001, 1e6, True),
   'pointing_jitter_urad': ('Erro de apontamento · µrad', 'number', 2., 0., 1e6, True),
@@ -130,6 +144,7 @@ FIELDS = {
   'scintillation_sigma': ('Desvio lognormal de cintilação', 'number', 0., 0., 3., False),
  },
  'satellite_isl': {
+  'pointing_jitter_convention': ('Convenção do jitter angular', 'choice', 'gaussian_per_axis', ('gaussian_per_axis','gaussian_radial_rms','legacy_offset_surrogate'), None, False),
   'point_ahead_compensation': ('Compensação de point-ahead', 'bool', True, None, None, True),
   'point_ahead_calibration_error_urad': ('Erro residual point-ahead · µrad', 'number', 0., 0., 10000., True),
   'pair_source_hz': ('Fonte ISL dedicada · pares/s', 'number', 20000., 1., 1e7, True),
@@ -147,6 +162,26 @@ FIELDS = {
   'dark_count_cps': ('Dark counts por detector espacial · contagens/s', 'number', 5., 0., 1e6, True),
   'detector_dead_time_ns': ('Tempo morto do detector · ns', 'number', 50., 0., 1e9, True),
   'propagation_compensation': ('Compensação calibrada do tempo de voo', 'bool', True, None, None, True),
+ },
+ 'orbital_relay': {
+  'resource_model': ('Modelo de estados', 'choice', 'werner_memory_logical_frame', ('werner_memory_logical_frame',), None, True),
+  'memory_heralding_kind': ('Heralding de captura não destrutiva', 'choice', 'ancillary_capture_herald', ('ancillary_capture_herald',), None, True),
+  'quantum_encoding': ('Codificação armazenada', 'choice', 'polarization_memory_pair', ('polarization_memory_pair',), None, True),
+  'optical_duplex': ('Separação dos canais', 'choice', 'dedicated_quantum_and_classical', ('dedicated_quantum_and_classical',), None, True),
+  'attempt_rate_hz': ('Taxa de tentativas · Hz', 'number', 200000., 1., 1e10, False),
+  'pair_emission_probability': ('Emissão por tentativa · 0–1', 'number', .1, 0., 1., False),
+  'divergence_urad': ('Divergência 1/e² · µrad', 'number', 2., .001, 1000., True),
+  'pointing_jitter_urad': ('Jitter por eixo · µrad', 'number', .1, 0., 1000., True),
+  'pointing_jitter_convention': ('Convenção do jitter', 'choice', 'gaussian_per_axis', ('gaussian_per_axis','gaussian_radial_rms'), None, False),
+  'receiver_diameter_m': ('Abertura receptora · m', 'number', 4., .001, 100., True),
+  'transmitter_diameter_m': ('Abertura transmissora · m', 'number', 1., .001, 100., True),
+  'min_elevation_deg': ('Elevação mínima · graus', 'number', 10., 0., 90., True),
+  'optical_efficiency': ('Eficiência óptica · 0–1', 'number', .8, 0., 1., True),
+  'zenith_optical_depth': ('Profundidade óptica zenital', 'number', .2, 0., 100., True),
+  'max_range_km': ('Distância máxima · km', 'number', 90000., 1., 1e6, True),
+  'earth_limb_margin_km': ('Margem do limbo · km', 'number', 80., 0., 1000., True),
+  'point_ahead_compensation': ('Compensação point-ahead', 'bool', True, None, None, True),
+  'pointing_enabled': ('Rastreamento habilitado', 'bool', True, None, None, True),
  },
  'orbit': {
   'model': ('Propagador disponível', 'choice', 'circular_reference', ('circular_reference','kepler_elements','sgp4_tle','state_vectors','geostationary_reference'), None, True),
@@ -224,6 +259,8 @@ def required_capabilities(technology, physical_type, configuration):
                 else ('coherent_sender', 'phase_reference'))
     if technology == 'satellite_doppler' and physical_type == 'satellite':
         return ('satellite_source', 'tracking')
+    if technology == 'orbital_relay':
+        return ('quantum_memory','tracking','heralded_photon_capture','optical_space_terminal' if physical_type=='satellite' else 'optical_ground_terminal')
     return TECH_CAPS[technology]
 
 
@@ -311,6 +348,7 @@ class Communicator:
             raise ValueError('tecnologia, protocolo ou capacidade não implementada')
         if len(set(self.technologies))!=len(self.technologies): raise ValueError('tecnologia duplicada')
         required=set(TYPE_TECHNOLOGIES[self.physical_type]) if self.physical_type!='satellite' else set()
+        if self.physical_type=='ground_station' and 'orbital_relay' in self.technologies:required.discard('satellite_doppler')
         if not required<=set(self.technologies):raise ValueError('tipo físico exige tecnologias: '+', '.join(sorted(required)))
         if not isinstance(self.mission,dict):raise ValueError('mission: objeto obrigatório')
         if self.mission:
@@ -324,7 +362,7 @@ class Communicator:
                 raise ValueError('satélite apenas RF exige optical={} e configuration={}; nenhuma carga útil quântica declarada')
             if set(self.capabilities)&{'satellite_source','single_photon_detector','optical_space_terminal','optical_ground_terminal','time_tagger','bell_measurement','quantum_memory','coherent_sender','interferometer','bilateral_cnot'}:
                 raise ValueError('satélite apenas RF não pode declarar capacidades de carga útil quântica')
-        elif self.physical_type=='satellite' and not set(self.technologies)&{'satellite_doppler','satellite_isl'}:
+        elif self.physical_type=='satellite' and not set(self.technologies)&{'satellite_doppler','satellite_isl','orbital_relay'}:
             raise ValueError('satélite exige um driver de enlace satélite–solo ou satélite–satélite')
         if not rf_only:
             validate_group('optical',self.optical)
@@ -352,6 +390,11 @@ class Communicator:
         if 'tf_qkd' in self.technologies:
             p=self.configuration['tf_qkd']
             if p['decoy_nu']>=p['signal_mu']: raise ValueError('intensidade chamariz deve ser menor que sinal')
+            if p['postprocessing']=='finite_sns_v2':
+                if p.get('decoy_strong_mu',.4)<=p['decoy_nu']:raise ValueError('SNS finito exige chamariz forte maior que fraco')
+                if p.get('tf_vacuum_probability',.3)+p.get('tf_weak_probability',.4)>=1.:raise ValueError('probabilidades X devem deixar espaço para chamariz forte')
+        if 'orbital_relay' in self.technologies and not {'quantum_memory','entanglement_swapping'}<=set(self.technologies):
+            raise ValueError('relay orbital exige memória e troca de entrelaçamento cadastradas')
         integration=self.integration
         keys={'mode','adapter','interface','service_address','credential_ref','data_origin'}
         if not isinstance(integration,dict) or set(integration)!=keys or any(not isinstance(v,str) or len(v)>2048 for v in integration.values()):
@@ -418,8 +461,9 @@ class Communicator:
         selected=set(self.technologies if technologies is None else technologies)
         for tech in self.technologies:
             if tech not in selected:continue
-            result.update({k:v for k,v in self.configuration[tech].items() if FIELDS[tech][k][1] in ('number','int','bool') or k in ('bsm_kind','receiver_coupling')})
+            result.update({k:v for k,v in self.configuration[tech].items() if FIELDS[tech][k][1] in ('number','int','bool') or k in ('bsm_kind','receiver_coupling','pointing_jitter_convention','resource_model','memory_heralding_kind','quantum_encoding','optical_duplex')})
         if 'tf_qkd' in self.technologies and 'tf_qkd' in selected:result['decoy_mu']=self.configuration['tf_qkd']['decoy_nu']
+        if 'tf_qkd' in self.technologies and 'tf_qkd' in selected:result['tf_estimation_mode']='finite_sns_v2' if self.configuration['tf_qkd']['postprocessing']=='finite_sns_v2' else 'reduced_asymptotic'
         if self.physical_type=='satellite': result['orbit_record']=dict(self.orbit)
         return result
 
@@ -430,7 +474,7 @@ def seed_record(node,topology,mode):
     site=telemetry.get('demonstration_site',{})
     loc=telemetry.get('location',{})
     kind=inventory.get('kind','installation')
-    physical='satellite' if kind=='satellite' else 'measurement_station' if 'measurement' in kind else 'quantum_repeater' if 'repeater' in kind or 'demonstration_repeater' in telemetry else 'installation'
+    physical='satellite' if kind=='satellite' else 'ground_station' if kind=='ground_station' else 'measurement_station' if 'measurement' in kind else 'quantum_repeater' if 'repeater' in kind or 'demonstration_repeater' in telemetry else 'installation'
     if node.node_id in NAMES or node.node_id in ('CIMATEC','USP','IME-USP','UNICAMP','CIQUANTA'):physical='installation'
     if physical=='installation' and not site and node.role==NodeRole.REPEATER and kind=='installation':physical='quantum_repeater'
     role='intermediate' if physical=='satellite' else 'measurement' if physical=='measurement_station' else 'repeater' if physical=='quantum_repeater' else 'endpoint'
@@ -439,16 +483,19 @@ def seed_record(node,topology,mode):
     configs=[raw for n in topology.nodes for raw in n.telemetry.get('technology_sessions',()) if node.node_id in raw['path']]
     techs=list(dict.fromkeys(t for raw in configs for t in raw['technologies']))
     if physical=='quantum_repeater':techs=list(dict.fromkeys(techs+['entanglement_swapping','quantum_memory']))
-    if physical=='satellite' and not set(techs)&{'satellite_doppler','satellite_isl'}:
+    if physical=='satellite' and not set(techs)&{'satellite_doppler','satellite_isl','orbital_relay'}:
         techs=list(dict.fromkeys(techs+['satellite_doppler']))
     params={k:v for raw in configs for k,v in raw['parameters'].items()}
     config={t:{**defaults(t),**{k:v for raw in configs if t in raw['technologies']
         for k,v in raw['parameters'].items() if k in FIELDS[t]}} for t in techs}
     if 'tf_qkd' in config:config['tf_qkd']['decoy_nu']=params.get('decoy_mu',config['tf_qkd']['decoy_nu'])
+    if 'tf_qkd' in config and params.get('tf_estimation_mode')=='finite_sns_v2':config['tf_qkd']['postprocessing']='finite_sns_v2'
     if physical=='measurement_station' and 'tf_qkd' in config:config['tf_qkd']['device_role']='central_measurement'
     optical_configs=[raw for raw in configs if 'satellite_isl' not in raw['technologies']] or configs
     optical={**defaults('optical'),**{k:v for raw in optical_configs for k,v in raw['parameters'].items() if k in FIELDS['optical']}}
+    if 'orbital_relay' in techs and 'pair_source_hz' not in params:optical['pair_source_hz']=params.get('attempt_rate_hz',200000.)*params.get('pair_emission_probability',.1)
     caps=list(dict.fromkeys(telemetry.get('technology_capabilities',[]) + [c for t in techs for c in TECH_CAPS[t]]))
+    if 'orbital_relay' in techs:caps=list(dict.fromkeys(caps+['optical_space_terminal' if physical=='satellite' else 'optical_ground_terminal']))
     orbit={}
     if physical=='satellite':
         downlinks=[raw for raw in configs if 'satellite_doppler' in raw['technologies']]
@@ -473,7 +520,7 @@ def seed_record(node,topology,mode):
         caps=list(dict.fromkeys(caps+['classical_forward']))
     return Communicator(ident,node.node_id,name,physical,role,institution=site.get('name',''),category=category,
         description='Referência documentada; interfaces ópticas propostas, sem conexão física comprovada.',
-        technologies=techs,protocols=(['BB84'] if any(l.technology is None and node.node_id in (l.left_node_id,l.right_node_id) for l in topology.links) else [])+[TECH_PROTOCOL[t] for t in techs],capabilities=caps,
+        technologies=techs,protocols=list(dict.fromkeys((['BB84'] if any(l.technology is None and node.node_id in (l.left_node_id,l.right_node_id) for l in topology.links) else [])+[TECH_PROTOCOL[t] for t in techs]+(['CSP1'] if 'classical_telemetry' in caps else []))),capabilities=caps,
         location={} if physical=='satellite' else {**({'latitude':loc['latitude'],'longitude':loc['longitude'],'altitude_m':loc.get('altitude_m',0.)} if loc else {})},
         integration={'mode':mode,'adapter':'local_simulator' if mode=='simulated' else 'external_unvalidated',
           'interface':'local_queue','service_address':'','credential_ref':'','data_origin':'simulated' if mode=='simulated' else 'physical'},
@@ -536,9 +583,11 @@ class CommunicatorStore:
         aliases={n.telemetry.get('communicator',{}).get('device_id',n.node_id):n.node_id for n in current.nodes}
         resolve=lambda name:aliases.get(name,name)
         config=replace(config,path=tuple(resolve(n) for n in config.path),endpoints=tuple(resolve(n) for n in config.endpoints))
-        if not any(t in config.technologies for t in ('entanglement_swapping','tf_qkd','satellite_doppler','satellite_isl')):
+        drivers=set(config.technologies)&{'entanglement_swapping','tf_qkd','satellite_doppler','satellite_isl','orbital_relay'}
+        if 'orbital_relay' in drivers:drivers.discard('entanglement_swapping')
+        if not drivers:
             raise ValueError('memória/purificação complementam um protocolo de distribuição; selecione um driver')
-        if len(set(config.technologies)&{'entanglement_swapping','tf_qkd','satellite_doppler','satellite_isl'})!=1:
+        if len(drivers)!=1:
             raise ValueError('uma sessão exige exatamente um driver de distribuição; use sessões separadas para drivers distintos')
         if len(config.link_ids)!=len(config.path)-1: raise ValueError('um par de canais obrigatório por segmento')
         for node_id in config.path:
@@ -580,6 +629,9 @@ class CommunicatorStore:
             if len(records)!=2 or any(r.physical_type!='satellite' for r in records):
                 raise ValueError('ISL exige dois satélites cadastrados e um par de canais explícito')
             params['satellite_orbits']={r.node_id:dict(r.orbit) for r in records}
+            params['device_parameters']={r.node_id:r.parameters(config.technologies) for r in records}
+        if 'orbital_relay' in config.technologies:
+            params['satellite_orbits']={r.node_id:dict(r.orbit) for r in records if r.physical_type=='satellite'}
             params['device_parameters']={r.node_id:r.parameters(config.technologies) for r in records}
         config=replace(config,parameters=params)
         supplied=payload.get('links',[])

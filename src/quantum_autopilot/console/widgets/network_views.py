@@ -19,6 +19,7 @@ from PySide6.QtGui import QPainter, QPen
 from PySide6.QtWidgets import QAbstractItemView, QHeaderView, QStyledItemDelegate, QTableView, QWidget
 
 from ..contract import LINK_STATUS_TONE
+from ..processing_labels import link_processing_labels
 from ..theme import C, family, label_font, mix, mono, qc, text as text_font, text_tone
 from .figures import link_key, link_style, marker_kind, paint_marker
 from .prims import vbox
@@ -100,6 +101,10 @@ class NetLink:
     label: str
     kind: str = "fibre"
     fidelity_value: float | None = None
+    processing_label: str = "UNREPORTED"
+    data_source: str = "unreported"
+    processing_detail: str = "No per-link processing record received."
+    processing_physics: str = "not reported by the backend"
 
     @property
     def state_text(self) -> str:
@@ -209,6 +214,7 @@ def build_net_model(snap, selection=(None, ""), layer: str = "physical", demand_
         if link.a not in ids or link.b not in ids:
             continue
         engine = live_links.get(link.id)
+        processing = link_processing_labels(engine, getattr(live, "technologies", None))
         links.append(NetLink(
             key=link_key(link), id=link.id, a=link.a, b=link.b,
             style=('space' if link.id in emitting else 'space_config') if satellite_ids.intersection((link.a,link.b))
@@ -218,7 +224,9 @@ def build_net_model(snap, selection=(None, ""), layer: str = "physical", demand_
                          else link.distance_km), configured_active=link.configured_active, label=link.label,
             kind='satellite_isl' if satellite_ids.issuperset((link.a,link.b))
                  else 'satellite' if satellite_ids.intersection((link.a,link.b)) else link.kind,
-            fidelity_value=engine.fidelity if engine is not None else _fidelity_value(link.fidelity)))
+            fidelity_value=engine.fidelity if engine is not None else _fidelity_value(link.fidelity),
+            processing_label=processing.badge, data_source=processing.data_source,
+            processing_detail=processing.detail, processing_physics=processing.physics))
     route, badges, shown = (), (), ""
     demand = live.demand(demand_id) if live is not None and demand_id else None
     if layer == "entanglement" and demand is not None:
@@ -281,7 +289,7 @@ def _matrix_cell(a, b, entries=()):
                                           else "", state.lower()) if part)
     return MatrixCell(value, detail, tone_name, link.key, link.style,
                       f"{link.key} · {a.id} ↔ {b.id} · {state} · F {link.fidelity} · "
-                      f"{format_km(link.distance_km)}")
+                      f"{format_km(link.distance_km)}\n{link.processing_detail}")
 
 
 def _matrix_pairs(model):

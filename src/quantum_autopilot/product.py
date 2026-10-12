@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 import re
 import sys
@@ -39,6 +38,8 @@ def product_version() -> str:
                 declared = tomllib.loads(text).get("project", {}).get("version")
                 if isinstance(declared, str) and declared:
                     return declared
+    from importlib.metadata import PackageNotFoundError, version
+
     try:
         return version(DISTRIBUTION_NAME)
     except PackageNotFoundError as error:

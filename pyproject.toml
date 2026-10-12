@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quantum-twin"
-version = "5.60.0"
+version = "5.66.2"
 description = "WDM-informed quantum repeater digital twin with explicit data provenance, predictive admission control, and simulation validation."
 requires-python = ">=3.10"
 dependencies = [
@@ -21,6 +21,9 @@ dependencies = [
 ]
 
 [project.scripts]
+orion-core = "quantum_autopilot.service.cli:main"
+orion-operator = "quantum_autopilot.service.operator_cli:main"
+orion-pl-gateway = "quantum_autopilot.service.pl_gateway_cli:main"
 orionq = "quantum_autopilot.desktop:main"
 orion-q-security = "quantum_autopilot.security.cli:main"
 orion-q-satellite-gateway = "quantum_autopilot.quantum_protocols.satellite_gateway_cli:main"
@@ -61,11 +64,15 @@ desktop = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-"quantum_autopilot.console" = ["assets/*.ico", "assets/*.png", "assets/*.wav", "fonts/*.ttf", "fonts/*.otf", "fonts/*-OFL.txt", "fonts/*-NOTICE.txt", "fonts/*.json", "geo/*.json", "geo/*.md"]
+"quantum_autopilot.geography" = ["geo/*.json", "geo/*.md"]
+"quantum_autopilot.console" = ["assets/*.ico", "assets/*.png", "assets/*.wav", "fonts/*.ttf", "fonts/*-OFL.txt", "fonts/*.json", "geo/*.json", "geo/*.md"]
 "quantum_autopilot.qkd" = ["data/*.json"]
 "quantum_autopilot.model_intake" = ["derived/*.json", "derived/*.npz"]
 "quantum_autopilot.control_plane" = ["data/*.json"]
 "quantum_autopilot.quantum_protocols" = ["data/*.json"]
+
+[tool.setuptools.exclude-package-data]
+"quantum_autopilot.console" = ["fonts/Quantum.otf", "fonts/quantum-NOTICE.txt"]
 
 [tool.ruff]
 line-length = 110

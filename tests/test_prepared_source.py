@@ -200,11 +200,14 @@ def test_stop_does_not_wait_for_preparation_and_late_generation_is_ignored(app):
         previous_future = deferred._future
         deferred.stop()
         assert previous_future.running() and not first_release.is_set()
+        with pytest.raises(RuntimeError, match="releasing"):
+            deferred.start()
+        assert created == []
+        first_release.set()
+        until(app, lambda: first_done.is_set() and previous_future.done() and not deferred.stopping)
         deferred.start()
         until(app, lambda: deferred.ready)
         assert created == [2] and deferred.service == 2
-        first_release.set()
-        until(app, lambda: first_done.is_set() and previous_future.done())
         app.processEvents()
         assert created == [2] and deferred.service == 2
     finally:

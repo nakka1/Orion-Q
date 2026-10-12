@@ -19,7 +19,7 @@ from .base import Screen
 TYPE_NAMES=dict(zip(TYPES,('Instalação terrestre','Repetidor quântico','Estação de medição','Estação terrestre óptica',
     'Satélite','Dispositivo de memória quântica','Serviço de purificação')))
 ROLE_NAMES=dict(zip(ROLES,('Endpoint','Core','Repetidor','Medição central','Estação terrestre','Serviço','Intermediário')))
-TECH_NAMES=dict(zip(TECHNOLOGIES,('Troca de entrelaçamento','Memória quântica','Purificação','TF-QKD','Enlace satélite–solo / Doppler','Enlace satélite–satélite / ISL')))
+TECH_NAMES=dict(zip(TECHNOLOGIES,('Troca de entrelaçamento','Memória quântica','Purificação','TF-QKD','Enlace satélite–solo / Doppler','Enlace satélite–satélite / ISL','Relay orbital com memórias')))
 DEFAULT_ROLES={'installation':'endpoint','quantum_repeater':'repeater','measurement_station':'measurement',
     'ground_station':'ground_station','satellite':'intermediate','quantum_memory':'service','purification_service':'service'}
 

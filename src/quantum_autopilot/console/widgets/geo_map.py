@@ -18,11 +18,12 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from PySide6.QtCore import QPointF, QRectF, Qt, QTimer, Signal
-from PySide6.QtGui import QFontMetricsF, QPainter, QPainterPath, QPen, QPixmap, QTransform
+from PySide6.QtCore import QPointF, QRectF, Qt, QTimer, QUrl, Signal
+from PySide6.QtGui import QDesktopServices, QFontMetricsF, QPainter, QPainterPath, QPen, QPixmap, QTransform
 from PySide6.QtWidgets import QComboBox, QToolTip, QWidget
 
-from ..geodata import BBox, BaseMap, LocalProjection, ViewTransform, load_brazil, load_salvador, load_world, load_campus
+from ..geodata import (BBox, BaseMap, LocalProjection, OSM_ATTRIBUTION, ViewTransform,
+                       load_brazil, load_salvador, load_world, load_campus)
 from ..theme import C, button_font, current_theme, label_font, mix, mono, qc, text as text_font
 from .figures import (
     marker_hit_rect, marker_kind, node_rect, paint_link, paint_node, paint_route, place_node_labels, segment_distance,
@@ -30,7 +31,7 @@ from .figures import (
 from .network_views import NetModel, build_net_model, format_km, format_lat, format_lon
 from .prims import Clickable, Frame, L, Label, clear_layout, hbox, vbox
 from .figures import paint_marker
-from .signal_geography import map_cross_rect, paint_signal_cross, signal_map_ocean
+from .signal_geography import SIGNAL_CROSS_LONLAT, map_cross_rect, paint_signal_cross, signal_map_ocean
 
 ROAD_WIDTH = {"motorway": 3.0, "trunk": 2.4, "primary": 1.5, "secondary": 1.0}
 MIN_M_PER_PX, MAX_M_PER_PX = 1.5, 100000.0
@@ -92,6 +93,9 @@ class MapRenderer(QWidget):
         self.signal_mode = False
         self.basemap = basemap or load_salvador()
         self._automatic_basemap = basemap is None
+        self._attribution_rect = QRectF()
+        self._attribution_licence_url = ""
+        self._attribution_font = text_font(12)
         self.projection = LocalProjection.for_bbox(self.basemap.bbox)
         self.net = NetModel()
         self.available = False
@@ -579,6 +583,11 @@ class MapRenderer(QWidget):
         if event.button() != Qt.MouseButton.LeftButton:
             return super().mousePressEvent(event)
         point = event.position()
+        if (not self._pick and self._attribution_licence_url and
+                self._attribution_rect.contains(point)):
+            QDesktopServices.openUrl(QUrl(self._attribution_licence_url))
+            event.accept()
+            return
         if self._pick:
             lon, lat = self.transform().to_lonlat(point.x(), point.y())
             self._end_pick()
@@ -607,7 +616,8 @@ class MapRenderer(QWidget):
             lon, lat = self.transform().to_lonlat(point.x(), point.y())
             QToolTip.showText(event.globalPosition().toPoint(), f"{format_lat(lat)} · {format_lon(lon)}", self)
             return
-        hover = self.hit(point)
+        hover = (("attribution", "") if self._attribution_licence_url and
+                 self._attribution_rect.contains(point) else self.hit(point))
         if hover != self._hover:
             self._hover = hover
             self.setCursor(Qt.CursorShape.PointingHandCursor if hover[0] else Qt.CursorShape.ArrowCursor)
@@ -630,6 +640,9 @@ class MapRenderer(QWidget):
 
     def _tooltip(self, hover) -> str:
         kind, ident = hover
+        if kind == "attribution":
+            return (f"{self.basemap.attribution}\nOpenStreetMap data: ODbL 1.0\n"
+                    f"{self._attribution_licence_url}")
         if kind == "node":
             node = self.net.node(ident)
             if node is not None:
@@ -707,7 +720,10 @@ class MapRenderer(QWidget):
             p.setPen(pen)
             p.drawPath(metres.map(roads[name]))
         if self.signal_mode:
-            paint_signal_cross(p, map_cross_rect(self.width(), self.height()))
+            anchor = QPointF(*transform.to_px(*SIGNAL_CROSS_LONLAT))
+            cross = map_cross_rect(anchor, transform.px_per_m)
+            if cross.intersects(QRectF(self.rect())):
+                paint_signal_cross(p, cross)
         self._paint_labels(p, transform)
         self._paint_furniture(p, transform)
         p.end()
@@ -808,21 +824,30 @@ class MapRenderer(QWidget):
         p.drawPolyline([QPointF(cx - 4, cy - 3), QPointF(cx, cy - 9), QPointF(cx + 4, cy - 3)])
         p.setFont(label_font(11))
         p.drawText(QRectF(cx - 12, cy + 12, 24, 16), Qt.AlignmentFlag.AlignCenter, "N")
-        # attribution (mandatory wherever the map is drawn), bottom right
-        font = text_font(8.5)
-        font.setPixelSize(9)
+        # Mandatory credit stays readable even when the secondary source
+        # description cannot fit. The compact text links to the ODbL notice.
+        font = text_font(12)
+        has_osm = "OpenStreetMap" in self.basemap.attribution
+        font.setUnderline(has_osm)
         metrics = QFontMetricsF(font)
-        available = self.width() - box.right() - 30
-        note = metrics.elidedText(self.basemap.attribution, Qt.TextElideMode.ElideRight, max(60.0, available))
-        width = metrics.horizontalAdvance(note) + 12
-        rect = QRectF(self.width() - width - 8, self.height() - 8 - 18, width, 18)
-        ground = qc(C.bg)
-        ground.setAlphaF(0.78)
-        p.fillRect(rect, ground)
+        available = max(1.0, self.width() - box.right() - 30)
+        full = self.basemap.attribution
+        note = (full if metrics.horizontalAdvance(full) + 12 <= available or not has_osm
+                else OSM_ATTRIBUTION + " · ODbL")
+        width = min(max(1.0, self.width() - 16), metrics.horizontalAdvance(note) + 12)
+        flags = Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap
+        bounds = metrics.boundingRect(QRectF(0, 0, max(1.0, width - 12), 1024), int(flags), note)
+        height = max(20.0, bounds.height() + 8)
+        bottom = self.height() - 8 if width <= available else box.top() - 6
+        rect = QRectF(self.width() - width - 8, bottom - height, width, height)
+        p.fillRect(rect, qc(C.bg))
         p.setFont(font)
-        p.setPen(qc(C.ink3))
-        p.drawText(rect, Qt.AlignmentFlag.AlignCenter, note)
+        p.setPen(qc(C.ink2))
+        p.drawText(rect.adjusted(6, 4, -6, -4), flags, note)
         self.attribution_text = note
+        self._attribution_rect = rect
+        self._attribution_font = font
+        self._attribution_licence_url = "https://www.openstreetmap.org/copyright" if has_osm else ""
 
     def paintEvent(self, _event) -> None:
         from ..display import raster_scale_for

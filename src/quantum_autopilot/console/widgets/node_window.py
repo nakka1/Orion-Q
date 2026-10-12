@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from collections import deque
-from time import perf_counter
+from time import perf_counter, thread_time
 from typing import TypedDict
 
 from PySide6.QtCore import QEvent, QObject, QPoint, QPointF, QTimer, Qt, Signal
@@ -42,6 +42,15 @@ from .loading_state import LoadingStatus
 WINDOW_W, WINDOW_H = 548, 610
 NO_WAVE_SOURCE = "this source delivers no wave"
 WAVE_CAPTION = 'Visibilidade de polarização · enlaces legados · 1 − 2·QBER'
+# With dozens of actual visual items, the previous 20 ms yield alone added
+# more than a second of queue time. Keep the 6 ms work budget and one new card.
+PRESENTATION_INTERVAL_MS = 8
+
+
+def _presentation_interval(value):
+    if type(value) is not int or value not in (8, 20):
+        raise ValueError('presentation interval must be 8 or 20 milliseconds')
+    return value
 
 #: Label of every `LiveNode` field as the window shows it (tests read `NodeWindow.field_texts()`).
 NODE_FIELDS = ("id", "role", "kind", "status", "located", "latitude", "longitude", "place", "links",
@@ -125,7 +134,9 @@ class _LegendRow(RowBtn):
 
 class _FibreCard(Frame):
     def __init__(self, window: "NodeWindow", key: str) -> None:
-        QWidget.__init__(self)
+        # Construct in the final owner. Reparenting a styled card after its child
+        # tree exists reapplies the inherited style and layout to that tree.
+        QWidget.__init__(self, window.cards_host)
         scoped_style(self, f"background:{C.bg};border:1px solid {C.soft};")
         self.key = key
         self._active: bool | None = None
@@ -220,7 +231,9 @@ class _FibreCard(Frame):
         ready = link.configured_active is not None and bool(link.id)
         self.toggle.setProperty("ready", ready)
         if not ready:self.toggle.setEnabled(False)
-        elif prior_ready is False:self._window.materialized.emit()
+        elif prior_ready is False:
+            self._window.controls_materialized.emit()
+            self._window.materialized.emit()
         if live_link is not None:
             name = LINK_STATUS_TONE.get(live_link.status, "muted")
             self.chip.setText(live_link.status.replace("_", " "))
@@ -272,6 +285,8 @@ class _FibreCard(Frame):
                 self.right.set_rows(rows)
             notes = [f"{item.role}: {item.controller_id}" + (f" ({item.model_state})" if item.model_state else "")
                      for item in live_link.controllers]
+            notes.append(f"processing: {link.processing_label}; data: {link.data_source}")
+            notes.append("physics: " + link.processing_physics)
             if technology:
                 notes.append('technology: ' + ' + '.join(technology['technologies']))
                 notes.append('session: ' + live_link.provenance.get('session_status', 'configured'))
@@ -315,14 +330,18 @@ class NodeWindow(Frame):
     locate = Signal(str)
     closed = Signal(str)
     materialized = Signal()
+    controls_materialized = Signal()
 
-    def __init__(self, node_id: str, parent=None, *, incremental: bool = False) -> None:
+    def __init__(self, node_id: str, parent=None, *, incremental: bool = False, diagnostic=None,
+                 presentation_interval_ms=PRESENTATION_INTERVAL_MS) -> None:
         QWidget.__init__(self, parent)
         scoped_style(self, f"background:{C.raised};border:1px solid {C.line};")
         # The window covers the map with an opaque ground; telling Qt so keeps the map (and every
         # other widget under it) out of the repaints the wave animation causes.
         self.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent, True)
         self.node_id = node_id
+        self._diagnostic_observer = diagnostic
+        self._close_reason = 'window_close'
         self._drag: QPoint | None = None
         self._isolated = False
         self._legend: dict[str, _LegendRow] = {}
@@ -355,7 +374,7 @@ class NodeWindow(Frame):
         self._step_max_ms = 0.
         self._presentation_timer = QTimer(self)
         self._presentation_timer.setSingleShot(True)
-        self._presentation_timer.setInterval(20)
+        self._presentation_timer.setInterval(_presentation_interval(presentation_interval_ms))
         self._presentation_timer.timeout.connect(self._materialize_step)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setAccessibleName(f"Node {node_id}")
@@ -381,7 +400,7 @@ class NodeWindow(Frame):
         self.close_button.setStyleSheet(
             f"QPushButton{{color:{C.ink2};border:1px solid {C.line};background:transparent;}}"
             f"QPushButton:hover{{color:{C.ink};background:{C.hover};}}")
-        self.close_button.clicked.connect(self.close_window)
+        self.close_button.clicked.connect(lambda: self.close_window(reason='close_button'))
         bar.addWidget(self.close_button)
         root.addWidget(self.bar)
 
@@ -489,7 +508,28 @@ class NodeWindow(Frame):
         self._protocol_link_keys = frozenset()
 
     # ---------------------------------------------------------------- window
-    def close_window(self) -> None:
+    def _emit_diagnostic(self, event, **details):
+        observer = self._diagnostic_observer
+        if observer is None:
+            return
+        context = self._latest_context
+        snap = context[0] if context is not None else None
+        record = {'event': event, 'node_id': self.node_id, 'instance_id': id(self),
+                  'at_perf_counter': perf_counter(), 'generation': self._generation,
+                  'state': self._presentation_state, 'pending_items': len(self._pending_widgets),
+                  'visible': self.isVisible(), 'received_tick': getattr(getattr(snap, 'live', None), 'tick', None),
+                  'context': {'input_kind': getattr(snap, 'input_kind', None),
+                              'campaign': getattr(snap, 'campaign', None),
+                              'adapter_id': getattr(getattr(snap, 'capabilities', None), 'adapter_id', None),
+                              'topology_id': getattr(getattr(snap, 'topology', None), 'id', None)}, **details}
+        try:
+            observer(record)
+        except Exception:
+            pass  # Optional diagnosis cannot alter presentation or close semantics.
+
+    def close_window(self, *, reason='window_close') -> None:
+        self._close_reason = reason
+        self._emit_diagnostic('close_request', reason=reason)
         self.cancel_presentation()
         if self._satellite_dialog is not None:self._satellite_dialog.hide()
         self.hide()
@@ -497,7 +537,7 @@ class NodeWindow(Frame):
 
     def keyPressEvent(self, event) -> None:
         if event.key() == Qt.Key.Key_Escape:
-            self.close_window()
+            self.close_window(reason='escape_key')
             event.accept()
             return
         super().keyPressEvent(event)
@@ -522,20 +562,39 @@ class NodeWindow(Frame):
         super().mouseReleaseEvent(event)
 
     def move_within(self, point: QPoint) -> None:
-        """Move, keeping the title bar reachable inside the host."""
+        """Keep the title inside the host's visible, possibly scrolled viewport."""
 
         host = self.parentWidget()
         if host is None:
             self.move(point)
             return
-        x = max(-self.width() + 120, min(point.x(), host.width() - 120))
-        y = max(0, min(point.y(), host.height() - 44))
+        bounds = self._visible_host_rect()
+        x = max(bounds.left(), min(point.x(), bounds.right() - self.width() + 1))
+        y = max(bounds.top(), min(point.y(), bounds.bottom() - self.bar.geometry().bottom()))
         self.move(x, y)
+
+    def _visible_host_rect(self):
+        """Logical bounds after every QWidget ancestor's clipping.
+
+        A screen can be taller than its QScrollArea viewport when the terminal
+        is open. Its complete rect is therefore not a placement boundary for a
+        floating window. Mapping each ancestor preserves proxy scaling without
+        guessing the sizes of shell chrome or the terminal.
+        """
+        host = self.parentWidget()
+        bounds = host.rect()
+        ancestor = host.parentWidget()
+        while ancestor is not None:
+            clipped = ancestor.rect().translated(host.mapFrom(ancestor, QPoint()))
+            bounds = bounds.intersected(clipped)
+            ancestor = ancestor.parentWidget()
+        return bounds
 
     def fit_host(self) -> None:
         host = self.parentWidget()
         if host is not None:
-            self.resize(min(WINDOW_W, max(360, host.width() - 16)), min(WINDOW_H, max(260, host.height() - 16)))
+            bounds = self._visible_host_rect()
+            self.resize(min(WINDOW_W, max(360, bounds.width() - 16)), min(WINDOW_H, max(260, bounds.height() - 16)))
             self.move_within(self.pos())
 
     def hideEvent(self, event) -> None:
@@ -742,6 +801,7 @@ class NodeWindow(Frame):
         generation = self._generation
         made = False
         created = False
+        controls_created = False
         refreshed = 0
         # At most one new expensive card; a small legend can share its turn.
         # A Qt operation cannot be preempted by the wall budget; expose its max.
@@ -757,14 +817,20 @@ class NodeWindow(Frame):
                 break
             made = True
             created = created or new
+            controls_created = controls_created or (kind == 'card' and new)
             if kind == 'refresh':refreshed += 1
             # Group small existing updates so one repaint covers several cards.
             # Creation remains one expensive item per turn, with no forced GC.
             if kind in ('card', 'core', 'satellite') or refreshed >= 4 or perf_counter()-started >= .006:
                 break
         self._step_max_ms = max(self._step_max_ms, (perf_counter()-started)*1000)
+        self._emit_diagnostic('presentation_work', duration_ms=(perf_counter()-started)*1000,
+                              created=created, refreshed=refreshed)
         if made and created:
-            self.materialized.emit()  # New controls are capability-gated before the next input turn.
+            # Gate new operation controls before legacy observers or the next
+            # input turn; informational rows still notify presentation observers.
+            if controls_created:self.controls_materialized.emit()
+            self.materialized.emit()
         if self._closed_presentation or generation != self._generation:
             self._step_max_ms = max(self._step_max_ms, (perf_counter()-started)*1000)
             return
@@ -777,10 +843,14 @@ class NodeWindow(Frame):
         else:
             self._complete_presentation()
         self._step_max_ms = max(self._step_max_ms, (perf_counter()-started)*1000)
+        self._emit_diagnostic('presentation_step', duration_ms=(perf_counter()-started)*1000,
+                              created=created, refreshed=refreshed)
 
     def _materialize_pending(self):
         """Commit a visual item only after creation and population both succeed."""
         kind, key, index = self._pending_widgets[0]
+        started = perf_counter() if self._diagnostic_observer is not None else None
+        cpu_started = thread_time() if started is not None else None
         try:
             complete = self._materialize_one(kind, key, index)
         except Exception as error:
@@ -804,6 +874,11 @@ class NodeWindow(Frame):
             self._presentation_error = f'Falha na visualização de {key} ({type(error).__name__})'
             self._update_presentation_line()
             return False
+        finally:
+            if started is not None:
+                self._emit_diagnostic('presentation_item', kind=kind, key=key,
+                                      duration_ms=(perf_counter()-started)*1000,
+                                      thread_cpu_ms=(thread_time()-cpu_started)*1000)
         if complete is not False:self._pending_widgets.popleft()
         return True
 
@@ -814,13 +889,16 @@ class NodeWindow(Frame):
         if self._latest_context is not None:
             self._presentation_snapshot = self._latest_context[:2]
         self._update_presentation_line()
+        self._emit_diagnostic('presentation_ready')
 
     def _schedule_presentation(self):
         if not self.incremental:
             made = bool(self._pending_widgets)
             while self._pending_widgets:
                 if not self._materialize_pending():break
-            if made:self.materialized.emit()
+            if made:
+                self.controls_materialized.emit()
+                self.materialized.emit()
             if self._presentation_state != 'error':self._complete_presentation()
         elif self._pending_widgets:
             self._presentation_state = 'presenting' if self.isVisible() else 'paused'
@@ -1286,6 +1364,7 @@ class NodeWindows(QObject):
     action = Signal(str, str, str, object)
     locate = Signal(str)
     changed = Signal()
+    controls_changed = Signal()
 
     def __init__(self, host: QWidget, *, incremental: bool = False) -> None:
         super().__init__(host)
@@ -1296,6 +1375,27 @@ class NodeWindows(QObject):
         self.overlay_active = None           # callables of the host: another Esc-dismissable state (map pick)
         self.overlay_cancel = None
         self._filtering = False
+        self._diagnostic_observer = None
+        self._presentation_interval_ms = PRESENTATION_INTERVAL_MS
+        self._restore_positions: dict[str, QPoint] = {}
+        self._viewport_fit = QTimer(self)
+        self._viewport_fit.setSingleShot(True)
+        self._viewport_fit.timeout.connect(self._fit_after_layout)
+
+    def set_diagnostic_observer(self, observer=None):
+        """Opt-in, read-only lifecycle observations; retain no diagnostic records."""
+        if observer is not None and not callable(observer):
+            raise TypeError('diagnostic observer must be callable')
+        self._diagnostic_observer = observer
+        for window in self.windows.values():
+            window._diagnostic_observer = observer
+
+    def set_presentation_interval_ms(self, value):
+        """Choose the presentation yield only; acquisition and budgets are unchanged."""
+        value = _presentation_interval(value)
+        self._presentation_interval_ms = value
+        for window in self.windows.values():
+            window._presentation_timer.setInterval(value)
 
     def _filter(self, wanted: bool) -> None:
         """Watch application clicks only while a window is open (to raise the one clicked)."""
@@ -1320,9 +1420,27 @@ class NodeWindows(QObject):
             self.overlay_cancel()
             return
         if self._order:
-            self.close(self._order[-1])
+            self.close(self._order[-1], reason='overlay_hide')
 
     def eventFilter(self, watched, event) -> bool:
+        if (self.windows and watched is self.host
+                and event.type() in (QEvent.Type.Move, QEvent.Type.Resize, QEvent.Type.Show)):
+            # QScrollArea can move its content *after* focus or a layout update.
+            # Refit at the next turn, once that automatic scroll has finished;
+            # changing a child window does not recursively move the screen.
+            if not self._viewport_fit.isActive():
+                self._viewport_fit.start(0)
+        if self._diagnostic_observer is not None and self.windows:
+            kind = event.type()
+            if (kind in (QEvent.Type.KeyPress, QEvent.Type.KeyRelease, QEvent.Type.ShortcutOverride)
+                    and event.key() == Qt.Key.Key_Escape and self._order):
+                self.windows[self._order[-1]]._emit_diagnostic(
+                    'input_escape', event_type=kind.name, receiver_class=type(watched).__name__)
+            elif kind in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
+                for window in self.windows.values():
+                    if watched is window.close_button:
+                        window._emit_diagnostic('input_close_button', event_type=kind.name)
+                        break
         if event.type() == QEvent.Type.MouseButtonPress and isinstance(watched, QWidget) and self.windows:
             for node_id, window in self.windows.items():
                 if watched is window or window.isAncestorOf(watched):
@@ -1343,12 +1461,18 @@ class NodeWindows(QObject):
              *, prepare=None) -> NodeWindow:
         window = self.windows.get(node_id)
         if window is None:
-            window = NodeWindow(node_id, self.host, incremental=self.incremental)
+            started = perf_counter() if self._diagnostic_observer is not None else None
+            window = NodeWindow(node_id, self.host, incremental=self.incremental,
+                                diagnostic=self._diagnostic_observer,
+                                presentation_interval_ms=self._presentation_interval_ms)
+            if started is not None:
+                window._emit_diagnostic('window_constructed', duration_ms=(perf_counter()-started)*1000)
             window.select.connect(self.select.emit)
             window.command.connect(self.command.emit)
             window.action.connect(self.action.emit)
             window.locate.connect(self.locate.emit)
-            window.closed.connect(self.close)
+            window.closed.connect(self._window_closed)
+            window.controls_materialized.connect(self.controls_changed.emit)
             window.materialized.connect(self.changed.emit)
             self.windows[node_id] = window
             self._filter(True)
@@ -1365,14 +1489,36 @@ class NodeWindows(QObject):
                 position = QPoint(position.x(), min(position.y(), fit_y))
             window.move_within(position)
             window.show()
+            window._emit_diagnostic('window_opened')
         elif prepare is not None:
             prepare(window)
         self._raise(node_id)
-        window.setFocus(Qt.FocusReason.OtherFocusReason)
+        # Focusing a 610 px frame asks the containing QScrollArea to centre the
+        # whole frame, which can scroll its title behind the shell's chrome.
+        # This reachable child still propagates Esc to the floating window.
+        window.close_button.setFocus(Qt.FocusReason.OtherFocusReason)
+        self.controls_changed.emit()
         self.changed.emit()
         return window
 
-    def close(self, node_id: str) -> None:
+    def _window_closed(self, node_id):
+        window = self.sender()
+        current = self.windows.get(node_id)
+        if window is not current:
+            if current is not None:
+                current._emit_diagnostic('stale_close_ignored',
+                                         signaling_instance_id=id(window) if window is not None else None)
+            return
+        self.close(node_id, reason=getattr(window, '_close_reason', 'closed_signal'), signaling_window=window)
+
+    def close(self, node_id: str, *, reason='registry_close', signaling_window=None) -> None:
+        self._restore_positions.pop(node_id, None)
+        current = self.windows.get(node_id)
+        if current is not None:
+            current._emit_diagnostic('registry_close', reason=reason,
+                                     signaling_instance_id=id(signaling_window) if signaling_window is not None else None,
+                                     signaling_instance_matches=(signaling_window is current)
+                                     if signaling_window is not None else None)
         window = self.windows.pop(node_id, None)
         if node_id in self._order:
             self._order.remove(node_id)
@@ -1384,32 +1530,57 @@ class NodeWindows(QObject):
             # native top-level window re-polished its whole hidden widget tree.
             window.deleteLater()
             self._filter(bool(self.windows))
+            self.controls_changed.emit()
             self.changed.emit()
 
-    def close_all(self) -> None:
+    def close_all(self, *, reason='close_all') -> None:
         for node_id in list(self.windows):
-            self.close(node_id)
+            self.close(node_id, reason=reason)
 
     def refresh(self, snap, net: NetModel, status: CommandStatus) -> None:
         for node_id, window in list(self.windows.items()):
             if not window.refresh(snap, net, status):
-                self.close(node_id)
+                self.close(node_id, reason='node_removed' if net.node(node_id) is None else 'presentation_cancelled')
 
     def fit(self) -> None:
         for window in self.windows.values():
             window.fit_host()
 
+    def _fit_after_layout(self) -> None:
+        self.fit()
+        if not self.host.isVisible():
+            return
+        # Theme rebuilds restore children before the new screen is displayed.
+        # Its scroll ancestors still have provisional 640x480 geometry then;
+        # clamping against those bounds must not discard the saved position.
+        # Consume it once, on the queued fit after Show/layout delivery. Normal
+        # drags and subsequent viewport changes retain their usual bounds.
+        for node_id, position in list(self._restore_positions.items()):
+            window = self.windows.get(node_id)
+            if window is not None:
+                window.move_within(position)
+            self._restore_positions.pop(node_id, None)
+
     def state(self) -> list:
-        return [{"id": node_id, "x": self.windows[node_id].x(), "y": self.windows[node_id].y()}
-                for node_id in self._order if node_id in self.windows]
+        positions = ((node_id, self._restore_positions.get(node_id, self.windows[node_id].pos()))
+                     for node_id in self._order if node_id in self.windows)
+        return [{"id": node_id, "x": point.x(), "y": point.y()} for node_id, point in positions]
 
     def restore(self, state) -> None:
         for item in state or ():
             if isinstance(item, Mapping) and item.get("id"):
-                self.open(str(item["id"]), position=QPoint(int(item.get("x", 14)), int(item.get("y", 10))))
+                node_id = str(item["id"])
+                position = QPoint(int(item.get("x", 14)), int(item.get("y", 10)))
+                if not self.host.isVisible():
+                    self._restore_positions[node_id] = position
+                self.open(node_id, position=position)
+        if self._restore_positions and not self._viewport_fit.isActive():
+            self._viewport_fit.start(0)
 
     def shutdown(self) -> None:
-        self.close_all()
+        self._viewport_fit.stop()
+        self.close_all(reason='shutdown')
+        self._restore_positions.clear()
         self._filter(False)
 
 

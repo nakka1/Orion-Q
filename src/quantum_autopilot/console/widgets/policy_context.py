@@ -11,6 +11,7 @@ from quantum_autopilot.control_plane.policy_context import MAX_INPUT_BYTES, MAX_
 from quantum_autopilot.model_intake.catalog import model_options
 from quantum_autopilot.model_intake.policy_compatibility import TARGET_POLICY_ID
 from ..model_archive_check import LocalModelJob
+from ..capabilities import SourceCapabilities
 from ..policy_context_binding import PolicyContextBinding
 from ..theme import C, mono
 from .command_history import _export_captured
@@ -33,6 +34,8 @@ class PolicyContextInspection(AdaptiveDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.provider = self._source = self.binding = None
+        self._presented_capabilities = SourceCapabilities()
+        self._presented_source = None
         self._export_capability = False
         self.context = self.observation = self.deadline = None
         self._epoch = 0
@@ -102,8 +105,17 @@ class PolicyContextInspection(AdaptiveDialog):
         if self.provider is not None:
             raise ValueError("context inspection already attached")
         self.provider = provider
-        provider.source_changed.connect(self._tick)
+        provider.source_changed.connect(self._source_changed)
         provider.snapshot_changed.connect(self._snapshot)
+        snapshot = getattr(provider, "_snap", None)
+        if snapshot is not None:
+            self._snapshot(snapshot)
+        else:
+            self._tick()
+
+    def _source_changed(self, *_):
+        self._presented_capabilities = SourceCapabilities()
+        self._presented_source = None
         self._tick()
 
     def _scope(self, capabilities=None):
@@ -113,7 +125,11 @@ class PolicyContextInspection(AdaptiveDialog):
         service = getattr(self.provider.active, "service", None)
         runtime = getattr(service, "_controller_runtime", None)
         if capabilities is None:
-            capabilities = self.provider.capabilities
+            capabilities = self._presented_capabilities
+        if (not self.provider.running or self._presented_source !=
+                (id(self.provider.active), self.provider._generation)):
+            self._presented_capabilities = SourceCapabilities()
+            capabilities = SourceCapabilities()
         self._export_capability = capabilities.allows("export_record")
         return (
             id(self.provider.active),
@@ -151,6 +167,10 @@ class PolicyContextInspection(AdaptiveDialog):
         self._render()
 
     def _snapshot(self, snapshot):
+        # Presentation declarations are never authority: the explicit action's
+        # provider/service boundary still revalidates identity and permissions.
+        self._presented_capabilities = snapshot.capabilities
+        self._presented_source = (id(self.provider.active), self.provider._generation)
         self._tick(capabilities=snapshot.capabilities)
         if self.context is not None:
             if (
@@ -258,9 +278,9 @@ class PolicyContextInspection(AdaptiveDialog):
         self._reset("Reading context…")
         self.deadline = time.monotonic() + MAX_PROPOSAL_AGE_S
         try:
-            self.binding = PolicyContextBinding(self.provider.active.policy_context_source())
-            self.job.submit(self.binding.run, "inspect")
-        except (ValueError, AttributeError) as exc:
+            self.binding = PolicyContextBinding(self.provider.active.policy_context_source(), source=self.provider.active)
+            self.job.submit(self.binding.dispatch("inspect"))
+        except (ValueError, AttributeError, PermissionError) as exc:
             self._reset("CONTEXT REFUSED · " + str(exc))
         self._render()
 
@@ -271,13 +291,13 @@ class PolicyContextInspection(AdaptiveDialog):
         self._epoch += 1
         self.observation = None
         self.export_job.clear()
-        self.job.submit(
+        self.job.submit(self.binding.authority.dispatch(
             _observe_text,
             self.binding,
             self.candidate.currentText(),
             self.context["record"]["context_sha256"],
             self.input.toPlainText(),
-        )
+        ))
 
     def export(self):
         self._tick()

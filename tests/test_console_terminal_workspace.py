@@ -264,10 +264,28 @@ def test_real_backend_keeps_publishing_while_terminal_is_hidden(app, tmp_path):
         assert win.journal.rows()
         win.set_terminal_visible(True)
         settle(app)
-        net=win.screens['topology']._net
-        expected={l.id for l in net.links if all(net.node(n).physical_type!='satellite' for n in (l.a,l.b))}
-        expected.update(l['link_id'] for s in net.satellites.values() for l in s['transmitting_links'])
-        assert len(net.nodes)==66 and win.screens['topology'].geo.drawn_link_keys()==expected
+        shown = win.snapshot
+        net = win.screens["topology"]._net
+        node_ids = [node.id for node in net.nodes]
+        assert node_ids == [node.id for node in shown.topology.nodes]
+        assert len(node_ids) == len(set(node_ids))
+        assert set(node_ids) == {node.id for node in shown.live.nodes}
+        link_ids = [link.id for link in net.links]
+        assert link_ids == [link.id for link in shown.topology.links]
+        assert len(link_ids) == len(set(link_ids))
+        assert set(link_ids) == {link.id for link in shown.live.links}
+        # Map geometry includes discrete registered orbital associations. Only
+        # validated reception may give those associations the emission style.
+        located = {node.id for node in shown.topology.nodes
+                   if node.located and node.latitude is not None and node.longitude is not None}
+        expected = {link.id for link in shown.topology.links if {link.a, link.b} <= located}
+        assert win.screens["topology"].geo.drawn_link_keys() == expected
+        satellites = {node.id for node in shown.topology.nodes if node.physical_type == "satellite"}
+        transmitting = {link["link_id"] for state in shown.live.satellites.values()
+                        for link in state["transmitting_links"]}
+        for link in net.links:
+            if satellites.intersection((link.a, link.b)):
+                assert link.style == ("space" if link.id in transmitting else "space_config")
         assert not win.screens["fpga"].flash.isEnabled()
         assert service.network_live_state()["policy"]["ml_control_enabled"] is False
         report = validate_terminal(win, tmp_path / "live-terminal")

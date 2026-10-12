@@ -25,7 +25,9 @@ def wait(app, predicate, timeout=8):
     until = time.monotonic() + timeout
     while not predicate() and time.monotonic() < until:
         app.processEvents()
-        QTest.qWait(20)
+        # Yield Python execution to the real acquisition/audit worker. PySide's
+        # qWait may keep its GIL on Windows even while dispatching Qt timers.
+        time.sleep(.02)
     assert predicate()
 
 

@@ -14,6 +14,12 @@ import time
 from unittest.mock import patch
 
 
+def _require(condition: bool, label: str) -> None:
+    """Keep diagnostic acceptance gates active in optimize=1 native builds."""
+    if not condition:
+        raise AssertionError(label)
+
+
 def validate_ui_pipeline(output, repository_root=None):
     from PySide6.QtCore import QPointF, Qt
     from PySide6.QtTest import QTest
@@ -140,10 +146,13 @@ def validate_ui_pipeline(output, repository_root=None):
             selected = next(item for item in panel.protocol_series._series
                             if any(value is not None for _at, value in item.points))
             panel.protocol_series.selector.setCurrentIndex(panel.protocol_series.selector.findData(selected.key))
-            assert panel.protocol_series.isVisible() and panel.chart.keys() == []
+            _require(panel.protocol_series.isVisible() and panel.chart.keys() == [],
+                     "Google node must show protocol observations, without an invented Bell wave")
             delivered = panel.protocol_series.chart.visible_samples(selected.key)
-            assert delivered and all(point in selected.points for point in delivered)
-            assert "simulated" in panel.protocol_series.metadata.text()
+            _require(delivered and all(point in selected.points for point in delivered),
+                     "Every displayed protocol point must come from the received series")
+            _require("simulated" in panel.protocol_series.metadata.text(),
+                     "Protocol observations must identify the simulated source")
             details["google"] = {"node_id": node_id, "metric": selected.metric, "unit": selected.unit,
                                  "technology": selected.technology, "points": delivered,
                                  "materialized_s": materialized_s,
@@ -171,11 +180,14 @@ def validate_ui_pipeline(output, repository_root=None):
             selected = next(item for item in panel.protocol_series._series
                             if item.technology == "tf_qkd" and item.metric == "conditional_key_estimate_bps")
             panel.protocol_series.selector.setCurrentIndex(panel.protocol_series.selector.findData(selected.key))
-            assert selected.unit == "bit/s" and panel.protocol_series.chart.series[0].rate_hz == 0
+            _require(selected.unit == "bit/s" and panel.protocol_series.chart.series[0].rate_hz == 0,
+                     "TF-QKD estimates must use bit/s and a received, non-interpolated timeline")
             metrics = snapshot().live.technologies["sessions"][ident]["metrics"]
-            assert metrics.get("certified_secret_bits") == 0
-            assert not any(item.technology == "tf_qkd" and item.metric in ("wave", "fidelity", "bell_fidelity")
-                           for item in panel.protocol_series._series)
+            _require(metrics.get("certified_secret_bits") == 0,
+                     "Simulated TF-QKD material must never be marked as certified secret bits")
+            _require(not any(item.technology == "tf_qkd" and item.metric in ("wave", "fidelity", "bell_fidelity")
+                             for item in panel.protocol_series._series),
+                     "TF-QKD must not be presented as an entanglement fidelity or Bell wave")
             details["tf_qkd"] = {"session_id": ident, "node_id": node_id, "metric": selected.metric,
                                  "points": selected.points, "certified_secret_bits": metrics["certified_secret_bits"],
                                  "materialized_s": materialized_s,
@@ -187,8 +199,10 @@ def validate_ui_pipeline(output, repository_root=None):
                              if item.technology == "tf_qkd" and item.metric == "certified_secret_bits"
                              and item.session_id == selected.session_id)
             panel.protocol_series.selector.setCurrentIndex(panel.protocol_series.selector.findData(certified.key))
-            assert "Bits secretos certificados" in panel.protocol_series.metadata.text()
-            assert all(value is None or value == 0 for _at, value in certified.points)
+            _require("Bits secretos certificados" in panel.protocol_series.metadata.text(),
+                     "Certified-secret-bits series must have its own descriptive label")
+            _require(all(value is None or value == 0 for _at, value in certified.points),
+                     "Simulated certified-secret-bit observations must be zero or absent")
             capture("tf-qkd-certified-zero")
             topology.node_windows.close(node_id)
 
@@ -197,7 +211,8 @@ def validate_ui_pipeline(output, repository_root=None):
         def cimatec_wave():
             panel = topology._open_window("CIMATEC")
             wait(lambda: panel.presentation_status()["ready"], label="CIMATEC node materialization")
-            assert panel.chart.isVisible() and any(item.samples for item in panel.chart.series)
+            _require(panel.chart.isVisible() and any(item.samples for item in panel.chart.series),
+                     "CIMATEC must preserve its received polarisation waveform")
             details["cimatec"] = {"keys": panel.chart.keys(), "caption": panel.wave_label.text(),
                                   "samples": {item.key: len(item.samples) for item in panel.chart.series}}
             capture("cimatec-legacy-polarisation")
@@ -218,7 +233,8 @@ def validate_ui_pipeline(output, repository_root=None):
             click(panel.connect_button)
             wait(lambda: device(device_id)["configuration"]["revision"] > revision and not window.provider.busy,
                  label="persisted FPGA connection command")
-            assert device(device_id)["configuration"]["connected"] != connected
+            _require(device(device_id)["configuration"]["connected"] != connected,
+                     "The persisted FPGA connection must reflect the requested command")
             if not device(device_id)["configuration"]["connected"]:
                 click(panel.connect_button)
                 wait(lambda: device(device_id)["configuration"]["connected"] and not window.provider.busy,
@@ -230,9 +246,12 @@ def validate_ui_pipeline(output, repository_root=None):
                  label="FPGA configuration readback")
             wait(lambda: bool(device(device_id)["state"].get("last_receipts")), label="processed FPGA receipts")
             current = device(device_id)
-            assert current["mode"] == "simulated" and current["state"]["accepted_frames"] > 0
-            assert current["state"]["temperature_c"] is None and current["state"]["measured_fpga_latency_s"] is None
-            assert any(row["channel_receipt"].get("stages") for row in current["state"]["last_receipts"])
+            _require(current["mode"] == "simulated" and current["state"]["accepted_frames"] > 0,
+                     "The simulated FPGA must process received frames")
+            _require(current["state"]["temperature_c"] is None and current["state"]["measured_fpga_latency_s"] is None,
+                     "The simulated FPGA must not claim physical temperature or measured hardware latency")
+            _require(any(row["channel_receipt"].get("stages") for row in current["state"]["last_receipts"]),
+                     "FPGA receipts must contain executed channel-processing stages")
             details["fpga"] = current
             capture("fpga-control-and-receipts")
 
@@ -250,8 +269,9 @@ def validate_ui_pipeline(output, repository_root=None):
                 click(window.screens["keys"].export_button)
             wait(lambda: bool(completed) and path.is_file(), label="QKEYS export completed at chosen path")
             data = json.loads(path.read_text(encoding="utf-8"))
-            assert data.get("scope") == "qkd" and data.get("format") == "unsigned_console_evidence_export_v1"
-            assert "qkd_example" in data
+            _require(data.get("scope") == "qkd" and data.get("format") == "unsigned_console_evidence_export_v1",
+                     "QKD evidence export must have the expected scope and unsigned format")
+            _require("qkd_example" in data, "QKD evidence export must include the received QKD example")
             details["qkeys"] = {"path": str(path), "completed": completed, "scope": data["scope"],
                                 "format": data["format"], "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
             capture("qkeys-chosen-evidence-export")

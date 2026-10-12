@@ -74,7 +74,7 @@ def test_conformal_predictor_requires_calibration_before_predict():
     def dummy_model(x):
         return torch.full((x.shape[0], 1), 0.5)
     conformal = ConformalPredictor(point_predictor_fn=dummy_model, alpha=0.1)
-    with pytest.raises(AssertionError):
+    with pytest.raises(RuntimeError, match="Call calibrate"):
         conformal.predict_interval(torch.rand(5, 8, 4))
 
 

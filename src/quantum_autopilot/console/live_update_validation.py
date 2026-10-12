@@ -29,6 +29,19 @@ def _visible_chart_image(window, chart):
     return stage.viewport().grab(pixels).toImage()
 
 
+def _wait_for_worker_release(provider, *, timeout_ms=5000):
+    """Drain asynchronous shutdown while servicing Qt; never accept partial release."""
+    if type(timeout_ms) is not int or not 1 <= timeout_ms <= 5000:
+        raise ValueError("shutdown deadline must be within 1..5000 ms")
+    began = perf_counter()
+    while provider.stopping and (perf_counter() - began) * 1000 < timeout_ms:
+        run_event_loop(5)
+    elapsed_ms = (perf_counter() - began) * 1000
+    released = (not provider.stopping and provider.shutdown_error is None
+                and provider._baseline_worker is None and elapsed_ms <= timeout_ms)
+    return bool(released), elapsed_ms
+
+
 def validate_live_updates(destination, *, repository_root=None, duration_ms=3200, native=False):
     """Five journeys; timings describe this machine, not a hardware real-time guarantee.
 
@@ -144,7 +157,10 @@ def validate_live_updates(destination, *, repository_root=None, duration_ms=3200
     finally:
         heartbeat.stop()
         window.provider.stop()
-        report['checks']['worker_released_on_close'] = provider._baseline_worker is None
+        released, shutdown_ms = _wait_for_worker_release(provider)
+        report['checks']['worker_released_on_close'] = released
+        report['shutdown_deadline_ms'] = 5000
+        report['shutdown_wait_ms'] = shutdown_ms
         window.close()
         window.deleteLater()
         from PySide6.QtCore import QCoreApplication, QEvent

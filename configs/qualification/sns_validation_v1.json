@@ -1,0 +1,54 @@
+{
+  "schema": "orionq.sns-validation-protocol.v1",
+  "scope": "Independent computational SNS estimator validation; no key admission, hardware or security certificate",
+  "sources_accessed": "2026-10-10",
+  "seeds": [101, 202, 303],
+  "parameters": {
+    "pulses": 1000000000000,
+    "pz": 0.8,
+    "p0": 0.3,
+    "p1": 0.4,
+    "send_probability": 0.01,
+    "weak_mu": 0.1,
+    "strong_mu": 0.4,
+    "signal_mu": 0.4,
+    "phase_slice_rad": 0.39269908169872414,
+    "detector_efficiency": 0.8,
+    "dark_per_gate": 1e-10,
+    "attenuation_db_km": 0.2,
+    "arm_lengths_km": [100.0, 100.0],
+    "misalignment_error": 0.15,
+    "ec_efficiency": 1.1,
+    "failure_probability": 1e-10,
+    "eps_cor": 1e-10,
+    "eps_pa": 1e-10,
+    "eps_hat": 1e-10
+  },
+  "parameter_provenance": {
+    "paper_table_1": ["detector_efficiency", "dark_per_gate", "attenuation_db_km", "misalignment_error", "ec_efficiency", "failure_probability"],
+    "explicit_campaign_assumptions": ["pulses", "pz", "p0", "p1", "send_probability", "weak_mu", "strong_mu", "signal_mu", "phase_slice_rad", "arm_lengths_km"],
+    "not_a_reproduction": "Source probabilities and intensities are fixed, not optimized; no equality to published distance/key-rate curves is claimed"
+  },
+  "criteria": {
+    "asymptotic_adapter_absolute_tolerance": 1e-12,
+    "lp_absolute_tolerance": 2e-7,
+    "finite_yield_not_above_asymptotic_tolerance": 1e-12,
+    "nominal_positive_conditional_reference_budget": true,
+    "all_cases_certified_secret_bits": 0,
+    "asymmetric_symmetric_proof": "reject",
+    "low_sample_reference_budget": 0,
+    "high_loss_reference_budget": 0,
+    "high_noise_reference_budget": 0
+  },
+  "cases": [
+    {"id": "nominal", "overrides": {}, "expectation": "positive_reference_budget"},
+    {"id": "longer_fiber", "overrides": {"arm_lengths_km": [200.0, 200.0]}, "expectation": "reduced_budget"},
+    {"id": "high_loss", "overrides": {"arm_lengths_km": [500.0, 500.0]}, "expectation": "zero_reference_budget"},
+    {"id": "low_sample", "overrides": {"pulses": 100000}, "expectation": "zero_reference_budget"},
+    {"id": "high_noise", "overrides": {"dark_per_gate": 0.001}, "expectation": "zero_reference_budget"},
+    {"id": "bad_phase", "overrides": {"misalignment_error": 0.49}, "expectation": "zero_reference_budget"},
+    {"id": "large_send_probability", "overrides": {"send_probability": 0.08}, "expectation": "zero_reference_budget"},
+    {"id": "asymmetric_arms", "overrides": {"arm_lengths_km": [50.0, 200.0]}, "expectation": "symmetric_proof_rejected"},
+    {"id": "vacuum_only", "overrides": {"detector_efficiency": 0.0}, "expectation": "zero_reference_budget"}
+  ]
+}

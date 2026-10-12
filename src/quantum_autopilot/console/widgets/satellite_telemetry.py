@@ -2,18 +2,142 @@
 from __future__ import annotations
 
 import json
+from collections import OrderedDict
+from math import ceil
 
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QComboBox, QHeaderView, QLabel, QLineEdit, QSpinBox, QTabWidget, QTableWidgetItem, QWidget
+from PySide6.QtCore import QPointF, QSize, Qt, QTimer, Signal
+from PySide6.QtGui import QPalette, QTextLayout, QTextOption
+from PySide6.QtWidgets import QComboBox, QDialog, QHeaderView, QLabel, QLineEdit, QSpinBox, QStyledItemDelegate, QStyle, QStyleOptionViewItem, QTabWidget, QTableWidgetItem, QWidget
 
 from .adaptive_dialog import AdaptiveDialog
 from .evidence_text import EvidenceText
-from .prims import Btn, vbox
+from .prims import Btn, scroll_panel, vbox
 from .prims import Frame, Label, Prose
 from .inspector import number, percent, rate
 from .metric_table import MetricTable
 from .scrollable_table import ScrollableTableWidget
 from ..theme import current_theme
+
+
+class _ObservationDelegate(QStyledItemDelegate):
+    """Read complete observations, including unbroken UTC epochs and vectors."""
+    _padding = 6
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._layouts = OrderedDict()
+
+    def _layout(self, text, font, width):
+        key = (text, font.toString(), width)
+        if key in self._layouts:
+            self._layouts.move_to_end(key)
+            return self._layouts[key]
+        layout = QTextLayout(text.replace('\n', '\u2028'), font)
+        option = QTextOption()
+        option.setWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
+        layout.setTextOption(option)
+        layout.beginLayout()
+        height = 0.
+        while True:
+            line = layout.createLine()
+            if not line.isValid():
+                break
+            line.setLineWidth(width)
+            line.setPosition(QPointF(0., height))
+            height += line.height()
+        layout.endLayout()
+        result = (layout, ceil(height))
+        self._layouts[key] = result
+        while len(self._layouts) > 512:
+            self._layouts.popitem(last=False)
+        return result
+
+    def sizeHint(self, option, index):  # noqa: N802 - Qt API
+        table = self.parent()
+        width = max(1, table.columnWidth(index.column()) - 2 * self._padding)
+        style_option = QStyleOptionViewItem(option)
+        self.initStyleOption(style_option, index)
+        _layout, height = self._layout(style_option.text, style_option.font, width)
+        return QSize(width + 2 * self._padding,
+                     max(style_option.fontMetrics.height(), height) + 2 * self._padding)
+
+    def paint(self, painter, option, index):
+        style_option = QStyleOptionViewItem(option)
+        self.initStyleOption(style_option, index)
+        text = style_option.text
+        style_option.text = ''
+        style = style_option.widget.style()
+        style.drawControl(QStyle.ControlElement.CE_ItemViewItem, style_option, painter, style_option.widget)
+        painter.save()
+        painter.setFont(style_option.font)
+        role = (QPalette.ColorRole.HighlightedText if style_option.state & QStyle.StateFlag.State_Selected
+                else QPalette.ColorRole.Text)
+        painter.setPen(style_option.palette.color(role))
+        painter.setClipRect(option.rect)
+        content = option.rect.adjusted(self._padding, self._padding, -self._padding, -self._padding)
+        layout, height = self._layout(text, style_option.font, max(1, content.width()))
+        layout.draw(painter, QPointF(content.x(), content.y() + max(0., (content.height() - height) / 2)))
+        painter.restore()
+
+
+class _ObservationTable(ScrollableTableWidget):
+    """Bounded columns and wrapped rows; no hover or export needed to read data.
+
+    ResizeToContents gave a long field name almost the entire narrow window,
+    leaving only 40 px for the value. Proportional columns preserve space for
+    every category. Below the minimum readable width normal horizontal scroll
+    retains the text size; row heights still show the complete received value.
+    """
+    _minimum_columns = (135, 170, 76, 155)
+
+    def __init__(self):
+        super().__init__(0, 4)
+        self.setItemDelegate(_ObservationDelegate(self))
+        self.setWordWrap(True)
+        self.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.horizontalHeader().setMinimumSectionSize(40)
+        self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        self._layout_pending = QTimer(self)
+        self._layout_pending.setSingleShot(True)
+        self._layout_pending.timeout.connect(self._resize_received_rows)
+        self._pending_full_rows = False
+        self._pending_row_indices = set()
+        self.horizontalHeader().sectionResized.connect(self._schedule_rows)
+        self._column_layout_width = None
+
+    def _schedule_rows(self, *_args, rows=None):
+        if rows is None:
+            self._pending_full_rows = True
+        else:
+            self._pending_row_indices.update(rows)
+        if not self._layout_pending.isActive():
+            self._layout_pending.start(0)
+
+    def _resize_received_rows(self):
+        if self._pending_full_rows:
+            self.resizeRowsToContents()
+        else:
+            for row in sorted(self._pending_row_indices):
+                if row < self.rowCount():
+                    self.resizeRowToContents(row)
+        self._pending_full_rows = False
+        self._pending_row_indices.clear()
+
+    def resizeEvent(self, event):  # noqa: N802 - Qt API
+        super().resizeEvent(event)
+        width = max(sum(self._minimum_columns), self.viewport().width())
+        if self._column_layout_width == width:
+            return
+        self._column_layout_width = width
+        unit_width = max(76, min(110, round(width * .13)))
+        field_width = max(135, min(400, round((width - unit_width) * .28)))
+        remaining = width - unit_width - field_width
+        value_width = max(170, round(remaining * .5))
+        sizes = (field_width, value_width, unit_width, max(155, remaining - value_width))
+        for column, size in enumerate(sizes):
+            self.setColumnWidth(column, size)
+        self._schedule_rows()
 
 
 def value(item):
@@ -382,7 +506,9 @@ class SatelliteTelemetryDialog(AdaptiveDialog):
         self.housekeeping=self._table('Housekeeping · órbita / APT')
         self.science=self._table('Science · payload / QKD')
         self.mission=self._table('Missão / RF · engenharia RAW')
-        page=QWidget();self.ogs_page=page;controls=vbox(page,(12,12,12,12),10);self._ogs_tab=self.tabs.addTab(page,'Entrada OGS · somente recepção')
+        page=QWidget();self.ogs_page=page;controls=vbox(page,(12,12,12,12),10)
+        self.ogs_scroll=scroll_panel(page,0)
+        self._ogs_tab=self.tabs.addTab(self.ogs_scroll,'Entrada OGS · somente recepção')
         note=QLabel('Gateway de estação terrestre: três entradas clássicas separadas para housekeeping, tracking e cliques TDC. '
                     'RF/CCSDS e o hardware TDC são decodificados pelo gateway da missão. Nenhuma atuação física. '
                     'A sessão autenticada é resolvida pelo cofre autorizado; informe apenas uma referência vault:, nunca o segredo.')
@@ -401,7 +527,9 @@ class SatelliteTelemetryDialog(AdaptiveDialog):
         self.stop.clicked.connect(lambda:self._stop('ogs'));controls.addWidget(self.stop)
         self.ogs_error=QLabel();self.ogs_error.setWordWrap(True);controls.addWidget(self.ogs_error)
         self.ingress=QLabel();self.ingress.setWordWrap(True);controls.addWidget(self.ingress);controls.addStretch(1)
-        page=QWidget();controls=vbox(page,(12,12,12,12),10);self.tabs.addTab(page,'Entrada Missão / RF · somente recepção')
+        page=QWidget();controls=vbox(page,(12,12,12,12),10)
+        self.mission_scroll=scroll_panel(page,0)
+        self.tabs.addTab(self.mission_scroll,'Entrada Missão / RF · somente recepção')
         note=QLabel('Recepção clássica de quadros de missão já demodulados pela estação terrestre. '
                     'O decodificador preserva EPS/COM/OBC em RAW, integridade, origem e relógio não qualificado. '
                     'Esta entrada não cria vetores ECEF, tracking, cliques TDC ou resultados QKD e não controla equipamentos.')
@@ -436,24 +564,40 @@ class SatelliteTelemetryDialog(AdaptiveDialog):
         close=Btn('FECHAR');close.clicked.connect(self.close);layout.addWidget(close);self.fixed_footer=(close,)
         self._refresh_controls()
 
+    def showEvent(self, event):  # noqa: N802 - Qt API
+        # Tables already own a scrolling viewport. Wrapping the complete
+        # dialog in another scroll area lets the tall integration forms dictate
+        # the table's size; scrollToItem then considers off-screen pixels
+        # visible. Only those forms scroll, keeping the data viewport and the
+        # close button fully on screen. Other AdaptiveDialogs retain their
+        # existing layout and scroll behavior.
+        from ..display import fit_to_screen, screen_for
+        from .button_help import install_control_help
+        install_control_help(self)
+        if self._first_show:
+            screen = screen_for(self.parentWidget())
+            if screen is not None:
+                self.setScreen(screen)
+            self._first_show = False
+        fit_to_screen(self)
+        QDialog.showEvent(self, event)
+
     def _table(self,label):
-        table=ScrollableTableWidget(0,4);table.setHorizontalHeaderLabels(('Campo','Valor','Unidade','Origem / qualidade'))
+        table=_ObservationTable();table.setHorizontalHeaderLabels(('Campo','Valor','Unidade','Origem / qualidade'))
         table.setEditTriggers(ScrollableTableWidget.EditTrigger.NoEditTriggers)
-        table.horizontalHeader().setSectionResizeMode(0,QHeaderView.ResizeMode.ResizeToContents)
-        table.horizontalHeader().setSectionResizeMode(1,QHeaderView.ResizeMode.Stretch)
-        table.horizontalHeader().setSectionResizeMode(2,QHeaderView.ResizeMode.ResizeToContents)
-        table.horizontalHeader().setSectionResizeMode(3,QHeaderView.ResizeMode.Stretch)
-        table.setWordWrap(False);table.setMinimumHeight(230);self.tabs.addTab(table,label);return table
+        table.setMinimumHeight(230);self.tabs.addTab(table,label);return table
 
     @staticmethod
     def _rows(table,rows,origin):
-        if table.rowCount()!=len(rows):table.setRowCount(len(rows))
+        changed=set()
+        if table.rowCount()!=len(rows):table.setRowCount(len(rows));changed.update(range(len(rows)))
         for r,row in enumerate(rows):
             for c,text in enumerate((row[0],value(row[1]),row[2],row[3] if len(row)>3 else origin)):
                 item=table.item(r,c)
                 if item is None:item=QTableWidgetItem();table.setItem(r,c,item)
-                if item.text()!=text:item.setText(text)
+                if item.text()!=text:item.setText(text);changed.add(r)
                 if item.toolTip()!=text:item.setToolTip(text)
+        if changed:table._schedule_rows(rows=changed)
 
     def set_metrics(self,metrics,*,session_id='',clock_s=None,ingress=None,allowed=False,
                     mission_ingress=None,satellite_id='',allowed_provision=False):

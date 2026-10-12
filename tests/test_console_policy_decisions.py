@@ -30,6 +30,7 @@ def panel(provider, app):
     runtime.cycle(sandbox.snapshot(request_id="veto", prediction_uncertainty=0.8))
     wrapper = SwitchableProvider(provider)
     wrapper.running = True
+    provider.refresh()
     view = ui.PolicyDecisionAudit()
     view.attach(wrapper)
     view.show()
@@ -234,9 +235,16 @@ def test_changed_journal_record_is_refused_without_exportable_explanation(panel,
 
 
 def test_missing_store_does_not_initialize_runtime(provider, app, tmp_path):
+    from dataclasses import replace
+    from quantum_autopilot.console.input_sources import empty_snapshot
+
     wrapper = SwitchableProvider(provider)
     wrapper.running = True
     provider.service.control_journal_path = tmp_path / "absent.sqlite"
+    # This refusal scenario receives an authorized declaration without reading
+    # or creating the absent runtime/journal itself.
+    provider.snapshot_changed.emit(replace(empty_snapshot('service', 'test'),
+                                          capabilities=provider.capabilities))
     view = ui.PolicyDecisionAudit()
     view.attach(wrapper)
     view.show()

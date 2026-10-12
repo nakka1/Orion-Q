@@ -57,7 +57,7 @@ def test_zero_latency_close_to_base_simulator():
 
 def test_t1_t2_constraint_enforced():
     import pytest
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="T2 must be <= 2\\*T1"):
         QuantumRepeaterNode(T1=10e-6, T2=30e-6)
 
 

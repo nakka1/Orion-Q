@@ -1,3 +1,21 @@
+# Demonstração — fonte atual, 12/10/2026
+
+O padrão continua `brazil-institutions-v1`, atualmente com 76 componentes, 136 enlaces e 11 satélites no ensaio de workspace novo. Para gravar um roteiro menor pelo mesmo serviço/backend, execute o launcher **fonte**:
+
+```powershell
+E:\OrionQ\project\.venv\Scripts\python.exe -m quantum_autopilot.console.app --provider demo --demo-preset salvador_metro --state-root E:\OrionQ\temp\demo-metro
+```
+
+Use um diretório novo para reproduzir a configuração inicial; um workspace existente conserva suas edições. `salvador_metro` tem 10 pontos e 11 enlaces, fontes simuladas identificadas, os mesmos canais/intake/validação/roteamento/recibos e autenticação normal. Não fornece resultados prontos nem conexões físicas. O executável histórico não reconhece o novo argumento até ser recompilado.
+
+A [gravação validada](../results/orionq_concurrency_and_routing_20261012.md) mostra login, seleção no mapa, isolamento/restauração de R-07, rotas, chaves, auditoria e Sign out. Aguarde o término do comando antes da ação seguinte. Onze passos aquecidos ficaram abaixo de 0,45 s, mas o primeiro passo frio levou 1,74 s; o cenário completo ainda ultrapassa 1 s. A frequência gráfica não altera a ordem causal da simulação.
+
+A lista de enlaces e o inspector diferenciam fonte dos dados, física/protocolo de referência, modelos efetivamente atuantes e fallback. ML continua opcional e OFF no novo cenário global; habilitar a permissão não comprova utilização de pesos. Quantum.otf foi retirada do fonte/pacote; as versões binárias anteriores permanecem históricas.
+
+Os trechos datados abaixo são **históricos**: seus nomes de instituições, contagens e arquitetura não descrevem a topologia global atual. Foram preservados para reproduzir as demonstrações anteriores.
+
+---
+
 # Demonstração institucional nacional — atualização de 2026-10-05
 
 A seleção **Demonstration** do console usa agora `brazil-institutions-v1`: UNIJORGE

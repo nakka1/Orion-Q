@@ -53,6 +53,9 @@ class Session:
     reason: str = 'no acquisition yet'
     operating: set = field(default_factory=set)
     pending: dict = field(default_factory=dict)
+    processing_commands: set = field(default_factory=set)
+    held_memories: dict = field(default_factory=dict)
+    capture_reservations: dict = field(default_factory=dict)
     delivered_fidelities: deque = field(default_factory=lambda: deque(maxlen=100))
 
 
@@ -162,6 +165,9 @@ class ProtocolRuntime:
         for session in self.sessions.values():
             previous_counters = dict(session.counts)
             session.pairs.clear(); session.operating.clear(); session.pending.clear()
+            session.processing_commands.clear()
+            session.held_memories.clear()
+            session.capture_reservations.clear()
             session.last_sequence = 0; session.sequence_streams.clear(); session.revision += 1
             session.metrics.clear(); session.status='configured'; session.reason='waiting for new source acquisition'
             session.counts.clear(); session.delivered_fidelities.clear()
@@ -180,6 +186,9 @@ class ProtocolRuntime:
                 continue
             discarded = [p.pair_id for p in session.pairs]
             session.pairs.clear(); session.pending.clear(); session.operating.clear()
+            session.processing_commands.clear()
+            session.held_memories.clear()
+            session.capture_reservations.clear()
             session.revision += 1
             session.metrics.clear(); session.status = 'configured'
             session.reason = 'node reset; fresh acquisition required'
@@ -221,7 +230,7 @@ class ProtocolRuntime:
                     parameters.update(record.parameters(config.technologies))
                     parameters.setdefault('device_parameters',{})[node_id]=record.parameters(config.technologies)
                 if record.physical_type=='satellite':
-                    if 'satellite_isl' in config.technologies:
+                    if set(config.technologies)&{'satellite_isl','orbital_relay'}:
                         parameters.setdefault('satellite_orbits',{})[node_id]=record.orbit
                     else:
                         parameters.update(record.orbit)
@@ -268,6 +277,8 @@ class ProtocolRuntime:
     def _validate_parameters(self, config):
         from .contracts import number
         p=config.parameters
+        if p.get('pointing_jitter_convention','gaussian_per_axis') not in ('gaussian_per_axis','gaussian_radial_rms','legacy_offset_surrogate'):
+            raise ProtocolError('invalid_parameter','unsupported pointing jitter convention')
         if type(p.get('raw_compression_level',1)) is not int or not 0<=p.get('raw_compression_level',1)<=9:
             raise ProtocolError('invalid_parameter','raw_compression_level: integer [0,9] required')
         for name,default,low,high in [
@@ -368,7 +379,8 @@ class ProtocolRuntime:
         else: condition=scenario
         locations=[node_location(self.topology.node(x)) for x in session.config.endpoints]
         return {'condition':condition,'ground_positions':[(x['latitude'],x['longitude']) for x in locations if x],
-                'ground_altitudes_m':[x.get('altitude_m',0.) for x in locations if x]}
+                'ground_altitudes_m':[x.get('altitude_m',0.) for x in locations if x],
+                'node_positions':{x:node_location(self.topology.node(x)) for x in session.config.path}}
 
     def _source_for(self,session):
         if session.config.session_id in getattr(self,'_paused_device_sessions',()):return self.source
@@ -396,6 +408,8 @@ class ProtocolRuntime:
         config=session.config
         context=context or {}
         arguments={**arguments,'device_endpoints':list(context.get('endpoints',config.endpoints))}
+        if operation=='generate' and 'orbital_relay' in config.technologies:
+            arguments['capture_mode_budget']=self._capture_budget(session,tuple(arguments['device_endpoints']))
         session.command_number+=1
         quantum,classical=[],[]
         for ident in config.link_ids:
@@ -404,6 +418,10 @@ class ProtocolRuntime:
         command=DeviceCommand(f'{config.session_id}:{session.revision}:{session.command_number}',config.session_id,
             operation,config.path,tuple(quantum),tuple(classical),at_s,at_s+config.parameters.get('timeout_s',2.),attempt,arguments)
         session.pending[command.command_id]=(command,context or {})
+        if operation=='generate' and 'orbital_relay' in config.technologies:
+            session.capture_reservations[command.command_id]=(tuple(arguments['device_endpoints']),arguments['capture_mode_budget'])
+        if operation=='tf_block' and config.parameters.get('tf_estimation_mode')=='finite_sns_v2':
+            session.processing_commands.add(command.command_id)
         self._event(session,at_s,'acquisition_requested',{'command':command.to_dict()},command.command_id)
         self._schedule(at_s,session,'poll',command.command_id)
 
@@ -430,6 +448,9 @@ class ProtocolRuntime:
             self._schedule(min(command.deadline_s,at_s+.05),session,'poll',command_id)
 
     def _failure(self,session,at_s,command,context,error):
+        session.processing_commands.discard(command.command_id)
+        session.held_memories.pop(context.get('resource_key'),None)
+        session.capture_reservations.pop(command.command_id,None)
         session.counts['errors']+=1
         session.status='unavailable';session.reason=f'{getattr(error,"code","source_error")}: {error}'
         self._event(session,at_s,'operation_error',{'code':getattr(error,'code','source_error'),'reason':str(error),
@@ -444,13 +465,15 @@ class ProtocolRuntime:
 
     def _intake(self,session,at_s,command,observation,context):
         serialized=observation.canonical_json();sha=hashlib.sha256(serialized.encode('utf-8')).hexdigest()
-        if observation.raw.get('satellite_schema') or observation.raw.get('isl_schema'):
+        finite_tf=bool(observation.raw.get('tf_schema'))
+        bulky=bool(observation.raw.get('satellite_schema') or observation.raw.get('isl_schema') or finite_tf or observation.raw.get('orbital_relay_schema'))
+        if bulky:
             # Raw clicks stay durable and exportable. Live snapshots contain a
             # reference, keeping large TDC arrays off the GUI publication path.
             self._queue_raw_acquisition(session,sha,serialized)
             detail={'observation_sha256':sha,'observation_reference':'satellite_acquisitions:'+sha,
-                    'streams':['housekeeping','tracking','tdc'],
-                    'clicks':[len(b['time_ps']) for b in observation.raw['tdc']],
+                    'streams':['private_acquisition','public_protocol_transcript'] if finite_tf else ['housekeeping','tracking','quantum_resources'] if observation.raw.get('orbital_relay_schema') else ['housekeeping','tracking','tdc'],
+                    'clicks':[len(b['time_ps']) for b in observation.raw.get('tdc',[])],
                     'source_id':observation.source_id,'origin':observation.origin}
         else:detail={'observation':observation.to_dict(),'observation_sha256':sha}
         self._event(session,at_s,'acquired',detail,command.command_id)
@@ -473,31 +496,52 @@ class ProtocolRuntime:
                 'observed_segment_endpoints':list(context.get('endpoints',session.config.endpoints)),
                 'binding_scope':'command binds required session channels; this event identifies observed quantum segments',
                 'source_origin':observation.origin, 'scope':'source-reported photon/count observations; no physical executor'},command.command_id)
-        payload_bytes=len(serialized.encode('utf-8'));fragments=1
+        # Sender preparations and signal bits are private SNS inputs. The
+        # classical network carries Charlie's public announcement only.
+        classical_payload=canonical({'command_id':command.command_id,'session_id':command.session_id,
+            'stage':'charlie_block_available','observation_sha256':sha,
+            'scope':'public block identity; private preparations remain in acquisition evidence'}) if finite_tf else serialized
+        payload_bytes=len(classical_payload.encode('utf-8'));fragments=1
         for ident in session.config.link_ids:
             link=next(x for x in self.topology.links if x.link_id==ident)
             limit=link.channels['classical']['max_message_bytes']
-            if observation.raw.get('satellite_schema') or observation.raw.get('isl_schema'):
+            if bulky:
                 if payload_bytes>8*1024*1024:raise ProtocolError('message_limit','OGS acquisition exceeds bounded 8 MiB assembly')
                 fragments=max(fragments,math.ceil(payload_bytes/limit))
             elif payload_bytes>limit:
                 raise ProtocolError('message_limit','classical observation exceeds configured message limit')
         op=command.operation
-        if op in ('generate','bsm'): technology='entanglement_swapping'
+        if op in ('generate','bsm'): technology='orbital_relay' if 'orbital_relay' in session.config.technologies else 'entanglement_swapping'
         elif op=='purify': technology='purification'
         elif op=='tf_block': technology='tf_qkd'
         elif op=='satellite_block': technology='satellite_doppler'
         elif op=='isl_block': technology='satellite_isl'
         else: technology='quantum_memory'
-        processed=self.registry.adapters[technology].process(observation.raw,{**context,'operation':op,
+        processing_context=dict(context)
+        if op in ('bsm','purify') and 'orbital_relay' in session.config.technologies:
+            duration=observation.observed_at_s-command.emitted_at_s
+            for side in ('first','second'):
+                if context.get(side+'_age_s',0.)+duration>context.get(side+'_cutoff_s',float('inf')):
+                    raise ProtocolError('resource_expired','reserved memory exceeds storage cutoff during operation')
+                processing_context[side+'_fidelity']=aged_fidelity(context[side+'_fidelity'],duration,context[side+'_coherence_s'])
+        if op=='readout' and 'orbital_relay' in session.config.technologies:
+            processing_context['elapsed_s']+=observation.observed_at_s-command.emitted_at_s
+            if processing_context['elapsed_s']>context.get('memory_cutoff_s',float('inf')):
+                raise ProtocolError('resource_expired','memory exceeds storage cutoff before readout completes')
+        processed={'_deferred_tf':True} if finite_tf else self.registry.adapters[technology].process(observation.raw,{**processing_context,'operation':op,
                    'duration_s':command.arguments.get('duration_s',.1),'parameters':session.config.parameters,
-                   'endpoints':session.config.endpoints,'origin':observation.origin,
+                   'endpoints':session.config.endpoints,'observed_endpoints':context.get('endpoints',session.config.endpoints),'origin':observation.origin,
+                   'path':session.config.path,
+                   'command_emitted_at_s':command.emitted_at_s,'observation_at_s':observation.observed_at_s,
+                   'capture_mode_budget':command.arguments.get('capture_mode_budget'),
                    'environment':self._environment(session,at_s)})
-        self._event(session,at_s,'protocol_processed',{'technology':technology,'operation':op,
+        self._event(session,at_s,'protocol_intake_deferred' if finite_tf else 'protocol_processed',{'technology':technology,'operation':op,
                    'parent_ids':context.get('parent_ids',[])},command.command_id)
         propagation=sum(self._lengths(session))*session.config.parameters.get('route_factor',1.2)/(C_KM_S/1.468)
-        if set(session.config.technologies)&{'satellite_doppler','satellite_isl'}:
+        if set(session.config.technologies)&{'satellite_doppler','satellite_isl','orbital_relay'}:
             propagation=max((g.get('flight_time_s',g['range_km']/C_KM_S) for g in processed.get('geometry',())),default=propagation)
+            if 'orbital_relay' in session.config.technologies:
+                propagation=sum(g.get('flight_time_s',g['range_km']/C_KM_S) for g in processed['geometry']) if processed.get('geometry') else sum(self._lengths(session))/C_KM_S
         # Deterministic positive jitter is reproducible and never grants a
         # negative latency. IDs also bind message receipts to both ports.
         token=int(digest(command.to_dict())[:8],16)/0xffffffff
@@ -512,6 +556,48 @@ class ProtocolRuntime:
                     'scope':'classical observation records; fragments obey each channel message limit'},command.command_id)
         self._schedule(at_s+delay,session,'received',(command,observation,context,processed))
 
+    def _tf_proposal(self,session,at_s,command,observation,context):
+        """Keep a private proposal until all its public channel exchanges arrive."""
+        from .classical_transcript import ClassicalTranscript
+        links=[next(x for x in self.topology.links if x.link_id==ident) for ident in session.config.link_ids]
+        p=session.config.parameters
+        one_way=sum(self._lengths(session))*p.get('route_factor',1.2)/(C_KM_S/1.468)+p.get('classical_latency_s',.001)
+        trace=ClassicalTranscript(command,at_s,2*one_way,min(x.channels['classical']['max_message_bytes'] for x in links))
+        result=self.registry.adapters['tf_qkd'].process(observation.raw,{**context,'operation':'tf_block',
+            'duration_s':command.arguments['duration_s'],'parameters':p,'endpoints':session.config.endpoints,
+            'origin':observation.origin,'environment':self._environment(session,at_s),
+            'command_emitted_at_s':command.emitted_at_s,'observation_at_s':observation.observed_at_s,
+            'require_classical_transport':True,'classical_exchange':trace.exchange})
+        if trace.cursor_s>command.deadline_s:
+            raise ProtocolError('timeout','finite SNS classical postprocessing exceeds command deadline')
+        if trace.roundtrip_s>min(x.channels['classical']['max_age_s'] for x in links):
+            raise ProtocolError('timeout','finite SNS classical exchange exceeds channel maximum age')
+        session.processing_commands.add(command.command_id)
+        self._event(session,at_s,'protocol_proposal_prepared',{'technology':'tf_qkd',
+            'public_exchanges':len(trace.exchanges),'admitted_metrics':False,
+            'scope':'private local computation; acceptance waits for every causal channel receipt'},command.command_id)
+        self._schedule(at_s,session,'postprocessing_send',(command,observation,context,result,trace.exchanges,0))
+
+    def _tf_exchange(self,session,at_s,payload,received=False):
+        command,observation,context,result,exchanges,index=payload
+        if not self._available(session) or at_s>command.deadline_s:
+            session.processing_commands.discard(command.command_id)
+            self._failure(session,at_s,command,context,ProtocolError('timeout','postprocessing channel unavailable or deadline exceeded'))
+            return
+        if index>=len(exchanges):
+            session.processing_commands.discard(command.command_id)
+            self._event(session,at_s,'protocol_processed',{'technology':'tf_qkd','operation':'tf_block',
+                'classical_exchanges_received':len(exchanges),'physical_transport':False},command.command_id)
+            self._received(session,at_s,command,observation,context,result)
+            return
+        message=exchanges[index]
+        kind='postprocessing_classical_received' if received else 'postprocessing_classical_transmitted'
+        self._event(session,at_s,kind,message,command.command_id)
+        if received:
+            self._schedule(at_s,session,'postprocessing_send',(command,observation,context,result,exchanges,index+1))
+        else:
+            self._schedule(message['received_at_s'],session,'postprocessing_receive',payload)
+
     def _expire(self,session,at_s):
         remaining=[]
         for pair in session.pairs:
@@ -525,23 +611,62 @@ class ProtocolRuntime:
         session.pairs=remaining
 
     def _add(self,session,pair,at_s):
+        if 'orbital_relay' in session.config.technologies and (at_s-pair.created_at_s>self._pair_parameter(session,pair,'memory_cutoff_s',1.) or self._fidelity(session,pair,at_s)<=.5):
+            session.counts['memory_expired']+=1
+            self._event(session,at_s,'memory_expired_before_herald',{'pair_id':pair.pair_id,'storage_s':at_s-pair.created_at_s})
+            return
         occupancy=Counter(x for p in session.pairs for x in (p.a,p.b))
+        occupancy.update(x for endpoints in session.held_memories.values() for x in endpoints)
+        for endpoints,slots in session.capture_reservations.values():
+            for node_id in endpoints:occupancy[node_id]+=slots
         if any(occupancy[n]>=self._device_parameter(session,n,'memory_slots',4) for n in (pair.a,pair.b)):
             session.counts['memory_overflow']+=1
             self._event(session,at_s,'memory_capacity_rejected',{'pair_id':pair.pair_id,'occupancy':dict(occupancy)})
             return
         session.pairs.append(pair);session.counts['memory_stored']+=1
+        command_id=(pair.pair_id.rsplit(':pair:',1)[0] if ':pair:' in pair.pair_id else pair.pair_id.removesuffix(':output')) if 'orbital_relay' in session.config.technologies else None
         self._event(session,at_s,'resource_stored',{'pair_id':pair.pair_id,'endpoints':[pair.a,pair.b],
                 'parent_ids':list(pair.parents),'pauli_frame':list(pair.pauli_frame),
-                'created_at_s':pair.created_at_s,'available_at_s':pair.available_at_s})
+                'created_at_s':pair.created_at_s,'available_at_s':pair.available_at_s},command_id)
+
+    def _capture_budget(self,session,endpoints):
+        occupancy=Counter(node_id for pair in session.pairs for node_id in (pair.a,pair.b))
+        occupancy.update(node_id for held in session.held_memories.values() for node_id in held)
+        pending_same=0
+        for held,slots in session.capture_reservations.values():
+            for node_id in held:occupancy[node_id]+=slots
+            if held==endpoints:pending_same+=slots
+        current=sum((pair.a,pair.b)==endpoints for pair in session.pairs)+pending_same
+        budgets=[]
+        for node_id in endpoints:
+            degree=sum(node_id in (link.left_node_id,link.right_node_id) for link in self.topology.links if link.link_id in session.config.link_ids)
+            slots=self._device_parameter(session,node_id,'memory_slots',4)
+            budgets.extend((slots//max(1,degree)-current,slots-occupancy[node_id]))
+        return max(0,min(budgets))
 
     def _received(self,session,at_s,command,observation,context,result):
         if not self._available(session):
+            session.processing_commands.discard(command.command_id)
             self._event(session,at_s,'late_message_discarded',{'reason':'link/node disabled before herald arrived'},command.command_id)
-            session.operating.discard(context.get('resource_key'));return
+            session.operating.discard(context.get('resource_key'));session.held_memories.pop(context.get('resource_key'),None);session.capture_reservations.pop(command.command_id,None);return
         if at_s>command.deadline_s:
             self._failure(session,at_s,command,context,ProtocolError('timeout','classical herald missed deadline'));return
         self._event(session,at_s,'classical_received',{'classical_channel_ids':list(command.classical_channel_ids)},command.command_id)
+        if result.get('_deferred_tf'):
+            self._tf_proposal(session,at_s,command,observation,context)
+            return
+        session.processing_commands.discard(command.command_id)
+        if 'orbital_relay' in session.config.technologies and command.operation=='generate':
+            if command.command_id not in session.capture_reservations:
+                self._event(session,at_s,'late_message_discarded',{'reason':'capture mode reservation invalidated'},command.command_id)
+                return
+            session.capture_reservations.pop(command.command_id)
+        if 'orbital_relay' in session.config.technologies and command.operation in ('bsm','purify','readout'):
+            if context.get('resource_key') not in session.held_memories:
+                session.operating.discard(context.get('resource_key'))
+                self._event(session,at_s,'late_message_discarded',{'reason':'input memory reservation invalidated'},command.command_id)
+                return
+            session.held_memories.pop(context['resource_key'])
         self._expire(session,at_s)
         op=command.operation;config=session.config
         session.counts['observations']+=1
@@ -553,18 +678,39 @@ class ProtocolRuntime:
             session.counts['tomography_consumed']+=result['tomography_consumed']
             writes=count(observation.raw,'memory_writes',result['available_pairs'])
             session.counts['memory_write_failures']+=result['available_pairs']-writes
+            session.counts['capture_capacity_rejections']+=observation.raw.get('capture_capacity_rejections',0)
             capacity=min(self._device_parameter(session,n,'memory_slots',4) for n in context['endpoints'])
+            if 'orbital_relay' in config.technologies:
+                # Dedicated elementary-span partitions prevent a bright first
+                # span from occupying every relay mode and starving its peer.
+                quotas=[]
+                for node_id in context['endpoints']:
+                    degree=sum(node_id in (link.left_node_id,link.right_node_id) for link in self.topology.links if link.link_id in config.link_ids)
+                    quota=self._device_parameter(session,node_id,'memory_slots',4)//max(1,degree)
+                    current=sum((pair.a,pair.b)==context['endpoints'] for pair in session.pairs)
+                    quotas.append(max(0,quota-current))
+                capacity=min(capacity,*quotas)
             for index in range(min(writes,capacity)):
                 self._add(session,PairResource(f'{command.command_id}:pair:{index}',*context['endpoints'],result['fidelity'],
-                          observation.observed_at_s,at_s),at_s)
+                          observation.raw.get('start_s',observation.observed_at_s) if 'orbital_relay' in config.technologies else observation.observed_at_s,at_s),at_s)
             session.counts['unbuffered_pairs']+=max(0,writes-capacity)
             session.metrics['last_optical_transmission']=observation.raw['optical_transmission']
             session.metrics['last_effective_length_km']=observation.raw['effective_length_km']
+            if 'orbital_relay' in config.technologies:
+                session.metrics.update(geometry=result.get('geometry',[]),
+                    orbital_relay=True,resource_model='Werner memory pairs with logical Bell frames',
+                    satellite_housekeeping={**session.metrics.get('satellite_housekeeping',{}),**result.get('satellite_housekeeping',{})},
+                    observation_origin=observation.origin,observation_source_id=observation.source_id)
+                if result.get('available') is False:
+                    session.status='unavailable';session.reason=result.get('reason') or 'orbital capture geometry unavailable'
             session.metrics.setdefault('segments',{})['|'.join(context['endpoints'])] = {
                 'fidelity_estimate':result['fidelity'], 'heralds':result['generated_pairs'],
                 'at_s':at_s,'origin':observation.origin,
                 'optical_transmission':observation.raw['optical_transmission'],
-                'effective_length_km':observation.raw['effective_length_km']}
+                'effective_length_km':observation.raw['effective_length_km'],
+                'geometry':result.get('geometry',[]),
+                'satellite_housekeeping':result.get('satellite_housekeeping',{}),
+                'emission_attempts':observation.raw['attempts']}
         elif op in ('bsm','purify'):
             session.operating.discard(context['resource_key'])
             success=result.get('success',result.get('accepted',False))
@@ -578,6 +724,10 @@ class ProtocolRuntime:
                     self._event(session,at_s,'pauli_frame_recorded',{'bell_outcome':result['bell_outcome'],
                                 'frame':result['pauli_frame'],
                                 'fidelity_reference':'conditional logical Bell frame; no physical correction actuated'},command.command_id)
+                    if 'orbital_relay' in config.technologies:
+                        self._event(session,at_s,'pauli_frame_acknowledged',{'parent_ids':context['parent_ids'],
+                            'endpoints':list(context['endpoints']),'frame':result['pauli_frame'],
+                            'scope':'received command-bound classical outcome; no physical correction'},command.command_id)
                 self._add(session,PairResource(f'{command.command_id}:output',*context['endpoints'],result['fidelity'],
                      observation.observed_at_s,at_s,tuple(context['parent_ids']),op=='purify',tuple(result['pauli_frame_bits'])),at_s)
             else:
@@ -611,14 +761,19 @@ class ProtocolRuntime:
                 self._event(session,at_s,'postprocessing_'+stage,{'certified_secret_bits':0},command.command_id)
             for skipped in result.get('postprocessing_skipped',()):
                 self._event(session,at_s,'postprocessing_skipped',skipped,command.command_id)
-        self._event(session,at_s,'metrics_computed',{'operation':op},command.command_id)
+        detail={'operation':op}
+        if observation.raw.get('tf_schema') or 'orbital_relay' in config.technologies:
+            detail['metrics']={**result,'last_observed_at_s':at_s,'certified_secret_bits':0}
+        self._event(session,at_s,'metrics_computed',detail,command.command_id)
         self._drive(session,at_s)
 
-    def _reserve(self,session,pairs,at_s):
+    def _reserve(self,session,pairs,at_s,resource_key=None,held_endpoints=()):
         for pair in pairs: session.pairs.remove(pair)
         session.counts['pairs_consumed']+=len(pairs)
+        if 'orbital_relay' in session.config.technologies and resource_key is not None:
+            session.held_memories[resource_key]=tuple(held_endpoints)
         self._event(session,at_s,'resources_reserved_and_consumed',{'parent_ids':[p.pair_id for p in pairs],
-                    'retained_copies':0})
+                    'retained_copies':0,'reserved_remote_memory_nodes':list(held_endpoints) if 'orbital_relay' in session.config.technologies else []})
 
     def _fidelity(self,session,pair,at_s):
         return aged_fidelity(pair.fidelity,at_s-pair.created_at_s,self._pair_parameter(session,pair,'coherence_s',1.))
@@ -644,10 +799,11 @@ class ProtocolRuntime:
         if ready:
             pair=max(ready,key=lambda x:self._fidelity(session,x,at_s));key=('readout',(start,end))
             if key not in session.operating:
-                self._reserve(session,[pair],at_s);session.operating.add(key)
+                self._reserve(session,[pair],at_s,key,(start,end));session.operating.add(key)
                 self._request(session,at_s,'readout',{'pauli_frame':list(pair.pauli_frame)}, {'endpoints':(start,end),'parent_ids':[pair.pair_id],
                     'pauli_frame':pair.pauli_frame,
                     'resource_key':key,'fidelity':pair.fidelity,'elapsed_s':at_s-pair.created_at_s,
+                    'memory_cutoff_s':self._pair_parameter(session,pair,'memory_cutoff_s',1.),
                     'coherence_s':self._pair_parameter(session,pair,'coherence_s',1.)})
             return
         path=config.path
@@ -659,12 +815,17 @@ class ProtocolRuntime:
             key=('bsm',(start,path[middle+1]))
             if left and right and key not in session.operating:
                 first=max(left,key=lambda x:self._fidelity(session,x,at_s));second=max(right,key=lambda x:self._fidelity(session,x,at_s))
-                self._reserve(session,[first,second],at_s);session.operating.add(key)
+                self._reserve(session,[first,second],at_s,key,(start,path[middle+1]));session.operating.add(key)
                 context={'endpoints':(start,path[middle+1]),'parent_ids':[first.pair_id,second.pair_id],'resource_key':key,
                     'first_frame':first.pauli_frame,'second_frame':second.pauli_frame,
+                    'first_coherence_s':self._pair_parameter(session,first,'coherence_s',1.),
+                    'second_coherence_s':self._pair_parameter(session,second,'coherence_s',1.),
+                    'first_age_s':at_s-first.created_at_s,'second_age_s':at_s-second.created_at_s,
+                    'first_cutoff_s':self._pair_parameter(session,first,'memory_cutoff_s',1.),
+                    'second_cutoff_s':self._pair_parameter(session,second,'memory_cutoff_s',1.),
                     'first_fidelity':self._fidelity(session,first,at_s),'second_fidelity':self._fidelity(session,second,at_s),
                     'operation_error':self._device_parameter(session,path[middle],'operation_error',.005)}
-                self._request(session,at_s,'bsm',{'bsm_node':path[middle],
+                self._request(session,at_s,'bsm',{'bsm_node':path[middle],'parent_ids':context['parent_ids'],
                               'input_frames':[list(first.pauli_frame),list(second.pauli_frame)]},context)
                 return
         for key,pairs in tuple(groups.items()):
@@ -672,9 +833,14 @@ class ProtocolRuntime:
                 candidates=[p for p in pairs if not p.purified and self._fidelity(session,p,at_s)>.5]
                 if len(candidates)>=2 and ('purify',key) not in session.operating:
                     first,second=candidates[:2];resource_key=('purify',key)
-                    self._reserve(session,[first,second],at_s);session.operating.add(resource_key)
+                    self._reserve(session,[first,second],at_s,resource_key,key);session.operating.add(resource_key)
                     context={'endpoints':key,'parent_ids':[first.pair_id,second.pair_id],'resource_key':resource_key,
                              'first_frame':first.pauli_frame,'second_frame':second.pauli_frame,
+                             'first_coherence_s':self._pair_parameter(session,first,'coherence_s',1.),
+                             'second_coherence_s':self._pair_parameter(session,second,'coherence_s',1.),
+                             'first_age_s':at_s-first.created_at_s,'second_age_s':at_s-second.created_at_s,
+                             'first_cutoff_s':self._pair_parameter(session,first,'memory_cutoff_s',1.),
+                             'second_cutoff_s':self._pair_parameter(session,second,'memory_cutoff_s',1.),
                              'first_fidelity':self._fidelity(session,first,at_s),'second_fidelity':self._fidelity(session,second,at_s),
                              'operation_error':max(self._device_parameter(session,n,'purification_operation_error',.01) for n in key)}
                     self._request(session,at_s,'purify',{k:context[k] for k in ('first_fidelity','second_fidelity','first_frame','second_frame')},context)
@@ -691,11 +857,14 @@ class ProtocolRuntime:
             if session.pairs:
                 self._event(session,at_s,'resources_discarded',{'pair_ids':[p.pair_id for p in session.pairs]})
                 session.pairs.clear()
+            session.held_memories.clear()
+            session.capture_reservations.clear()
+            session.operating.clear()
         else:
             pending_kinds={c.operation for c,ctx in session.pending.values()}
             technologies=session.config.technologies
             if 'tf_qkd' in technologies:
-                if 'tf_block' not in pending_kinds:
+                if 'tf_block' not in pending_kinds and not session.processing_commands:
                     self._request(session,at_s,'tf_block',{'duration_s':block,'arm_lengths_km':self._lengths(session)})
             elif 'satellite_isl' in technologies:
                 if 'isl_block' not in pending_kinds:
@@ -725,6 +894,8 @@ class ProtocolRuntime:
                 elif kind=='poll':self._poll(session,at_s,payload)
                 elif kind=='intake':self._intake(session,at_s,*payload)
                 elif kind=='received':self._received(session,at_s,*payload)
+                elif kind=='postprocessing_send':self._tf_exchange(session,at_s,payload)
+                elif kind=='postprocessing_receive':self._tf_exchange(session,at_s,payload,received=True)
             except (ProtocolError,ValueError,KeyError,TypeError) as error:
                 self._event(session,at_s,'processing_error',{'code':getattr(error,'code','invalid_observation'),'reason':str(error)})
                 if kind=='intake':
@@ -734,7 +905,12 @@ class ProtocolRuntime:
                     command,_,context=payload
                     self._failure(session,at_s,command,context,error)
                 else:
-                    session.status='error';session.reason=str(error)
+                    if kind in ('received','postprocessing_send','postprocessing_receive'):
+                        # Release capture/output modes even when processing
+                        # fails after intake. Consumed parents stay consumed.
+                        self._failure(session,at_s,payload[0],payload[2],error)
+                    else:
+                        session.status='error';session.reason=str(error)
         # If the bounded worker has a backlog, do not age resources past an
         # event still awaiting processing. Repeated calls drain the same target.
         watermark = min(target, self._queue[0][0]) if self._queue else target
@@ -743,6 +919,8 @@ class ProtocolRuntime:
             self._expire(session,watermark)
             session.metrics.update(memory_occupancy=len(session.pairs),
                 memory_qubit_occupancy=dict(Counter(x for pair in session.pairs for x in (pair.a,pair.b))),
+                reserved_memory_qubit_occupancy=dict(Counter(x for endpoints in session.held_memories.values() for x in endpoints)),
+                pending_capture_modes={node_id:sum(slots for endpoints,slots in session.capture_reservations.values() if node_id in endpoints) for node_id in session.config.path},
                 memory_ages_s=[max(0.,watermark-p.created_at_s) for p in session.pairs],
                 stored_fidelity_estimates=[self._fidelity(session,p,watermark) for p in session.pairs],
                 measurement_window_s=max(0.,watermark-session.started_at_s),

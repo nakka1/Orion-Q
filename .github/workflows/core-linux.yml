@@ -1,0 +1,89 @@
+name: Headless core Linux
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/core-linux.yml'
+      - 'packaging/core/**'
+      - 'src/quantum_autopilot/security/**'
+      - 'src/quantum_autopilot/service/**'
+      - 'src/quantum_autopilot/control_plane/**'
+      - 'src/quantum_autopilot/lab/**'
+      - 'src/quantum_autopilot/qkd/**'
+      - 'src/quantum_autopilot/network_engine/**'
+      - 'src/quantum_autopilot/geography/**'
+      - 'src/quantum_autopilot/quantum_protocols/**'
+      - 'src/quantum_twin/**'
+      - 'tests/test_core_deployment.py'
+      - 'tests/test_security_vault_portable.py'
+      - 'tests/test_service_identity_runtime.py'
+      - 'tests/test_portable_core_service.py'
+      - 'tests/test_portable_kme.py'
+      - 'tests/test_headless_clock.py'
+      - 'tests/test_headless_http_drain.py'
+      - 'tools/run_core_linux_validation.py'
+      - 'tools/run_core_linux_cli_smoke.py'
+      - 'docs/thesis/tcc_claim_registry.json'
+      - 'evidence/tcc/v1.0.0/tables/**'
+      - 'configs/qkd_assurance/irelandqci_example_operating_point.json'
+      - 'outputs/qkd_coexistence_measured/experimental_cells.csv'
+      - 'pyproject.toml'
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Stage the independent core distribution
+        run: python packaging/core/prepare_source.py --repository "$GITHUB_WORKSPACE" --destination "$RUNNER_TEMP/orionq-core-source"
+      - name: Install the staged wheel profile without GUI or ML
+        run: python -m pip install "$RUNNER_TEMP/orionq-core-source" 'pytest>=7,<10' 'setuptools>=61' 'wheel>=0.43'
+      - name: Verify the installed artifact outside the checkout
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import quantum_autopilot.service.cli
+          assert importlib.util.find_spec('PySide6') is None
+          assert importlib.util.find_spec('torch') is None
+          assert importlib.util.find_spec('quantum_autopilot.console') is None
+          PY
+      - name: Headless identity, vault and deployment regressions
+        run: |
+          mkdir -p outputs/core-linux-ci
+          python -m pytest -q tests/test_core_deployment.py tests/test_security_vault_portable.py tests/test_service_identity_runtime.py tests/test_portable_core_service.py tests/test_portable_kme.py tests/test_headless_clock.py tests/test_headless_http_drain.py --basetemp "$RUNNER_TEMP/core-pytest" --junitxml outputs/core-linux-ci/tests.xml
+          python -m pip freeze > outputs/core-linux-ci/dependencies.txt
+      - name: Independent CLI, client disconnection and graceful shutdown
+        run: python tools/run_core_linux_cli_smoke.py --repository "$GITHUB_WORKSPACE" --state "$RUNNER_TEMP/core-cli-smoke" --report outputs/core-linux-ci/cli-smoke.json
+      - name: Build the Linux image
+        run: docker build -f packaging/core/Dockerfile --target runtime -t orionq-core:ci .
+      - name: Verify image CLI and absence of an implicit bootstrap
+        run: |
+          docker run --rm orionq-core:ci python -m quantum_autopilot.service.cli --help
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          result = subprocess.run(['docker', 'run', '--rm', 'orionq-core:ci', 'python', '-m',
+              'quantum_autopilot.service.cli', '--config', '/etc/orionq/missing.json', 'serve'],
+              capture_output=True, text=True, timeout=30)
+          assert result.returncode == 2, (result.returncode, result.stdout, result.stderr)
+          assert json.loads(result.stderr)['status'] == 'blocked'
+          assert 'Traceback' not in result.stderr
+          Path('outputs/core-linux-ci/unprovisioned-image.json').write_text(
+              json.dumps({'status':'PASS', 'exit_code':result.returncode, 'implicit_bootstrap':False})+'\n')
+          PY
+          docker image inspect orionq-core:ci --format '{{.Id}}' > outputs/core-linux-ci/image-id.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: headless-core-linux-evidence
+          path: outputs/core-linux-ci/

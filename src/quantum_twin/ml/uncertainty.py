@@ -187,7 +187,8 @@ class ConformalPredictor:
         return self.qhat
 
     def predict_interval(self, x: torch.Tensor, confidence_z: float = None):
-        assert self.qhat is not None, "Call calibrate() before predict_interval()."
+        if self.qhat is None:
+            raise RuntimeError("Call calibrate() before predict_interval().")
         with torch.no_grad():
             preds = self.point_predictor_fn(x).squeeze(-1).numpy()
         lower = np.clip(preds - self.qhat, 0.0, 1.0)

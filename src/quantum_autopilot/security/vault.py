@@ -1,10 +1,12 @@
-"""OS-protected secrets and atomic state. Never a hardware-qualified HSM."""
+"""Provider-protected secrets and atomic state; never a qualified HSM.
+
+Operational callers inject their protection adapter. The local default is
+retained solely for the existing desktop/diagnostic profile.
+"""
 from __future__ import annotations
 
 import base64
 from contextlib import contextmanager
-import ctypes
-from ctypes import wintypes
 import json
 import os
 from pathlib import Path
@@ -79,9 +81,36 @@ def atomic_write(path: Path, payload: bytes):
         temp.unlink(missing_ok=True)
 
 
-class _DataBlob(ctypes.Structure):
-    # DATA_BLOB.cbData is a Windows DWORD even when imported on another OS.
-    _fields_ = [("cbData", ctypes.c_uint32), ("pbData", ctypes.POINTER(ctypes.c_ubyte))]
+_data_blob_type = None
+_data_blob_type_guard = threading.Lock()
+
+
+def _get_data_blob_type():
+    """Load ctypes and the Windows structure only for the desktop adapter."""
+    global _data_blob_type
+    if _data_blob_type is None:
+        with _data_blob_type_guard:
+            if _data_blob_type is None:
+                import ctypes
+
+                class _DataBlob(ctypes.Structure):
+                    # DATA_BLOB.cbData is a Windows DWORD on every host.
+                    _fields_ = [("cbData", ctypes.c_uint32),
+                                ("pbData", ctypes.POINTER(ctypes.c_ubyte))]
+
+                _data_blob_type = _DataBlob
+    return _data_blob_type
+
+
+def __getattr__(name):
+    # Preserve the diagnostic API used to verify native pointer lifetime while
+    # keeping Windows/ctypes imports out of an operational portable startup.
+    if name == "_DataBlob":
+        return _get_data_blob_type()
+    if name == "ctypes":
+        import ctypes
+        return ctypes
+    raise AttributeError(name)
 
 
 _dpapi_bindings = None
@@ -95,9 +124,12 @@ def _get_dpapi_bindings():
         with _dpapi_bindings_guard:
             if _dpapi_bindings is None:
                 try:
+                    import ctypes
+                    from ctypes import wintypes
+
                     crypt = ctypes.WinDLL("crypt32", use_last_error=True)
                     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
-                    blob_pointer = ctypes.POINTER(_DataBlob)
+                    blob_pointer = ctypes.POINTER(_get_data_blob_type())
                     signature = (blob_pointer, ctypes.c_void_p, blob_pointer,
                                  ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32, blob_pointer)
                     protect, unprotect, release = crypt.CryptProtectData, crypt.CryptUnprotectData, kernel.LocalFree
@@ -115,12 +147,15 @@ def _get_dpapi_bindings():
 
 
 def _dpapi(payload: bytes, *, decrypt: bool) -> bytes:
+    import ctypes
+
     _crypt, _kernel, protect, unprotect, release = _get_dpapi_bindings()
+    blob_type = _get_data_blob_type()
     source = ctypes.create_string_buffer(payload)
-    source_blob = _DataBlob(len(payload), ctypes.cast(source, ctypes.POINTER(ctypes.c_ubyte)))
+    source_blob = blob_type(len(payload), ctypes.cast(source, ctypes.POINTER(ctypes.c_ubyte)))
     entropy = ctypes.create_string_buffer(b"ORION-Q:CurrentUser:security-v1")
-    entropy_blob = _DataBlob(len(entropy) - 1, ctypes.cast(entropy, ctypes.POINTER(ctypes.c_ubyte)))
-    output_blob = _DataBlob()
+    entropy_blob = blob_type(len(entropy) - 1, ctypes.cast(entropy, ctypes.POINTER(ctypes.c_ubyte)))
+    output_blob = blob_type()
     operation = unprotect if decrypt else protect
     # CRYPTPROTECT_UI_FORBIDDEN only; never LOCAL_MACHINE.
     if not operation(ctypes.byref(source_blob), None, ctypes.byref(entropy_blob), None, None,
@@ -138,16 +173,64 @@ def _dpapi(payload: bytes, *, decrypt: bool) -> bytes:
             raise VaultError("operating system protected buffer release failed")
 
 
+class WindowsDPAPIProvider:
+    """Explicit desktop adapter for existing CurrentUser-protected v1 stores."""
+
+    mode = "windows-dpapi-current-user"
+    operational_ready = True
+    desktop_only = True
+
+    def __init__(self):
+        if os.name != "nt":
+            raise VaultError("desktop DPAPI protection requires Windows")
+
+    def seal(self, plaintext: bytes) -> dict:
+        return {"schema": "orion.security.vault.v1", "mode": self.mode,
+                "protected": base64.b64encode(_dpapi(plaintext, decrypt=False)).decode("ascii")}
+
+    def open(self, envelope) -> bytes:
+        if (not isinstance(envelope, dict) or set(envelope) != {"schema", "mode", "protected"}
+                or envelope["schema"] != "orion.security.vault.v1" or envelope["mode"] != self.mode):
+            raise VaultError("protected storage profile mismatch")
+        return _dpapi(base64.b64decode(envelope["protected"], validate=True), decrypt=True)
+
+
+class _LegacyLocalProvider:
+    """Compatibility only: this local Unix test profile is not encrypted."""
+
+    mode = "unix-0600-local-only"
+    operational_ready = False
+
+    def seal(self, plaintext: bytes) -> dict:
+        return {"schema": "orion.security.vault.v1", "mode": self.mode,
+                "protected": base64.b64encode(plaintext).decode("ascii")}
+
+    def open(self, envelope) -> bytes:
+        if (not isinstance(envelope, dict) or set(envelope) != {"schema", "mode", "protected"}
+                or envelope["schema"] != "orion.security.vault.v1" or envelope["mode"] != self.mode):
+            raise VaultError("protected storage profile mismatch")
+        return base64.b64decode(envelope["protected"], validate=True)
+
+
 class SecretVault:
-    def __init__(self, path, *, profile="local"):
+    def __init__(self, path, *, profile="local", provider=None):
         self.path = Path(path)
         self.profile = profile
         if profile not in {"local", "operational"}:
             raise ValueError("unknown security profile")
-        if os.name != "nt" and profile == "operational":
-            raise VaultError("operational profile requires an OS/service-protected secret vault")
+        if provider is None:
+            if profile == "operational":
+                raise VaultError("operational profile requires an explicitly provisioned secret provider")
+            provider = WindowsDPAPIProvider() if os.name == "nt" else _LegacyLocalProvider()
+        if (not isinstance(getattr(provider, "mode", None), str)
+                or not callable(getattr(provider, "seal", None))
+                or not callable(getattr(provider, "open", None))):
+            raise ValueError("invalid secret protection provider")
+        if profile == "operational" and getattr(provider, "operational_ready", False) is not True:
+            raise VaultError("secret provider is not admissible for operational storage")
+        self.provider = provider
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.mode = "windows-dpapi-current-user" if os.name == "nt" else "unix-0600-local-only"
+        self.mode = provider.mode
 
     @contextmanager
     def transaction(self):
@@ -160,25 +243,28 @@ class SecretVault:
         if not self.path.exists():
             return {}
         try:
-            if os.name != "nt" and (self.path.stat().st_mode & 0o077):
+            if os.name == "posix" and (self.path.stat().st_mode & 0o077):
                 raise VaultError("local secret vault permissions are not private")
+            if self.path.stat().st_size > 90 * 1024 * 1024:
+                raise VaultError("protected storage exceeds its size limit")
             envelope = json.loads(self.path.read_bytes())
-            if envelope["mode"] != self.mode or envelope["schema"] != "orion.security.vault.v1":
+            if not isinstance(envelope, dict) or envelope.get("mode") != self.mode:
                 raise VaultError("protected storage profile mismatch")
-            payload = base64.b64decode(envelope["protected"], validate=True)
-            plaintext = _dpapi(payload, decrypt=True) if os.name == "nt" else payload
+            plaintext = self.provider.open(envelope)
             rows = json.loads(plaintext)
-            if not isinstance(rows, dict):
+            if not isinstance(rows, dict) or any(not isinstance(value, str) for value in rows.values()):
                 raise VaultError("invalid protected storage")
             return rows
-        except (ValueError, KeyError, TypeError, OSError) as exc:
-            raise VaultError("protected storage is unreadable or modified") from exc
+        except (ValueError, KeyError, TypeError, OSError):
+            # Parsers/native providers may carry input bytes in their exception
+            # attributes. Public failures never include those causal details.
+            raise VaultError("protected storage is unreadable or modified") from None
 
     def _write(self, rows):
-        plaintext = json.dumps(rows, separators=(",", ":"), sort_keys=True).encode()
-        protected = _dpapi(plaintext, decrypt=False) if os.name == "nt" else plaintext
-        envelope = {"schema": "orion.security.vault.v1", "mode": self.mode,
-                    "protected": base64.b64encode(protected).decode("ascii")}
+        plaintext = json.dumps(rows, separators=(",", ":"), sort_keys=True, allow_nan=False).encode()
+        envelope = self.provider.seal(plaintext)
+        if not isinstance(envelope, dict) or envelope.get("mode") != self.mode:
+            raise VaultError("secret provider returned an invalid protected envelope")
         atomic_write(self.path, json.dumps(envelope, separators=(",", ":")).encode())
 
     @staticmethod

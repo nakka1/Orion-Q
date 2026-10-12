@@ -233,7 +233,9 @@ por topologia; extremos precisam existir e ser diferentes; no máximo 16. Padrã
 | custo por tentativa | 0,01 (variante `nominal`) | idem |
 | limiar de fidelidade | o da demanda (0,70 por padrão) | 0,70 é a menor das três opções do autor (0,70/0,74/0,78): três saltos a 0,90 dão ≈ 0,73, e com 0,74 a heurística não entrega em rotas de 3 saltos (medido: 0 de 8 episódios em P3 e P4) |
 | prazo | `max(65 ms · T_caminho / T_ref, 2 · saltos · 4 ms)` | 65 ms = ponto médio da faixa do autor (40–90 ms); `T = Σ tempo de ida-e-volta / p_sucesso` no caminho mais curto, `T_ref` o mesmo na cadeia revisada. Em vãos metropolitanos vale o piso (dois orçamentos de geração por salto): 16 ms para 2 saltos, 24 ms para 3 |
-| episódios | até 24, mínimo 3, parando ao gastar 120 ms | limite declarado (`RouterConfig`), não é modelo físico |
+| episódios | quota fixa de 24 por avaliação de política; fallback de plano pode acrescentar mais 24 | trabalho declarado (`RouterConfig`), independente de carga/relógio; 120 ms é apenas alvo indicativo, não deadline físico |
+
+Desde 12/10/2026, a quota integra o hash de entradas. `planning_ms` mede o custo real e não escolhe quantos episódios entrarão nas estatísticas; as sementes e os prazos físicos continuam explícitos. Ver [qualificação de concorrência e roteamento](../results/orionq_concurrency_and_routing_20261012.md).
 
 O ambiente do autor tem **uma** fidelidade bruta para todo par anunciado. A estimativa por fibra
 (`1 − 3·QBER/2` da sessão QKD) é outra grandeza e **não entra na planta**; ela vai nas arestas e aparece ao

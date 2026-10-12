@@ -6,6 +6,8 @@ Two user interfaces share one application service:
   socket is opened and no browser is involved.
 * ``--ui web`` serves the static dashboard and control API on one loopback
   origin, exactly as before.
+* ``--core-url`` selects a desktop client for a separately deployed mTLS core;
+  no local service, network journal or controller is constructed.
 
 Neither binds to the LAN and neither enables physical actuation.
 """
@@ -21,13 +23,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import Timer
 
-from quantum_autopilot.qkd.dashboard_api import DEFAULT_HOST, DEFAULT_PORT, create_server
+from quantum_autopilot.qkd.api_contract import DEFAULT_HOST, DEFAULT_PORT
 from quantum_autopilot.product import PRODUCT_NAME, product_version
 
 
 DEFAULT_MODEL_BUNDLE = Path(
     "outputs/wdm_model_bundle_v527/edge_lstm_dual_head_uniform_v1.wdmbundle.npz"
 )
+
+
+def create_server(*args, **kwargs):
+    """Legacy web composition, imported only when a local server is requested."""
+    from quantum_autopilot.qkd.dashboard_api import create_server as factory
+    return factory(*args, **kwargs)
 
 
 @dataclass(frozen=True)
@@ -174,6 +182,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--host", default=DEFAULT_HOST, choices=("127.0.0.1", "localhost"))
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--repository-root", type=Path, default=None)
+    parser.add_argument("--core-url", help="HTTPS origin of the separate authenticated core (native UI only)")
+    parser.add_argument("--core-ca", type=Path, help="trusted core CA PEM")
+    parser.add_argument("--core-cert", type=Path, help="provisioned client certificate PEM")
+    parser.add_argument("--core-key", type=Path, help="protected client private-key PEM")
+    parser.add_argument("--core-timeout-s", type=float, default=15.0)
     parser.add_argument("--dashboard-root", type=Path, default=None)
     parser.add_argument("--state-root", type=Path, default=None)
     parser.add_argument("--wdm-model-bundle", type=Path, default=None)
@@ -222,6 +235,17 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _run_native(args, *, startup_monitor=None, desktop_instance=None) -> int:
     from quantum_autopilot.console.app import build_parser as console_parser, run
+
+    if getattr(args, "core_url", None):
+        console_args = console_parser().parse_args([])
+        console_args.provider = "remote"
+        for name in ("core_url", "core_ca", "core_cert", "core_key", "core_timeout_s", "state_root"):
+            setattr(console_args, name, getattr(args, name))
+        options = {}
+        if desktop_instance is not None:
+            options["desktop_instance"] = desktop_instance
+        # Client UI preferences may be local; backend resources and journals are not.
+        return run(console_args, **options)
 
     if args.synthetic and args.state_root is None:
         from uuid import uuid4
@@ -320,6 +344,12 @@ def _run_web(args, *, desktop_instance=None) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     security_arguments = list(sys.argv[1:] if argv is None else argv)
+    if security_arguments and security_arguments[0] == "--scientific-input-test":
+        if len(security_arguments) != 2:
+            raise ValueError("--scientific-input-test requires a new report JSON path")
+        from quantum_twin.core.runtime_validation import write_scientific_validation
+        report = write_scientific_validation(security_arguments[1])
+        return 0 if report["passed"] else 1
     if security_arguments and security_arguments[0] == "--branding-test":
         if len(security_arguments) != 2:
             raise ValueError("--branding-test requires an isolated output directory")
@@ -347,6 +377,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if validate_mission_reception(security_arguments[1])['passed'] else 1
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.core_url:
+        if (args.ui != "native" or any((args.self_test, args.satellite_test, args.global_network_test,
+                args.lab_test, args.stress_test, args.startup_test, args.performance_test, args.demo,
+                args.synthetic, args.telemetry_file, args.qnet_archive, args.qkd_archive,
+                args.wdm_model_bundle, args.repository_root, args.dashboard_root))):
+            parser.error('--core-url requires a remote native session without local data, model or diagnostic inputs')
+        if not all((args.core_ca, args.core_cert, args.core_key)):
+            parser.error('--core-url requires --core-ca, --core-cert and --core-key')
+    elif any((args.core_ca, args.core_cert, args.core_key)) or args.core_timeout_s != 15.0:
+        parser.error('--core-* options require --core-url')
     if args.performance_test:
         if (args.ui != "native" or args.state_root or args.wdm_model_bundle or args.qnet_archive
                 or args.qkd_archive or any((args.self_test, args.satellite_test,

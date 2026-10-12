@@ -35,6 +35,8 @@ dataset).
 import json
 from dataclasses import dataclass, asdict
 
+from .validation import finite_real, integer, probability, relaxation_times
+
 
 @dataclass
 class PhysicsConfig:
@@ -83,10 +85,28 @@ class PhysicsConfig:
     OU_SAMPLING_INTERVAL_STEPS: int = 1   # every how many simulation steps theta(t) is resampled (1 = every step)
 
     def __post_init__(self):
-        assert self.T2 <= 2 * self.T1, "Physical constraint violated: T2 must be <= 2*T1"
-        assert 0.0 <= self.DEPOLARIZATION_P <= 1.0, "DEPOLARIZATION_P must be a probability"
+        self.validate()
+
+    def validate(self) -> None:
+        """Validate physical inputs, including configurations modified in place.
+
+        Explicit guards also run with Python -O and PyInstaller optimize=1.
+        Zero source rate/loss/exposure is allowed for controlled limit cases.
+        """
+        relaxation_times(self.T1, self.T2)
+        probability("DEPOLARIZATION_P", self.DEPOLARIZATION_P)
+        integer("NUM_QUBITS", self.NUM_QUBITS, minimum=1)
+        integer("SEED", self.SEED)
+        integer("OU_SAMPLING_INTERVAL_STEPS", self.OU_SAMPLING_INTERVAL_STEPS, minimum=1)
+        for name in ("DISTANCE_KM", "ALPHA_DB_PER_KM", "PHOTON_RATE_BASE", "STORAGE_TIME",
+                     "TRANSMISSION_EXPOSURE_TIME", "KAPPA_DEPOL_FROM_BER", "KAPPA_ENV_T1T2",
+                     "OU_THETA_SIGMA", "OU_THETA_MEAN_REVERSION"):
+            finite_real(name, getattr(self, name), minimum=0.0)
+        for name in ("TX_POWER_DBM", "NOISE_FLOOR_DBM", "KAPPA_PHASE"):
+            finite_real(name, getattr(self, name))
 
     def save(self, path: str) -> None:
+        self.validate()
         with open(path, "w", encoding="utf-8") as f:
             json.dump(asdict(self), f, indent=2)
 

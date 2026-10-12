@@ -1,0 +1,41 @@
+{
+  "schema": "orionq.test-fixtures.qualification.v1",
+  "scope": "Existing public archived inputs for read-only contract/tamper regression; not new scientific validation, hardware evidence or current topology.",
+  "fixtures": [
+    {
+      "filename": "zenodo-6384558-v1.1.0.zip",
+      "size_bytes": 138402,
+      "sha256": "895b3b093b33587d08c9d878c94597825ad0d83dae564a34e6455b673146f482",
+      "historical_source": "outputs/space_validation_preparation_20261010/zenodo-6384558-v1.1.0.zip",
+      "source": "https://doi.org/10.5281/zenodo.6384558",
+      "version": "v1.1.0",
+      "license": "MIT; space-reference-MIT-LICENSE.txt"
+    },
+    {
+      "filename": "sequence-network-20261010-public-fixture.zip",
+      "size_bytes": 354347,
+      "sha256": "e82235dbafd4d70515f0f9cec6722ee9c2667fb8129094536ee99c12680230c5",
+      "license": "OrionQ project LICENSE",
+      "members": [
+        {
+          "filename": "census.json",
+          "size_bytes": 1616537,
+          "sha256": "e3457af5e1aee1351f96c2e4f546fbb8ae390c09d82ac878957004fb5d5a85f0",
+          "historical_source": "outputs/sequence_network_20261010/run1/census.json"
+        },
+        {
+          "filename": "report.json",
+          "size_bytes": 87131,
+          "sha256": "1fe501c9740a671120708c7e278a29e18cd6bb672c053b367024409626d1a780",
+          "historical_source": "outputs/sequence_network_20261010/run1/report.json"
+        },
+        {
+          "filename": "coverage-matrix.json",
+          "size_bytes": 2287926,
+          "sha256": "b85ea7a98de8832bf5e7c0d4ece0db96857fb54d9c334b5d137db318370ba5e0",
+          "historical_source": "outputs/sequence_network_20261010/run1/coverage-matrix.json"
+        }
+      ]
+    }
+  ]
+}

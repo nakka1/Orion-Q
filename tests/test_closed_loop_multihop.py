@@ -77,5 +77,5 @@ def test_purify_action_increments_qpu_operations_correctly():
 
 
 def test_zero_hops_rejected():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="n_hops"):
         ClosedLoopMultiHopEnvironment(n_hops=0, config=PhysicsConfig(SEED=7), max_rounds=10)

@@ -246,7 +246,7 @@ def validate_global_network(destination, repository_root=None, steps=10, *, full
               'output': str(target), 'run_directory': str(run), 'checks': checks, 'passed': False,
               'physical_actuation': False, 'certified_secret_bits': 0,
               'limitations': ['GEO/ISL optical terminals are hypothetical and are not hardware-qualified.',
-                  'Measured BBM92 photons are consumed; global coherent quantum relay/memory/BSM driver is absent.',
+                  'Measured BBM92 photons are consumed and cannot relay entanglement. The separate orbital-memory-cbpf-bsc-v1 session uses simulated heralded memory captures and BSM; it does not qualify arbitrary global routes or physical relay hardware.',
                   'Simulated protocol sessions have declared dedicated hypothetical resource banks; installed capacity and shared-hardware arbitration are not validated.',
                   'Classical diagnostic probes do not carry application payloads or deliver usable QKD keys.',
                   'Classical local forwarding assumes 1 Mbps, declared latency/jitter/loss; RF/optical classical analog budgets are not mission-qualified.']}

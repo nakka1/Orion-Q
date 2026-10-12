@@ -39,6 +39,8 @@ from enum import Enum
 
 import pandas as pd
 
+from quantum_twin.core.validation import finite_real
+
 
 class ProtocolPhase(Enum):
     TRAIN = "train"
@@ -72,8 +74,12 @@ def make_four_way_split(df: pd.DataFrame, train_frac: float = 0.55, validation_f
                          calibration_frac: float = 0.15, test_frac: float = 0.15) -> FourWaySplit:
     """Splits a time-ordered DataFrame chronologically into four
     SEQUENTIAL blocks. Fractions must sum to 1.0 (within tolerance)."""
+    for name, fraction in (("train_frac", train_frac), ("validation_frac", validation_frac),
+                           ("calibration_frac", calibration_frac), ("test_frac", test_frac)):
+        finite_real(name, fraction, minimum=0.0, maximum=1.0)
     total = train_frac + validation_frac + calibration_frac + test_frac
-    assert abs(total - 1.0) < 1e-6, f"Fractions must sum to 1.0, got {total}"
+    if abs(total - 1.0) >= 1e-6:
+        raise ValueError(f"Fractions must sum to 1.0, got {total}")
 
     n = len(df)
     train_end = int(n * train_frac)
@@ -120,10 +126,11 @@ class ModelSelectionProtocol:
         """Records a parameter/hyperparameter/threshold decision, WITH the
         phase it was made in -- the audit trail proving no parameter was
         tuned using held-out test data."""
-        assert not self._frozen or phase == "test_evaluation", (
-            f"Cannot log a new tuning decision ('{parameter_name}') after the model has been frozen -- "
-            f"only 'test_evaluation'-phase log entries are permitted post-freeze."
-        )
+        if self._frozen and phase != "test_evaluation":
+            raise ProtocolViolationError(
+                f"Cannot log a new tuning decision ('{parameter_name}') after the model has been frozen -- "
+                f"only 'test_evaluation'-phase log entries are permitted post-freeze."
+            )
         self.decisions_log.append({
             "parameter": parameter_name, "value": chosen_value, "phase": phase, "rationale": rationale,
         })

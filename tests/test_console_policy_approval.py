@@ -145,6 +145,7 @@ def test_confirmation_is_dismissed_on_context_invalidation(panel, app, monkeypat
                 )
             ),
         )
+        wrapper.active.refresh()  # Commit the changed presentation capabilities.
     view._tick()
     assert view.confirmation is None and not dialog.isVisible()
     dialog.accept()  # A delayed accepted signal cannot bypass the captured epoch.

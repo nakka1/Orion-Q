@@ -200,6 +200,9 @@ def test_recovery_confirmation_invalidates_with_source_selection(panel, app, mon
                 )
             ),
         )
+        # Presentation follows the next authenticated committed frame; the
+        # timer must not poll this fresh backend property on the Qt thread.
+        wrapper.active.refresh()
     view._tick()
     assert view.confirmation is None and not dialog.isVisible()
     dialog.accept()
@@ -311,7 +314,7 @@ def test_recovery_commit_failure_stays_blocked_and_new_review_can_recover(panel,
 def test_selection_is_owned_and_old_panel_cannot_clear_or_recover_new_selection(panel, app, monkeypatch):
     _, _, service = panel
     recovery_tests.fail_commit(service, monkeypatch)
-    one, two = PolicyReviewBinding(service), PolicyReviewBinding(service)
+    one, two = PolicyReviewBinding(service, source=panel[1].active), PolicyReviewBinding(service, source=panel[1].active)
     one.run("inspect_recovery")
     review = two.run("inspect_recovery")["receipt"]
     selected = service.controller_runtime._policy_recovery_selection
@@ -326,7 +329,7 @@ def test_selection_is_owned_and_old_panel_cannot_clear_or_recover_new_selection(
 def test_recovery_invalidates_other_private_approval_binding(panel, app, monkeypatch):
     view, _, service = panel
     inspect_fault(panel, app, monkeypatch)
-    other = PolicyReviewBinding(service)
+    other = PolicyReviewBinding(service, source=panel[1].active)
     context = other.run("inspect")["receipt"]
     proposal = other.run("prepare", prep_tests.payload(context))["receipt"]
     reviewed = other.run("review", *prep_tests.selection(proposal))["receipt"]
@@ -373,14 +376,14 @@ def test_own_recovery_generation_change_does_not_drop_success_receipt(panel, app
     inspect_fault(panel, app, monkeypatch)
     dialog = confirm(view)
     entered, release = Event(), Event()
-    original = service.invalidate_policy_preparation
+    original = service._invalidate_policy_preparation
 
     def slow_invalidate():
         original()
         entered.set()
         assert release.wait(5)
 
-    monkeypatch.setattr(service, "invalidate_policy_preparation", slow_invalidate)
+    monkeypatch.setattr(service, "_invalidate_policy_preparation", slow_invalidate)
     click(dialog.recover_button)
     wait(app, entered.is_set)
     try:
@@ -462,7 +465,7 @@ def test_closing_old_panel_during_new_inspection_is_nonblocking_and_preserves_ne
 
     _, _, service = panel
     recovery_tests.fail_commit(service, monkeypatch)
-    old, new = PolicyReviewBinding(service), PolicyReviewBinding(service)
+    old, new = PolicyReviewBinding(service, source=panel[1].active), PolicyReviewBinding(service, source=panel[1].active)
     old.run("inspect_recovery")
     entered, release = Event(), Event()
     original = recovery._read_topology

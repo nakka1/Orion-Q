@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
+import threading
+import time
 
 import pytest
 
@@ -156,6 +158,49 @@ def test_busy_and_failed_factory_do_not_replace_input(app, tmp_path):
         plug.switch(broken)
     assert plug.active is source
     plug.stop()
+
+
+@pytest.mark.parametrize("return_to_login", [False, True])
+def test_async_source_preserves_destination_or_explicit_return_to_login(app, tmp_path, return_to_login):
+    """UI fixtures test navigation; the native campaign separately verifies OS login."""
+    from quantum_autopilot.console.prepared_source import DeferredProvider
+
+    source = SyntheticProvider(ROOT, tmp_path / "initial", profile="load")
+    window = ConsoleWindow(source, skip_auth=True, state_root=tmp_path)
+    gate = threading.Event()
+    path = tmp_path / "input.json"
+    path.write_text(json.dumps(frame()))
+
+    def prepare():
+        if not gate.wait(15):
+            raise TimeoutError("bounded fixture preparation")
+        return path
+
+    candidate = DeferredProvider(prepare, lambda value: MeasuredFileProvider(value, tmp_path / "measured"))
+    try:
+        window.provider.start()
+        window.show_screen("keys")
+        assert window.switch_input(lambda: candidate)
+        assert window.current_screen == "splash" and not candidate.ready
+        if return_to_login:
+            window.show_screen("boot")
+            assert not window._loading_source
+        gate.set()
+        deadline = time.monotonic() + 15
+        expected = "boot" if return_to_login else "keys"
+        while (not candidate.ready or window.current_screen != expected) and time.monotonic() < deadline:
+            app.processEvents()
+            time.sleep(.005)
+        assert candidate.ready and window.current_screen == expected
+        assert not window._loading_source and window._source_return_screen is None
+        assert window.snapshot.campaign.startswith("measured:")
+        if return_to_login:
+            # A completed background preparation must not strand later entry.
+            assert window.open_workspace(window.active_source_key())
+            assert window.current_screen == "topology"
+    finally:
+        gate.set()
+        window.close()
 
 
 def test_expiration_reorder_and_identity_change_fail_closed(app, tmp_path):

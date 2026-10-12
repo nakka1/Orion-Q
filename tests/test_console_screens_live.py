@@ -12,6 +12,8 @@ import re
 import json
 import os
 import time
+from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -19,7 +21,7 @@ import pytest
 pytest.importorskip("PySide6.QtWidgets")
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QCoreApplication, QEvent  # noqa: E402
+from PySide6.QtCore import QCoreApplication, QEvent, QTimer  # noqa: E402
 from PySide6.QtWidgets import (  # noqa: E402
     QAbstractButton, QApplication, QComboBox, QLabel, QLineEdit, QTableView,
 )
@@ -527,37 +529,56 @@ def test_edge_feed_updates_after_a_real_fibre_change(app, demo):
     snap = demo.snap
     screen = EdgeControlScreen()
     screen.apply(snap)
-    demo.provider.snapshot_changed.connect(screen.apply)
-    panel = screen.demo_panel
-    known = {decision.id for decision in snap.live.decisions}
-    routed = next(demand for demand in snap.live.demands if demand.route_links)
-    link_id = routed.route_links[0]
+    received = [snap]
 
-    after = demo.run("set_link_active", {"link_id": link_id, "active": False,
-                                         "expected_version": snap.topology.version, "topology_id": snap.topology.id})
-    assert not demo.errors and after.live.link(link_id).status == "disabled"
-    demo.wait_ticks(2)
-    live = demo.live
-    new = [decision for decision in live.decisions if decision.id not in known]
-    assert any(decision.kind in ("reroute", "no_route") for decision in new)      # the backend re-planned
-    pump(app, lambda: panel.decision_ids() == [d.id for d in reversed(demo.live.decisions)])
-    panel.set_kind("reroute")
-    assert panel.decision_ids() == [d.id for d in reversed(demo.live.decisions) if d.kind == "reroute"]
-    panel.set_kind(None)
-    assert [row[0] for row in panel.demands.rows()] == [demand.id for demand in demo.live.demands]
-    changed = demo.live.demand(routed.id)
-    row = next(row for row in panel.demands.rows() if row[0] == routed.id)
-    assert changed.status in row[1] and (link_id not in changed.route_links)
+    def present(frame):
+        screen.apply(frame)
+        received[0] = frame
 
-    # re-enable it: again only what the backend reports
-    current = demo.snap
-    demo.run("set_link_active", {"link_id": link_id, "active": True,
-                                 "expected_version": current.topology.version, "topology_id": current.topology.id})
-    demo.wait_ticks(2)
-    pump(app, lambda: panel.decision_ids() == [d.id for d in reversed(demo.live.decisions)])
-    assert panel.model_rows() == [model_row_values(model) for model in demo.live.models]
-    demo.provider.snapshot_changed.disconnect(screen.apply)
-    close(screen)
+    def presented_at_least(tick):
+        # Compare against the exact provider frame applied to the widget. A fresh
+        # snapshot() can observe a later acquisition, with different call counts.
+        pump(app, lambda: received[0].live.tick >= tick)
+        return received[0].live
+
+    demo.provider.snapshot_changed.connect(present)
+    try:
+        panel = screen.demo_panel
+        known = {decision.id for decision in snap.live.decisions}
+        routed = next(demand for demand in snap.live.demands if demand.route_links)
+        link_id = routed.route_links[0]
+
+        after = demo.run("set_link_active", {"link_id": link_id, "active": False,
+                                             "expected_version": snap.topology.version, "topology_id": snap.topology.id})
+        assert not demo.errors and after.live.link(link_id).status == "disabled"
+        demo.wait_ticks(2)
+        backend = demo.live
+        new = [decision for decision in backend.decisions if decision.id not in known]
+        assert any(decision.kind in ("reroute", "no_route") for decision in new)      # the backend re-planned
+        shown = presented_at_least(backend.tick)
+        assert shown.link(link_id).status == "disabled"
+        assert panel.decision_ids() == [d.id for d in reversed(shown.decisions)]
+        panel.set_kind("reroute")
+        assert panel.decision_ids() == [d.id for d in reversed(shown.decisions) if d.kind == "reroute"]
+        panel.set_kind(None)
+        assert [row[0] for row in panel.demands.rows()] == [demand.id for demand in shown.demands]
+        changed = shown.demand(routed.id)
+        row = next(row for row in panel.demands.rows() if row[0] == routed.id)
+        assert changed.status in row[1] and (link_id not in changed.route_links)
+
+        # Re-enable it through the real command and await a subsequent publication.
+        current = demo.snap
+        demo.run("set_link_active", {"link_id": link_id, "active": True,
+                                     "expected_version": current.topology.version, "topology_id": current.topology.id})
+        demo.wait_ticks(2)
+        shown = presented_at_least(demo.live.tick)
+        assert shown.link(link_id).status != "disabled"
+        assert panel.decision_ids() == [d.id for d in reversed(shown.decisions)]
+        assert panel.model_rows() == [model_row_values(model) for model in shown.models]
+        assert not demo.errors
+    finally:
+        demo.provider.snapshot_changed.disconnect(present)
+        close(screen)
 
 
 def test_input_event_control_exists_only_in_the_demonstration(app, demo, idle):
@@ -742,7 +763,7 @@ def test_screens_render_for_sources_without_a_network_engine(app, tmp_path, sour
 
 
 def test_every_action_button_names_its_operation(app, demo):
-    """Capability gating needs the Qt property on every button that sends a backend command."""
+    """Every command has metadata, permission and its required configured resources."""
     from quantum_autopilot.console.capabilities import OPERATIONS
     from quantum_autopilot.console.widgets import Btn
     snap = demo.snap
@@ -750,15 +771,217 @@ def test_every_action_button_names_its_operation(app, demo):
                   "Remove shadow record"}
     for screen_type in SCREEN_TYPES:
         screen = screen_type()
+        try:
+            screen.apply(snap)
+            resource_gates = {}
+            if isinstance(screen, KeysScreen):
+                laboratory = snap.laboratory or {}
+                configuration = laboratory.get("configuration")
+                availability = (laboratory.get("capabilities") or {}).get("availability", {})
+                if not availability:
+                    availability = (configuration or {}).get("availability", {})
+                panel = screen.laboratory_panel
+                resource_gates[panel.configure_button] = configuration is not None
+                for name, button in panel.buttons.items():
+                    experiment = availability.get("experiments", {}).get(name, {})
+                    resource_gates[button] = configuration is not None and experiment.get("available") is True
+            if isinstance(screen, EdgeControlScreen):
+                panel = screen.fpga_devices
+                devices = ([] if snap.live is None else
+                           snap.live.technologies.get("fpga_devices", {}).get("devices", []))
+                device = next((item for item in devices if item["configuration"]["device_id"]
+                               == panel.selector.currentData()), None)
+                simulated = device is not None and device["mode"] == "simulated"
+                resource_gates.update({
+                    panel.register_button: snap.live is not None,
+                    panel.save: device is not None,
+                    panel.connect_button: simulated,
+                    panel.fault_button: simulated and snap.live is not None and snap.live.source_kind == "simulated",
+                })
+            buttons = [button for button in screen.findChildren(Btn) if button.window() is screen]   # not the dialogs
+            assert buttons
+            for button in buttons:
+                operation = button.property("operation")
+                if button.text() in local_only and not operation:
+                    continue
+                assert operation in OPERATIONS, f"{screen_type.__name__}: {button.text()!r} has no operation"
+                expected = snap.capabilities.allows(operation) and resource_gates.get(button, True)
+                assert button.isEnabled() == expected or operation == "remove_staged_node", (
+                    f"{screen_type.__name__}: {button.text()!r} permission/resource gating differs from its frame")
+        finally:
+            close(screen)
+
+
+@pytest.mark.parametrize("change", [
+    "unchanged_tick", "input_kind", "campaign", "adapter", "topology", "engine_session",
+    "revision", "permission", "configuration", "restored_context", "restored_permission",
+    "restored_configuration",
+])
+def test_laboratory_modal_rechecks_source_revision_and_permissions(app, idle, change):
+    """A real modal may receive new frames; only its unchanged context may submit.
+
+    Deliberate frame mutations exercise the visual guard. They are software-test
+    inputs, not measured observations or evidence of a physical experiment.
+    """
+    from quantum_autopilot.console.widgets.laboratory import LaboratoryPanel
+    from quantum_autopilot.console.widgets.laboratory_configuration import LaboratoryConfigurationDialog
+
+    snap = idle.snap
+    assert snap.capabilities.allows("configure_laboratory")
+    assert snap.laboratory["configuration"] is not None
+    panel = LaboratoryPanel()
+    panel.set_snapshot(snap)
+    captured, failures, drafts, dialogs = [], [], [], []
+    panel.command.connect(lambda verb, body: captured.append((verb, json.loads(body))))
+
+    def accept_after_frame():
+        dialog = None
+        try:
+            current = panel.findChildren(LaboratoryConfigurationDialog)
+            assert len(current) == 1
+            dialog = current[0]
+            dialogs.append(dialog)
+            assert dialog.isVisible()
+            seed = snap.laboratory["configuration"]["configuration"]["photon"]["parameters"]["seed"]
+            dialog.controls[("photon", "seed")].setValue(seed + 1)
+            drafts.append(dialog.request())
+            if change == "unchanged_tick":
+                later = replace(snap, live=replace(
+                    snap.live, tick=snap.live.tick + 1,
+                    publication_revision=(snap.live.publication_revision or 0) + 1))
+            elif change == "input_kind":
+                later = replace(snap, input_kind="measured")
+            elif change == "campaign":
+                later = replace(snap, campaign=snap.campaign + "-replacement")
+            elif change == "adapter":
+                later = replace(snap, capabilities=replace(snap.capabilities, adapter_id="replacement-adapter"))
+            elif change == "topology":
+                later = replace(snap, topology=replace(snap.topology, id=snap.topology.id + "-replacement"))
+            elif change == "engine_session":
+                later = replace(snap, live=replace(snap.live, engine_session_id="replacement-engine-session"))
+            elif change == "permission":
+                later = replace(snap, capabilities=replace(
+                    snap.capabilities, operations=tuple(op for op in snap.capabilities.operations
+                                                      if op != "configure_laboratory")))
+            elif change.startswith("restored_"):
+                if change == "restored_permission":
+                    intermediate = replace(snap, capabilities=replace(snap.capabilities, operations=()))
+                elif change == "restored_configuration":
+                    intermediate = replace(snap, laboratory=None)
+                else:
+                    intermediate = replace(snap, campaign=snap.campaign + "-intermediate-source")
+                panel.set_snapshot(intermediate)
+                later = snap
+            else:
+                laboratory = deepcopy(snap.laboratory)
+                if change == "revision":
+                    laboratory["configuration"]["revision"] += 1
+                else:
+                    laboratory["configuration"] = None
+                later = replace(snap, laboratory=laboratory)
+            panel.set_snapshot(later)
+            dialog.accept()
+        except Exception as error:
+            failures.append(error)
+            for current in panel.findChildren(LaboratoryConfigurationDialog):
+                current.reject()
+
+    try:
+        assert panel.configure_button.property("operation") == "configure_laboratory"
+        assert panel.configure_button.isEnabled()
+        QTimer.singleShot(0, accept_after_frame)
+        panel.configure_button.click()
+        assert not failures, failures
+        assert len(dialogs) == len(drafts) == 1
+        if change == "unchanged_tick":
+            assert captured == [("configure_laboratory", drafts[0])]
+            assert drafts[0]["expected_revision"] == snap.laboratory["configuration"]["revision"]
+            assert panel.configure_button.isEnabled()
+        else:
+            assert captured == []
+            assert panel.summary.text().startswith("REFUSED")
+            if change in {"permission", "configuration"}:
+                assert not panel.configure_button.isEnabled()
+    finally:
+        for dialog in panel.findChildren(LaboratoryConfigurationDialog):
+            dialog.close()
+        close(panel)
+
+
+def test_laboratory_missing_permission_or_configuration_cannot_open_a_dialog(app, idle):
+    from quantum_autopilot.console.widgets.laboratory import LaboratoryPanel
+    from quantum_autopilot.console.widgets.laboratory_configuration import LaboratoryConfigurationDialog
+
+    snap = idle.snap
+    panel = LaboratoryPanel()
+    captured = []
+    panel.command.connect(lambda *args: captured.append(args))
+    try:
+        blocked = [replace(snap, laboratory=None), replace(snap, capabilities=replace(
+            snap.capabilities, operations=tuple(op for op in snap.capabilities.operations
+                                              if op != "configure_laboratory")))]
+        for frame in blocked:
+            panel.set_snapshot(frame)
+            assert not panel.configure_button.isEnabled()
+            panel.configure_button.click()
+            panel._configure()  # A direct handler call must enforce the same refusal.
+            assert panel.findChildren(LaboratoryConfigurationDialog) == []
+            assert captured == []
+    finally:
+        close(panel)
+
+
+def test_screen_command_permissions_do_not_enable_missing_laboratory_resources(app, idle):
+    snap = idle.snap
+    assert snap.capabilities.allows("run_lab_experiment")
+    assert snap.capabilities.allows("configure_laboratory")
+    laboratory = deepcopy(snap.laboratory)
+    laboratory.setdefault("capabilities", {})["availability"] = {"experiments": {
+        name: {"available": False, "missing_dependencies": ["fixture-unavailable-dependency"]}
+        for name in ("photon", "qkd", "all")}}
+    screen = KeysScreen()
+    captured = []
+    screen.command.connect(lambda *args: captured.append(args))
+    try:
+        screen.apply(replace(snap, laboratory=laboratory))
+        panel = screen.laboratory_panel
+        assert panel.configure_button.isEnabled()
+        for button in panel.buttons.values():
+            assert not button.isEnabled()
+            button.click()
+        assert captured == []
+        screen.apply(replace(snap, laboratory=None))
+        assert not panel.configure_button.isEnabled()
+        assert not any(button.isEnabled() for button in panel.buttons.values())
+        panel.configure_button.click()
+        panel._configure()
+        assert captured == []
+        # Eligible existing configuration restores the positive case from the
+        # actual service's published dependency/identity availability.
         screen.apply(snap)
-        buttons = [button for button in screen.findChildren(Btn) if button.window() is screen]   # not the dialogs
-        assert buttons
-        for button in buttons:
-            operation = button.property("operation")
-            if button.text() in local_only and not operation:
-                continue
-            assert operation in OPERATIONS, f"{screen_type.__name__}: {button.text()!r} has no operation"
-            assert button.isEnabled() == snap.capabilities.allows(operation) or operation == "remove_staged_node"
+        assert panel.configure_button.isEnabled()
+        availability = (snap.laboratory.get("capabilities") or {}).get("availability", {})
+        if not availability:
+            availability = snap.laboratory["configuration"].get("availability", {})
+        for name, button in panel.buttons.items():
+            assert button.isEnabled() == (availability.get("experiments", {}).get(name, {}).get("available") is True)
+        missing = deepcopy(snap.laboratory)
+        missing["capabilities"] = {"availability": {"experiments": {}}}
+        missing["configuration"].pop("availability", None)
+        screen.apply(replace(snap, laboratory=missing))
+        assert not any(button.isEnabled() for button in panel.buttons.values())
+        screen.apply(snap)
+        screen.commands_busy = True
+        screen.apply_command_capabilities()
+        for button in (*panel.buttons.values(), panel.configure_button):
+            assert not button.isEnabled()
+            button.click()
+        panel._configure()
+        assert captured == []
+        screen.commands_busy = False
+        screen.apply_command_capabilities()
+        assert panel.configure_button.isEnabled()
+    finally:
         close(screen)
 
 

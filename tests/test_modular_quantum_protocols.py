@@ -218,8 +218,8 @@ def test_final_outputs_are_not_an_acquisition_contract():
 def test_workspace_migration_is_atomic_and_idempotent(tmp_path):
     store=SimulatedTopologyStore(tmp_path/'state.sqlite')
     topology,_=ensure_institutional_workspace(store)
-    assert len(topology.nodes)==71 and 'UNIJORGE' not in {n.node_id for n in topology.nodes}
-    assert sum(n.telemetry.get('inventory',{}).get('kind')=='satellite' for n in topology.nodes)==9
+    assert len(topology.nodes)==76 and 'UNIJORGE' not in {n.node_id for n in topology.nodes}
+    assert sum(n.telemetry.get('inventory',{}).get('kind')=='satellite' for n in topology.nodes)==11
     before=topology.to_dict()
     again=upgrade_global_workspace(store,topology)
     assert again.to_dict()==before
