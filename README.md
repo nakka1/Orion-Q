@@ -224,4 +224,4 @@ For contributions, preserve data provenance, event causality, optional-model def
 
 OrionQ is licensed under the [Apache License 2.0](LICENSE). Third-party code, models, datasets, fonts and map data retain their own licenses and attribution requirements. Review their bundled notices and provenance before redistribution. OpenStreetMap attribution must remain visible where its data is used.
 
-The interface acknowledges **Sponsored by SENAI CIMATEC - LAQCC/QuIIN**.
+**Sponsored by SENAI CIMATEC - LAQCC/QuIIN**.
