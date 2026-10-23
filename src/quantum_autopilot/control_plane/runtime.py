@@ -43,12 +43,7 @@ def _request_hash(mode: ControlMode, snapshot: NetworkStateSnapshot) -> str:
 
 
 class ControllerRuntime:
-    """Run idempotent, fail-closed cycles. PHYSICAL mode routes to
-    `physical_executor`, which — absent a certified adapter — always refuses
-    before the safety supervisor even runs (the supervisor also refuses
-    PHYSICAL unconditionally; see safety.py). Two independent refusals for
-    the same mode is intentional, not redundant."""
-
+    
     def __init__(
         self,
         journal_path: str | Path,
